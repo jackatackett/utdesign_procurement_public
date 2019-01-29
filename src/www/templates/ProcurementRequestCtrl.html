@@ -1,0 +1,33 @@
+<div ng-controller="ProcurementRequestCtrl as $ctrl">
+    <div class="procurementTable">
+
+        <table class="table table-bordered">
+
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col" ng-repeat="field in fields" ng-bind="field"></th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr ng-repeat="row in grid track by $index" ng-init="rowIdx = $index">
+
+                    <th scope="row" ng-bind="rowIdx + 1"></th>
+
+                    <td class="cleanInputCell" ng-repeat="field in fields track by $index" ng-init="fieldIdx = $index">
+                        <input type="text" ng-model="grid[rowIdx][field]">
+                    </td>
+
+                </tr>
+            </tbody>
+
+
+        </table>
+
+    </div>
+
+    <button type="button" class="btn btn-secondary" ng-click="addRow()">
+        &#x2795;
+    </button>
+</div>
