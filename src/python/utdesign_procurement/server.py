@@ -2,6 +2,7 @@
 
 import cherrypy
 import os
+# import pymongo as pm
 
 from functools import reduce
 from mako.lookup import TemplateLookup
@@ -19,6 +20,86 @@ class Root(object):
         ret = template.render()
         cherrypy.log(str(type(ret)))
         return ret
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    def procurementRequest(self):
+        #check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            return cherrypy.HTTPError(400, 'No data was given')
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    def procurementStatuses(self):
+        #check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            return cherrypy.HTTPError(400, 'No data was given')
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    def procurementCancel(self):
+        #check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            return cherrypy.HTTPError(400, 'No data was given')
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    def procurementAccept(self):
+        #check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            return cherrypy.HTTPError(400, 'No data was given')
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    def procurementReject(self):
+        #check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            return cherrypy.HTTPError(400, 'No data was given')
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    def userAdd(self):
+        #check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            return cherrypy.HTTPError(400, 'No data was given')
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    def userEdit(self):
+        #check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            return cherrypy.HTTPError(400, 'No data was given')
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    def userRemove(self):
+        #check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            return cherrypy.HTTPError(400, 'No data was given')
 
 def main():
     cherrypy.Application.wwwDir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 
