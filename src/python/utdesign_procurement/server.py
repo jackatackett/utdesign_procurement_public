@@ -22,9 +22,9 @@ class Root(object):
 
 def main():
     cherrypy.Application.wwwDir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 
-        reduce(os.path.join, ('..', '..', 'www')))
+        os.path.join('..', '..', 'www'))
 
-    server_config = reduce(os.path.join, ('..', '..', 'etc', 'server.conf'))
+    server_config = os.path.abspath(os.path.join('..', '..', 'etc', 'server.conf'))
     cherrypy.tree.mount(Root(), '/', config=server_config)
     cherrypy.engine.start()
     cherrypy.engine.block()
