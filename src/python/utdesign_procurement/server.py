@@ -375,16 +375,37 @@ class Root(object):
 
         if '_id' in data:
             myID = data['_id']
-            if ObjectId.is_valid(myID):
+            if ObjectId.is_valid(myID): #this takes the id as a string, not an ObjectId -> need to convert it if searching on ObjectId
                 # if there exists a user with the given id, change its data and update it
-                if self.colUsers.find({'_id': myID}).count() > 0:
-                    self.colRequests.update({'_id': myID}, {"$set": {'status': 'rejected'} })		#wrong currently
+                if self.colUsers.find({'_id': ObjectId(myID)}).count() > 0:
+                    cherrypy.log("found ID")
+                    data.pop('_id')
+                    cherrypy.log("popped id")
+                    self.colUsers.update({'_id': ObjectId(myID)}, {"$set": data })
+                    cherrypy.log("successful update")
                 else:
                     raise cherrypy.HTTPError(400, 'User matching id not found in database')
             else:
                 raise cherrypy.HTTPError(400, 'object id not valid')
         else:
             raise cherrypy.HTTPError(400, 'data needs object id')
+        #~ if '_id' in data:
+            #~ myID = data['_id']
+            #~ print(myID)
+            #~ # if ObjectId.is_valid(myID): #this takes the id as a string, not an ObjectId -> need to convert it if searching on ObjectId
+                #~ # if there exists a user with the given id, change its data and update it
+            #~ if self.colUsers.find({'_id': myID}).count() > 0:
+                #~ cherrypy.log("found ID")
+                #~ data.pop('_id')
+                #~ cherrypy.log("popped id")
+                #~ self.colUsers.update({'_id': myID}, {"$set": data })
+                #~ cherrypy.log("successful update")
+            #~ else:
+                #~ raise cherrypy.HTTPError(400, 'User matching id not found in database')
+            #~ # else:
+                #~ # raise cherrypy.HTTPError(400, 'object id not valid')
+        #~ else:
+            #~ raise cherrypy.HTTPError(400, 'data needs object id')
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
