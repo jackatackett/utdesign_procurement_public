@@ -405,7 +405,8 @@ def main():
         '..', '..', 'etc', 'server.conf'))
     cherrypy.tree.mount(Root(), '/', config=server_config)
     cherrypy.engine.start()
-    cherrypy.engine.block()
+    input()
+    cherrypy.engine.stop()
 
 if __name__ == '__main__':
     main()
