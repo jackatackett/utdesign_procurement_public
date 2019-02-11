@@ -2,7 +2,7 @@
 
 import cherrypy
 import os
-# import pymongo as pm
+import pymongo as pm
 
 from functools import reduce
 from mako.lookup import TemplateLookup
@@ -13,6 +13,11 @@ class Root(object):
         templateDir = os.path.join(cherrypy.Application.wwwDir, 'templates')
         cherrypy.log("Template Dir: %s" % templateDir)
         self.templateLookup = TemplateLookup(directories=templateDir)
+        
+        client = pm.MongoClient()
+        db = client['procurement']
+        colRequests = db['requests']
+        colUsers = db['users']
 
     @cherrypy.expose
     def index(self):
@@ -20,66 +25,338 @@ class Root(object):
         ret = template.render()
         cherrypy.log(str(type(ret)))
         return ret
+        
+    #@cherrypy.expose
+    #def helperFunc(
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
     def procurementRequest(self):
+        """
+        Would like to rework the code to promote re-use and such.
+        Also check to make sure it all/any of it works.
+        """
         #check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
         else:
             return cherrypy.HTTPError(400, 'No data was given')
+        
+        myRequest = dict()
+        
+        # set default value of value in dict
+        myRequest['status'] = 'pending'
+        
+        # check for value in data, check value is of correct type, add value to dict
+        if 'vendor' in data:
+            myVendor = data['vendor']
+            if isinstance(myVendor, str):
+                myRequest['vendor'] = myVendor
+            else:
+                cherrypy.log("Expected vendor of type str. See: %s" % myVendor)
+                return cherrypy.HTTPError(400, 'Invalid vendor format')
+        else:
+            return cherrypy.HTTPError(400, 'Missing vendor')
+              
+        # check for value in data, check value is of correct type, add value to dict
+        if 'token' in data:
+            myToken = data['token']
+            if isinstance(myToken, str):
+                myRequest['token'] = myToken
+            else:
+                cherrypy.log("Expected token of type str. See: %s" % myToken)
+                return cherrypy.HTTPError(400, 'Invalid token format')
+        else:
+            return cherrypy.HTTPError(400, 'Missing token')
+
+        # check for value in data, check value is of correct type, add value to dict                
+        if 'groupID' in data:
+            myGroupID = data['groupID']
+            if isinstance(myGroupID, str):
+                myRequest['groupID'] = myGroupID
+            else:
+                cherrypy.log("Expected groupID of type str. See: %s" % myGroupID)
+                return cherrypy.HTTPError(400, 'Invalid groupID format')
+        else:
+            return cherrypy.HTTPError(400, 'Missing group ID')
+                
+        
+        if hasattr(data['items'], '__iter__'):
+            myItem = dict()
+            for item in data['items']:
+                if isinstance(item, dict):
+                    if 'description' in item:
+                        myDescription = item['description']
+                        if isinstance(myGroupID, str):
+                            myRequest['groupID'] = myGroupID
+                        else:
+                            cherrypy.log("Expected description of type str. See: %s" % myGroupID)
+                            return cherrypy.HTTPError(400, 'Invalid description format')
+                    else:
+                        return cherrypy.HTTPError(400, 'Missing description')
+
+                    if 'partNo' in item:
+                        myPartNo = item['partNo']
+                        if isinstance(myPartNo, str):
+                            myRequest['partNo'] = myPartNo
+                        else:
+                            cherrypy.log("Expected partNo of type str. See: %s" % myPartNo)
+                            return cherrypy.HTTPError(400, 'Invalid partNo format')
+                    else:
+                        return cherrypy.HTTPError(400, 'Missing partNo')
+
+                    if 'quantity' in item:
+                        myQuantity = item['quantity']
+                        if isinstance(myQuantity, str):
+                            myRequest['quantity'] = myQuantity
+                        else:
+                            cherrypy.log("Expected quantity of type str. See: %s" % myQuantity)
+                            return cherrypy.HTTPError(400, 'Invalid quantity format')
+                    else:
+                        return cherrypy.HTTPError(400, 'Missing quantity')
+
+                    if 'unitCost' in item:
+                        myUnitCost = item['unitCost']
+                        if isinstance(myUnitCost, str):
+                            myRequest['unitCost'] = myUnitCost
+                        else:
+                            cherrypy.log("Expected unitCost of type str. See: %s" % myUnitCost)
+                            return cherrypy.HTTPError(400, 'Invalid unitCost format')
+                    else:
+                        return cherrypy.HTTPError(400, 'Missing unitCost')
+
+                else:
+                    return cherrypy.HTTPError(400, 'Invalid item format')
+        else:
+            return cherrypy.HTTPError(400, 'Invalid item format')
+
+        # the following data fields are optional
+        if 'URL' in data:
+            myURL = data['URL']
+            if isinstance(myURL, str):
+                myRequest['URL'] = myURL
+            else:
+                return cherrypy.HTTPError(400, 'Invalid URL format')
+
+            
+        if 'justification' in data:
+            myJust = data['justification']
+            if isinstance(myJust, str):
+                myRequest['justification'] = myJust
+            else:
+                return cherrypy.HTTPError(400, 'Invalid justification format')
+            
+            
+        if 'additionalInfo' in data:
+            myAdd = data['additionalInfo']
+            if isinstance(myAdd, str):
+                myRequest['additionalInfo'] = myAdd
+            else:
+                return cherrypy.HTTPError(400, 'Invalid additional info format')
+            
+        # insert the data into the database
+        colRequests.insert(myRequest)
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
     def procurementStatuses(self):
+        """
+        Returns a list of procurement requests matching all provided 
+        filters. Currently matches with any combination of vendor, 
+        token, groupID, and URL, but also that doesn't work yet.
+        """
         #check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
         else:
-            return cherrypy.HTTPError(400, 'No data was given')
+            data = None
+            
+            
+        filters = []
+        
+        if 'vendor' in data:
+            myVendor = data['vendor']
+            filters.append(myVendor)
+                
+        if 'token' in data:
+            myToken = data['token']
+            filters.append(myToken)
+                
+        if 'groupID' in data:
+            myGroupID = data['groupID']
+            filters.append(myGroupID)
+            
+        if 'URL' in data:
+            myURL = data['URL']
+            filters.append(myURL)
+        
+        # array of json objects {'key': 'value"}
+        
+        # currently doesn't make use of filters
+        listRequests = list(colRequests.find())
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
     def procurementCancel(self):
+        """
+        
+        """
         #check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
         else:
             return cherrypy.HTTPError(400, 'No data was given')
+            
+        if '_id' in data:
+            myID = data['_id']
+            if ObjectId.isValid(myID): 
+                if db.colRequests.find({ '$and': [ {'_id': { "$in": myID}}, {'status': 'pending'} ]  }).count() > 0:
+                    db.colRequests.update({'_id': { "$set": {'status': 'cancelled'} } })
+                else:
+                    return cherrypy.HTTPError(400, 'Pending request matching id not found in database')
+            else:
+                return cherrypy.HTTPError(400, 'object id not valid')
+        else:
+            return cherrypy.HTTPError(400, 'data needs object id')
+        
+        
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
-    def procurementAccept(self):
+    def procurementApprove(self):
+        """
+        Need to make code pretty,
+        check it works.
+        """
         #check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
         else:
             return cherrypy.HTTPError(400, 'No data was given')
+            
+        if '_id' in data:
+            myID = data['_id']
+            if ObjectId.isValid(myID): 
+                # if there exists a request with the given id whose status is 'pending', update the request's status to 'rejected'
+                if db.colRequests.find({ '$and': [ {'_id': { "$in": myID}}, {'status': 'pending'} ]  }).count() > 0:
+                    db.colRequests.update({'_id': { "$set": {'status': 'approved'} } })
+                else:
+                    return cherrypy.HTTPError(400, 'Pending request matching id not found in database')
+            else:
+                return cherrypy.HTTPError(400, 'object id not valid')
+        else:
+            return cherrypy.HTTPError(400, 'data needs object id')
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
     def procurementReject(self):
+        """
+        Need to make code pretty, check it works.
+        """
         #check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
         else:
             return cherrypy.HTTPError(400, 'No data was given')
+            
+        if '_id' in data:
+            myID = data['_id']
+            if ObjectId.isValid(myID): 
+                # if there exists a request with the given id whose status is either 'pending' or 'approved', update the request's status to 'rejected'
+                if db.colRequests.find({ '$and': [ {'_id': { "$in": myID}}, { '$or': [{'status': 'pending'}, {'status': 'approved' } ] } ] }).count() > 0:
+                    db.colRequests.update({'_id': { "$set": {'status': 'rejected'} } })
+                else:
+                    return cherrypy.HTTPError(400, 'Pending request matching id not found in database')
+            else:
+                return cherrypy.HTTPError(400, 'object id not valid')
+        else:
+            return cherrypy.HTTPError(400, 'data needs object id')
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
     def userAdd(self):
+        """
+        I've assumed that every student has:
+        a groupID, firstName, lastName, netID, email, and course
+        """
         #check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
         else:
             return cherrypy.HTTPError(400, 'No data was given')
+            
+        myUser = dict()
+        
+        if 'groupID' in data:
+            myGroupID = data['groupID']
+            if isinstance(myGroupID, str):
+                myUser['groupID'] = myGroupID
+            else:
+                cherrypy.log("Expected groupID of type str. See: %s" % myGroupID)
+                return cherrypy.HTTPError(400, 'Invalid groupID format')
+        else:
+            return cherrypy.HTTPError(400, 'Missing group ID')
+        
+        if 'firstName' in data:
+            myFirstName = data['firstName']
+            if isinstance(myFirstName, str):
+                myUser['firstName'] = myFirstName
+            else:
+                cherrypy.log("Expected firstName of type str. See: %s" % myFirstName)
+                return cherrypy.HTTPError(400, 'Invalid firstName format')
+        else:
+            return cherrypy.HTTPError(400, 'Missing first name')
+            
+            
+        if 'lastName' in data:
+            myLastName = data['lastName']
+            if isinstance(myLastName, str):
+                myUser['lastName'] = myLastName
+            else:
+                cherrypy.log("Expected lastName of type str. See: %s" % myLastName)
+                return cherrypy.HTTPError(400, 'Invalid lastName format')
+        else:
+            return cherrypy.HTTPError(400, 'Missing last name')
+                
+        if 'netID' in data:
+            myNetID = data['netID']
+            if isinstance(myNetID, str):
+                myUser['netID'] = myNetID
+            else:
+                cherrypy.log("Expected netID of type str. See: %s" % myNetID)
+                return cherrypy.HTTPError(400, 'Invalid netID format')
+        else:
+            return cherrypy.HTTPError(400, 'Missing net id')
+            
+        if 'email' in data:
+            myEmail = data['email']
+            if isinstance(myEmail, str):
+                myUser['email'] = myEmail
+            else:
+                cherrypy.log("Expected email of type str. See: %s" % myEmail)
+                return cherrypy.HTTPError(400, 'Invalid email format')
+        else:
+            return cherrypy.HTTPError(400, 'Missing email')
+            
+        if 'course' in data:
+            myCourse = data['course']
+            if isinstance(myCourse, str):
+                myUser['course'] = myCourse
+            else:
+                cherrypy.log("Expected course of type str. See: %s" % myCourse)
+                return cherrypy.HTTPError(400, 'Invalid course format')
+        else:
+            return cherrypy.HTTPError(400, 'Missing course')    
+       
+            
+        # insert the data into the database
+        colUsers.insert(myUser)
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
