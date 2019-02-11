@@ -42,7 +42,7 @@ class Root(object):
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
         else:
-            return cherrypy.HTTPError(400, 'No data was given')
+            raise cherrypy.HTTPError(400, 'No data was given')
         
         myRequest = dict()
         
@@ -56,9 +56,9 @@ class Root(object):
                 myRequest['vendor'] = myVendor
             else:
                 cherrypy.log("Expected vendor of type str. See: %s" % myVendor)
-                return cherrypy.HTTPError(400, 'Invalid vendor format')
+                raise cherrypy.HTTPError(400, 'Invalid vendor format')
         else:
-            return cherrypy.HTTPError(400, 'Missing vendor')
+            raise cherrypy.HTTPError(400, 'Missing vendor')
               
         # check for value in data, check value is of correct type, add value to dict
         if 'token' in data:
@@ -67,9 +67,9 @@ class Root(object):
                 myRequest['token'] = myToken
             else:
                 cherrypy.log("Expected token of type str. See: %s" % myToken)
-                return cherrypy.HTTPError(400, 'Invalid token format')
+                raise cherrypy.HTTPError(400, 'Invalid token format')
         else:
-            return cherrypy.HTTPError(400, 'Missing token')
+            raise cherrypy.HTTPError(400, 'Missing token')
 
         # check for value in data, check value is of correct type, add value to dict                
         if 'groupID' in data:
@@ -78,9 +78,9 @@ class Root(object):
                 myRequest['groupID'] = myGroupID
             else:
                 cherrypy.log("Expected groupID of type str. See: %s" % myGroupID)
-                return cherrypy.HTTPError(400, 'Invalid groupID format')
+                raise cherrypy.HTTPError(400, 'Invalid groupID format')
         else:
-            return cherrypy.HTTPError(400, 'Missing group ID')
+            raise cherrypy.HTTPError(400, 'Missing group ID')
                 
         
         if hasattr(data['items'], '__iter__'):
@@ -93,9 +93,9 @@ class Root(object):
                             myRequest['groupID'] = myGroupID
                         else:
                             cherrypy.log("Expected description of type str. See: %s" % myGroupID)
-                            return cherrypy.HTTPError(400, 'Invalid description format')
+                            raise cherrypy.HTTPError(400, 'Invalid description format')
                     else:
-                        return cherrypy.HTTPError(400, 'Missing description')
+                        raise cherrypy.HTTPError(400, 'Missing description')
 
                     if 'partNo' in item:
                         myPartNo = item['partNo']
@@ -103,9 +103,9 @@ class Root(object):
                             myRequest['partNo'] = myPartNo
                         else:
                             cherrypy.log("Expected partNo of type str. See: %s" % myPartNo)
-                            return cherrypy.HTTPError(400, 'Invalid partNo format')
+                            raise cherrypy.HTTPError(400, 'Invalid partNo format')
                     else:
-                        return cherrypy.HTTPError(400, 'Missing partNo')
+                        raise cherrypy.HTTPError(400, 'Missing partNo')
 
                     if 'quantity' in item:
                         myQuantity = item['quantity']
@@ -113,9 +113,9 @@ class Root(object):
                             myRequest['quantity'] = myQuantity
                         else:
                             cherrypy.log("Expected quantity of type str. See: %s" % myQuantity)
-                            return cherrypy.HTTPError(400, 'Invalid quantity format')
+                            raise cherrypy.HTTPError(400, 'Invalid quantity format')
                     else:
-                        return cherrypy.HTTPError(400, 'Missing quantity')
+                        raise cherrypy.HTTPError(400, 'Missing quantity')
 
                     if 'unitCost' in item:
                         myUnitCost = item['unitCost']
@@ -123,14 +123,14 @@ class Root(object):
                             myRequest['unitCost'] = myUnitCost
                         else:
                             cherrypy.log("Expected unitCost of type str. See: %s" % myUnitCost)
-                            return cherrypy.HTTPError(400, 'Invalid unitCost format')
+                            raise cherrypy.HTTPError(400, 'Invalid unitCost format')
                     else:
-                        return cherrypy.HTTPError(400, 'Missing unitCost')
+                        raise cherrypy.HTTPError(400, 'Missing unitCost')
 
                 else:
-                    return cherrypy.HTTPError(400, 'Invalid item format')
+                    raise cherrypy.HTTPError(400, 'Invalid item format')
         else:
-            return cherrypy.HTTPError(400, 'Invalid item format')
+            raise cherrypy.HTTPError(400, 'Invalid item format')
 
         # the following data fields are optional
         if 'URL' in data:
@@ -138,7 +138,7 @@ class Root(object):
             if isinstance(myURL, str):
                 myRequest['URL'] = myURL
             else:
-                return cherrypy.HTTPError(400, 'Invalid URL format')
+                raise cherrypy.HTTPError(400, 'Invalid URL format')
 
             
         if 'justification' in data:
@@ -146,7 +146,7 @@ class Root(object):
             if isinstance(myJust, str):
                 myRequest['justification'] = myJust
             else:
-                return cherrypy.HTTPError(400, 'Invalid justification format')
+                raise cherrypy.HTTPError(400, 'Invalid justification format')
             
             
         if 'additionalInfo' in data:
@@ -154,7 +154,7 @@ class Root(object):
             if isinstance(myAdd, str):
                 myRequest['additionalInfo'] = myAdd
             else:
-                return cherrypy.HTTPError(400, 'Invalid additional info format')
+                raise cherrypy.HTTPError(400, 'Invalid additional info format')
             
         # insert the data into the database
         self.colRequests.insert(myRequest)
@@ -209,7 +209,7 @@ class Root(object):
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
         else:
-            return cherrypy.HTTPError(400, 'No data was given')
+            raise cherrypy.HTTPError(400, 'No data was given')
             
         if '_id' in data:
             myID = data['_id']
@@ -217,11 +217,11 @@ class Root(object):
                 if self.colRequests.find({ '$and': [ {'_id': { "$in": myID}}, {'status': 'pending'} ]  }).count() > 0:
                     self.colRequests.update({'_id': { "$set": {'status': 'cancelled'} } })
                 else:
-                    return cherrypy.HTTPError(400, 'Pending request matching id not found in database')
+                    raise cherrypy.HTTPError(400, 'Pending request matching id not found in database')
             else:
-                return cherrypy.HTTPError(400, 'object id not valid')
+                raise cherrypy.HTTPError(400, 'object id not valid')
         else:
-            return cherrypy.HTTPError(400, 'data needs object id')
+            raise cherrypy.HTTPError(400, 'data needs object id')
         
         
 
@@ -237,20 +237,20 @@ class Root(object):
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
         else:
-            return cherrypy.HTTPError(400, 'No data was given')
+            raise cherrypy.HTTPError(400, 'No data was given')
             
         if '_id' in data:
             myID = data['_id']
             if ObjectId.is_valid(myID):
-                # if there exists a request with the given id whose status is 'pending', update the request's status to 'rejected'
+                # if there exists a request with the given id whose status is 'pending', update the request's status to 'approved'
                 if self.colRequests.find({ '$and': [ {'_id': { "$in": myID}}, {'status': 'pending'} ]  }).count() > 0:
                     self.colRequests.update({'_id': { "$set": {'status': 'approved'} } })
                 else:
-                    return cherrypy.HTTPError(400, 'Pending request matching id not found in database')
+                    raise cherrypy.HTTPError(400, 'Pending request matching id not found in database')
             else:
-                return cherrypy.HTTPError(400, 'object id not valid')
+                raise cherrypy.HTTPError(400, 'object id not valid')
         else:
-            return cherrypy.HTTPError(400, 'data needs object id')
+            raise cherrypy.HTTPError(400, 'data needs object id')
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -263,20 +263,20 @@ class Root(object):
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
         else:
-            return cherrypy.HTTPError(400, 'No data was given')
+            raise cherrypy.HTTPError(400, 'No data was given')
             
         if '_id' in data:
             myID = data['_id']
             if ObjectId.is_valid(myID):
                 # if there exists a request with the given id whose status is either 'pending' or 'approved', update the request's status to 'rejected'
-                if self.colRequests.find({ '$and': [ {'_id': { "$in": myID}}, { '$or': [{'status': 'pending'}, {'status': 'approved' } ] } ] }).count() > 0:
-                    self.colRequests.update({'_id': { "$set": {'status': 'rejected'} } })
+                if self.colRequests.find({ '$and': [ {'_id': myID}, { '$or': [{'status': 'pending'}, {'status': 'approved' } ] } ] }).count() > 0:
+                    self.colRequests.update({'_id': myID}, {"$set": {'status': 'rejected'} })
                 else:
-                    return cherrypy.HTTPError(400, 'Pending request matching id not found in database')
+                    raise cherrypy.HTTPError(400, 'Pending request matching id not found in database')
             else:
-                return cherrypy.HTTPError(400, 'object id not valid')
+                raise cherrypy.HTTPError(400, 'object id not valid')
         else:
-            return cherrypy.HTTPError(400, 'data needs object id')
+            raise cherrypy.HTTPError(400, 'data needs object id')
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -290,7 +290,7 @@ class Root(object):
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
         else:
-            return cherrypy.HTTPError(400, 'No data was given')
+            raise cherrypy.HTTPError(400, 'No data was given')
             
         myUser = dict()
         
@@ -300,9 +300,9 @@ class Root(object):
                 myUser['groupID'] = myGroupID
             else:
                 cherrypy.log("Expected groupID of type str. See: %s" % myGroupID)
-                return cherrypy.HTTPError(400, 'Invalid groupID format')
+                raise cherrypy.HTTPError(400, 'Invalid groupID format')
         else:
-            return cherrypy.HTTPError(400, 'Missing group ID')
+            raise cherrypy.HTTPError(400, 'Missing group ID')
         
         if 'firstName' in data:
             myFirstName = data['firstName']
@@ -310,9 +310,9 @@ class Root(object):
                 myUser['firstName'] = myFirstName
             else:
                 cherrypy.log("Expected firstName of type str. See: %s" % myFirstName)
-                return cherrypy.HTTPError(400, 'Invalid firstName format')
+                raise cherrypy.HTTPError(400, 'Invalid firstName format')
         else:
-            return cherrypy.HTTPError(400, 'Missing first name')
+            raise cherrypy.HTTPError(400, 'Missing first name')
             
             
         if 'lastName' in data:
@@ -321,9 +321,9 @@ class Root(object):
                 myUser['lastName'] = myLastName
             else:
                 cherrypy.log("Expected lastName of type str. See: %s" % myLastName)
-                return cherrypy.HTTPError(400, 'Invalid lastName format')
+                raise cherrypy.HTTPError(400, 'Invalid lastName format')
         else:
-            return cherrypy.HTTPError(400, 'Missing last name')
+            raise cherrypy.HTTPError(400, 'Missing last name')
                 
         if 'netID' in data:
             myNetID = data['netID']
@@ -331,9 +331,9 @@ class Root(object):
                 myUser['netID'] = myNetID
             else:
                 cherrypy.log("Expected netID of type str. See: %s" % myNetID)
-                return cherrypy.HTTPError(400, 'Invalid netID format')
+                raise cherrypy.HTTPError(400, 'Invalid netID format')
         else:
-            return cherrypy.HTTPError(400, 'Missing net id')
+            raise cherrypy.HTTPError(400, 'Missing net id')
             
         if 'email' in data:
             myEmail = data['email']
@@ -341,9 +341,9 @@ class Root(object):
                 myUser['email'] = myEmail
             else:
                 cherrypy.log("Expected email of type str. See: %s" % myEmail)
-                return cherrypy.HTTPError(400, 'Invalid email format')
+                raise cherrypy.HTTPError(400, 'Invalid email format')
         else:
-            return cherrypy.HTTPError(400, 'Missing email')
+            raise cherrypy.HTTPError(400, 'Missing email')
             
         if 'course' in data:
             myCourse = data['course']
@@ -351,9 +351,9 @@ class Root(object):
                 myUser['course'] = myCourse
             else:
                 cherrypy.log("Expected course of type str. See: %s" % myCourse)
-                return cherrypy.HTTPError(400, 'Invalid course format')
+                raise cherrypy.HTTPError(400, 'Invalid course format')
         else:
-            return cherrypy.HTTPError(400, 'Missing course')    
+            raise cherrypy.HTTPError(400, 'Missing course')    
        
             
         # insert the data into the database
@@ -367,7 +367,20 @@ class Root(object):
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
         else:
-            return cherrypy.HTTPError(400, 'No data was given')
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        if '_id' in data:
+            myID = data['_id']
+            if ObjectId.is_valid(myID):
+                # if there exists a user with the given id, change its data and update it
+                if self.colUsers.find({'_id': myID}).count() > 0:
+                    self.colRequests.update({'_id': myID}, {"$set": {'status': 'rejected'} })		#wrong currently
+                else:
+                    raise cherrypy.HTTPError(400, 'User matching id not found in database')
+            else:
+                raise cherrypy.HTTPError(400, 'object id not valid')
+        else:
+            raise cherrypy.HTTPError(400, 'data needs object id')
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -377,7 +390,7 @@ class Root(object):
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
         else:
-            return cherrypy.HTTPError(400, 'No data was given')
+            raise cherrypy.HTTPError(400, 'No data was given')
 
 def main():
     cherrypy.Application.wwwDir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 
