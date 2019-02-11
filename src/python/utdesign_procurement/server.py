@@ -3,8 +3,9 @@
 import cherrypy
 import os
 import pymongo as pm
-
+from bson.objectid import ObjectId
 from functools import reduce
+
 from mako.lookup import TemplateLookup
 
 class Root(object):
@@ -16,8 +17,8 @@ class Root(object):
         
         client = pm.MongoClient()
         db = client['procurement']
-        colRequests = db['requests']
-        colUsers = db['users']
+        self.colRequests = db['requests']
+        self.colUsers = db['users']
 
     @cherrypy.expose
     def index(self):
@@ -156,7 +157,7 @@ class Root(object):
                 return cherrypy.HTTPError(400, 'Invalid additional info format')
             
         # insert the data into the database
-        colRequests.insert(myRequest)
+        self.colRequests.insert(myRequest)
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -195,7 +196,7 @@ class Root(object):
         # array of json objects {'key': 'value"}
         
         # currently doesn't make use of filters
-        listRequests = list(colRequests.find())
+        listRequests = list(self.colRequests.find())
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -212,9 +213,9 @@ class Root(object):
             
         if '_id' in data:
             myID = data['_id']
-            if ObjectId.isValid(myID): 
-                if db.colRequests.find({ '$and': [ {'_id': { "$in": myID}}, {'status': 'pending'} ]  }).count() > 0:
-                    db.colRequests.update({'_id': { "$set": {'status': 'cancelled'} } })
+            if ObjectId.is_valid(myID):
+                if self.colRequests.find({ '$and': [ {'_id': { "$in": myID}}, {'status': 'pending'} ]  }).count() > 0:
+                    self.colRequests.update({'_id': { "$set": {'status': 'cancelled'} } })
                 else:
                     return cherrypy.HTTPError(400, 'Pending request matching id not found in database')
             else:
@@ -240,10 +241,10 @@ class Root(object):
             
         if '_id' in data:
             myID = data['_id']
-            if ObjectId.isValid(myID): 
+            if ObjectId.is_valid(myID):
                 # if there exists a request with the given id whose status is 'pending', update the request's status to 'rejected'
-                if db.colRequests.find({ '$and': [ {'_id': { "$in": myID}}, {'status': 'pending'} ]  }).count() > 0:
-                    db.colRequests.update({'_id': { "$set": {'status': 'approved'} } })
+                if self.colRequests.find({ '$and': [ {'_id': { "$in": myID}}, {'status': 'pending'} ]  }).count() > 0:
+                    self.colRequests.update({'_id': { "$set": {'status': 'approved'} } })
                 else:
                     return cherrypy.HTTPError(400, 'Pending request matching id not found in database')
             else:
@@ -266,10 +267,10 @@ class Root(object):
             
         if '_id' in data:
             myID = data['_id']
-            if ObjectId.isValid(myID): 
+            if ObjectId.is_valid(myID):
                 # if there exists a request with the given id whose status is either 'pending' or 'approved', update the request's status to 'rejected'
-                if db.colRequests.find({ '$and': [ {'_id': { "$in": myID}}, { '$or': [{'status': 'pending'}, {'status': 'approved' } ] } ] }).count() > 0:
-                    db.colRequests.update({'_id': { "$set": {'status': 'rejected'} } })
+                if self.colRequests.find({ '$and': [ {'_id': { "$in": myID}}, { '$or': [{'status': 'pending'}, {'status': 'approved' } ] } ] }).count() > 0:
+                    self.colRequests.update({'_id': { "$set": {'status': 'rejected'} } })
                 else:
                     return cherrypy.HTTPError(400, 'Pending request matching id not found in database')
             else:
@@ -356,7 +357,7 @@ class Root(object):
        
             
         # insert the data into the database
-        colUsers.insert(myUser)
+        self.colUsers.insert(myUser)
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
