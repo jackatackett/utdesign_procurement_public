@@ -27,8 +27,12 @@ class Root(object):
         cherrypy.log(str(type(ret)))
         return ret
         
-    #@cherrypy.expose
-    #def helperFunc(
+    @cherrypy.expose
+    def debug(self):
+        template = self.templateLookup.get_template('DebugApp.html')
+        ret = template.render()
+        cherrypy.log(str(type(ret)))
+        return ret
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
