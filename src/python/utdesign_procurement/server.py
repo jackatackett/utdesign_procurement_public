@@ -218,8 +218,8 @@ class Root(object):
         if '_id' in data:
             myID = data['_id']
             if ObjectId.is_valid(myID):
-                if self.colRequests.find({ '$and': [ {'_id': { "$in": myID}}, {'status': 'pending'} ]  }).count() > 0:
-                    self.colRequests.update({'_id': { "$set": {'status': 'cancelled'} } })
+                if self.colRequests.find({ '$and': [ {'_id': ObjectId(myID)}, {'status': 'pending'} ]  }).count() > 0:
+                    self.colRequests.update_one({'_id': ObjectId(myID)}, {'$set': {'status': 'cancelled'}}, upsert=False )
                 else:
                     raise cherrypy.HTTPError(400, 'Pending request matching id not found in database')
             else:
