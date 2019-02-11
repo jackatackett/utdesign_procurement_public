@@ -273,8 +273,8 @@ class Root(object):
             myID = data['_id']
             if ObjectId.is_valid(myID):
                 # if there exists a request with the given id whose status is either 'pending' or 'approved', update the request's status to 'rejected'
-                if self.colRequests.find({ '$and': [ {'_id': myID}, { '$or': [{'status': 'pending'}, {'status': 'approved' } ] } ] }).count() > 0:
-                    self.colRequests.update({'_id': myID}, {"$set": {'status': 'rejected'} })
+                if self.colRequests.find({ '$and': [ {'_id': ObjectId(myID)}, { '$or': [{'status': 'pending'}, {'status': 'approved' } ] } ] }).count() > 0:
+                    self.colRequests.update({'_id': ObjectId(myID)}, {"$set": {'status': 'rejected'} })
                 else:
                     raise cherrypy.HTTPError(400, 'Pending request matching id not found in database')
             else:
