@@ -216,8 +216,8 @@ class Root(object):
         if '_id' in data:
             myID = data['_id']
             if ObjectId.is_valid(myID):
-                # request exists in database matching id with status pending
-                if self.colRequests.find({ '$and': [ {'_id': ObjectId(myID)}, {'status': 'pending'} ]  }).count() > 0:
+                # request exists in database matching id with status 'pending' or 'review'
+                if self.colRequests.find({ '$and': [ {'_id': ObjectId(myID)}, {'$or' : [ {'status': 'pending'}, {'status': 'review'} ] } ]  }).count() > 0:
                     # update request to set status to cancelled
                     self.colRequests.update_one({'_id': ObjectId(myID)}, {'$set': {'status': 'cancelled'}}, upsert=False )
                 else:
@@ -247,7 +247,7 @@ class Root(object):
             myID = data['_id']
             if ObjectId.is_valid(myID):
                 # if there exists a request with the given id whose status is 'pending', update the request's status to 'approved'
-                if self.colRequests.find({ '$and': [ {'_id': ObjectId(myID)}, {'status': 'pending'} ]  }).count() > 0:
+                if self.colRequests.find({ '$and': [ {'_id': ObjectId(myID)}, {'status': 'pending'} ] } ).count() > 0:
                     self.colRequests.update_one({'_id': ObjectId(myID)}, {'$set': {'status': 'approved'}}, upsert=False )
                 else:
                     raise cherrypy.HTTPError(400, 'Pending request matching id not found in database')
@@ -255,6 +255,60 @@ class Root(object):
                 raise cherrypy.HTTPError(400, 'object id not valid')
         else:
             raise cherrypy.HTTPError(400, 'data needs object id')
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    def procurementReview(self):
+        """
+        Need to make code pretty, check it works.
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        if '_id' in data:
+            myID = data['_id']
+            if ObjectId.is_valid(myID):
+                # if there exists a request with the given id whose status is 'approved' or 'pending', update the request's status to 'review'
+                if self.colRequests.find({ '$and': [ {'_id': ObjectId(myID)}, { '$or': [ {'status': 'approved'}, {'status': 'pending'} ]} ]}).count() > 0:
+                    self.colRequests.update({'_id': ObjectId(myID)}, {"$set": {'status': 'review'} }, upsert=False )
+                else:
+                    raise cherrypy.HTTPError(400, 'Pending request matching id not found in database')
+            else:
+                raise cherrypy.HTTPError(400, 'object id not valid')
+        else:
+            raise cherrypy.HTTPError(400, 'data needs object id')
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    def procurementResubmit(self):
+        """
+        Need to make code pretty, check it works.
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        if '_id' in data:
+            myID = data['_id']
+            if ObjectId.is_valid(myID):
+                # if there exists a request with the given id whose status is 'review', update the request's status to 'pending'
+                if self.colRequests.find({'$and': [{'_id': ObjectId(myID)}, {'status': 'review'}, ] } ).count() > 0:
+                    self.colRequests.update({'_id': ObjectId(myID)}, {"$set": {'status': 'pending'}}, upsert=False)
+                else:
+                    raise cherrypy.HTTPError(400, 'Pending request matching id not found in database')
+            else:
+                raise cherrypy.HTTPError(400, 'object id not valid')
+        else:
+            raise cherrypy.HTTPError(400, 'data needs object id')
+
+
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
