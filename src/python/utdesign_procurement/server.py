@@ -197,8 +197,6 @@ class Root(object):
             myURL = data['URL']
             filters.append(myURL)
         
-        # array of json objects {'key': 'value"}
-        
         # currently doesn't make use of filters
         listRequests = list(self.colRequests.find())
 
@@ -218,7 +216,9 @@ class Root(object):
         if '_id' in data:
             myID = data['_id']
             if ObjectId.is_valid(myID):
+                # request exists in database matching id with status pending
                 if self.colRequests.find({ '$and': [ {'_id': ObjectId(myID)}, {'status': 'pending'} ]  }).count() > 0:
+                    # update request to set status to cancelled
                     self.colRequests.update_one({'_id': ObjectId(myID)}, {'$set': {'status': 'cancelled'}}, upsert=False )
                 else:
                     raise cherrypy.HTTPError(400, 'Pending request matching id not found in database')
@@ -274,7 +274,7 @@ class Root(object):
             if ObjectId.is_valid(myID):
                 # if there exists a request with the given id whose status is either 'pending' or 'approved', update the request's status to 'rejected'
                 if self.colRequests.find({ '$and': [ {'_id': ObjectId(myID)}, { '$or': [{'status': 'pending'}, {'status': 'approved' } ] } ] }).count() > 0:
-                    self.colRequests.update({'_id': ObjectId(myID)}, {"$set": {'status': 'rejected'} })
+                    self.colRequests.update({'_id': ObjectId(myID)}, {"$set": {'status': 'rejected'} }, upsert=False )
                 else:
                     raise cherrypy.HTTPError(400, 'Pending request matching id not found in database')
             else:
@@ -297,6 +297,9 @@ class Root(object):
             raise cherrypy.HTTPError(400, 'No data was given')
             
         myUser = dict()
+        
+        # set default value of value in dict
+        myUser['status'] = 'current'
         
         if 'groupID' in data:
             myGroupID = data['groupID']
@@ -381,7 +384,7 @@ class Root(object):
                     cherrypy.log("found ID")
                     data.pop('_id')
                     cherrypy.log("popped id")
-                    self.colUsers.update({'_id': ObjectId(myID)}, {"$set": data })
+                    self.colUsers.update({'_id': ObjectId(myID)}, {"$set": data }) # TODO : doesn't check data is valid
                     cherrypy.log("successful update")
                 else:
                     raise cherrypy.HTTPError(400, 'User matching id not found in database')
@@ -416,6 +419,24 @@ class Root(object):
             data = cherrypy.request.json
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
+            
+        if '_id' in data:
+            myID = data['_id']
+            if ObjectId.is_valid(myID):
+                # if there exists a user with the given id whose status is 'current', update the user's status to 'removed'
+                if self.colUsers.find({ '$and': [ {'_id': ObjectId(myID)}, {'status': 'current'} ]  }).count() > 0:
+                    self.colUsers.update_one({'_id': ObjectId(myID)}, {'$set': {'status': 'removed'}}, upsert=False )
+                    
+                #~ usr = self.colUsers.find_one({'_id': ObjectId(myID)})
+                #~ if usr and 'status' in usr and usr['status'] == 'current':
+                    #~ cow = self.colUsers.update_one({'_id': ObjectId(myID)}, {'$set': {'status': 'removed'}}, upsert=False )
+                    
+                else:
+                    raise cherrypy.HTTPError(400, 'Current user matching id not found in database')
+            else:
+                raise cherrypy.HTTPError(400, 'object id not valid')
+        else:
+            raise cherrypy.HTTPError(400, 'data needs object id')
 
 def main():
     cherrypy.Application.wwwDir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 
