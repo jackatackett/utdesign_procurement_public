@@ -1,7 +1,6 @@
-app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', function($scope, $http, $timeout) {
+app.controller('RequestSummaryCtrl', ['$scope', '$http', function($scope, $http) {
 
-    var fieldKeys = ["description", "partNo", "quantity", "unitCost"];
-    $scope.fields = ["Description", "Catalog Part Number", "Quantity", "Estimated Unit Cost"];
+    $scope.fields = ["Group ID", "Status", "Vendor", "URL", "Justification", "Additional Info"];
     $scope.grid = [];
 
     $scope.addRow = function() {
@@ -25,6 +24,7 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', function($sc
         return ret;
     }
 
-    //add a row when the thing loads
-    $timeout($scope.addRow, 0);
+    $(document).ready(function() {
+        $scope.addRow();
+    });
 }]);
