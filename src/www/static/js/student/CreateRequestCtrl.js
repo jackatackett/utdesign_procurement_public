@@ -1,4 +1,4 @@
-app.controller('ProcurementRequestCtrl', ['$scope', '$http', function($scope, $http) {
+app.controller('CreateRequestCtrl', ['$scope', '$http', function($scope, $http) {
 
     $scope.fields = ["Description", "URL", 'Vendor', "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total"];
     $scope.grid = [];

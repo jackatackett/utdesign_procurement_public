@@ -14,25 +14,25 @@ class Root(object):
         templateDir = os.path.join(cherrypy.Application.wwwDir, 'templates')
         cherrypy.log("Template Dir: %s" % templateDir)
         self.templateLookup = TemplateLookup(directories=templateDir)
-        
+
+    @cherrypy.expose
+    def index(self):
+        template = self.templateLookup.get_template('LoginApp.html')
+        ret = template.render()
+        cherrypy.log(str(type(ret)))
+        return ret
+
+class API(object):
+
+    def __init__(self):
+        templateDir = os.path.join(cherrypy.Application.wwwDir, 'templates')
+        cherrypy.log("Template Dir: %s" % templateDir)
+        self.templateLookup = TemplateLookup(directories=templateDir)
+
         client = pm.MongoClient()
         db = client['procurement']
         self.colRequests = db['requests']
         self.colUsers = db['users']
-
-    @cherrypy.expose
-    def index(self):
-        template = self.templateLookup.get_template('StudentApp.html')
-        ret = template.render()
-        cherrypy.log(str(type(ret)))
-        return ret
-        
-    @cherrypy.expose
-    def debug(self):
-        template = self.templateLookup.get_template('DebugApp.html')
-        ret = template.render()
-        cherrypy.log(str(type(ret)))
-        return ret
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -85,8 +85,8 @@ class Root(object):
                 raise cherrypy.HTTPError(400, 'Invalid groupID format')
         else:
             raise cherrypy.HTTPError(400, 'Missing group ID')
-                
-        
+
+        #TODO check that data['items'] exists
         if hasattr(data['items'], '__iter__'):
             myItem = dict()
             for item in data['items']:
@@ -492,6 +492,59 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(400, 'data needs object id')
 
+class StudentView:
+
+    def __init__(self):
+        templateDir = os.path.join(cherrypy.Application.wwwDir, 'templates')
+        cherrypy.log("Template Dir: %s" % templateDir)
+        self.templateLookup = TemplateLookup(directories=templateDir)
+
+    @cherrypy.expose
+    def index(self):
+        template = self.templateLookup.get_template('student/StudentApp.html')
+        ret = template.render()
+        return ret
+
+class ManagerView:
+
+    def __init__(self):
+        templateDir = os.path.join(cherrypy.Application.wwwDir, 'templates')
+        cherrypy.log("Template Dir: %s" % templateDir)
+        self.templateLookup = TemplateLookup(directories=templateDir)
+
+    @cherrypy.expose
+    def index(self):
+        template = self.templateLookup.get_template('manager/ManagerApp.html')
+        ret = template.render()
+        return ret
+
+class AdminView:
+
+    def __init__(self):
+        templateDir = os.path.join(cherrypy.Application.wwwDir, 'templates')
+        cherrypy.log("Template Dir: %s" % templateDir)
+        self.templateLookup = TemplateLookup(directories=templateDir)
+
+    @cherrypy.expose
+    def index(self):
+        template = self.templateLookup.get_template('admin/ AdminApp.html')
+        ret = template.render()
+        return ret
+
+class DebugView:
+
+    def __init__(self):
+        templateDir = os.path.join(cherrypy.Application.wwwDir, 'templates')
+        cherrypy.log("Template Dir: %s" % templateDir)
+        self.templateLookup = TemplateLookup(directories=templateDir)
+
+    @cherrypy.expose
+    def index(self):
+        template = self.templateLookup.get_template('debug/DebugApp.html')
+        ret = template.render()
+        cherrypy.log(str(type(ret)))
+        return ret
+
 def main():
     cherrypy.Application.wwwDir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 
         os.path.join('..', '..', 'www'))
@@ -500,6 +553,12 @@ def main():
         os.path.dirname(os.path.realpath(__file__)), 
         '..', '..', 'etc', 'server.conf'))
     cherrypy.tree.mount(Root(), '/', config=server_config)
+    cherrypy.tree.mount(API(), '/api', config=server_config)
+    cherrypy.tree.mount(StudentView(), '/student', config=server_config)
+    cherrypy.tree.mount(ManagerView(), '/manager', config=server_config)
+    cherrypy.tree.mount(AdminView(), '/admin', config=server_config)
+    cherrypy.tree.mount(DebugView(), '/debug', config=server_config)
+
     cherrypy.engine.start()
     input()
     cherrypy.engine.stop()

@@ -2,7 +2,7 @@ app.controller('DebugCtrl', ['$scope', '$http', '$sce', function($scope, $http, 
 
     $scope.data = "Input goes here";
     $scope.output = "Output goes here";
-    $scope.url = "procurementRequest";
+    $scope.url = "/api/procurementRequest";
     $scope.status = "#FFF"
     $scope.showHTML = false;
 
