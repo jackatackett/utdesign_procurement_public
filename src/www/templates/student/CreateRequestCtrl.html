@@ -1,7 +1,38 @@
 <div id="createRequestCtrlDiv" ng-controller="CreateRequestCtrl as $ctrl">
     <div class="procurementTable">
 
-        <table class="table table-bordered">
+        <h2> General Information: </h2>
+
+        <table style="width: 100%;">
+
+            <tr>
+                <td style="width: 15em">Vendor: </td>
+                <td>
+                    <input ng-model="metadata.vendor">
+                </td>
+            </tr>
+
+            <tr>
+                <td>Vendor URL: </td>
+                <td>
+                    <input ng-model="metadata.URL">
+                </td>
+            </tr>
+
+        </table>
+
+            <!--'status': (string)-->
+            <!--'vendor': (string),-->
+            <!--'URL': (string Optional),-->
+            <!--'token': (string),-->
+            <!--'groupID': (string),-->
+            <!--'justification': (string Optional),-->
+            <!--'additionalInfo': (string Optional),-->
+
+
+
+        <h2> Items: </h2>
+        <table class="table table-bordered" style="margin-bottom: 0px;">
 
             <thead>
                 <tr>
@@ -15,7 +46,7 @@
 
                     <th scope="row" ng-bind="rowIdx + 1"></th>
 
-                    <td class="cleanInputCell" ng-repeat="field in fields track by $index" ng-init="fieldIdx = $index">
+                    <td class="cleanInputCell" ng-repeat="field in fieldKeys track by $index" ng-init="fieldIdx = $index">
                         <input type="text" ng-model="grid[rowIdx][field]">
                     </td>
 
@@ -25,11 +56,27 @@
 
         </table>
 
-    </div>
+        <button type="button" class="btn btn-secondary" ng-click="addRow()">
+            &#x2795;
+        </button>
 
-    <button type="button" class="btn btn-secondary" ng-click="addRow()">
-        &#x2795;
-    </button>
+        <table style="width: 100%; margin-top: 15px; margin-bottom: 15px;">
+
+            <tr>
+                <td style="width: 50%">
+                    <p>Justification (optional): </p>
+                    <textarea ng-model="metadata.justification" style="width: 100%; height: 10em"></textarea>
+                </td>
+
+                <td style="width: 50%">
+                    <p>Additional Info (optional): </p>
+                    <textarea ng-model="metadata.additionalInfo" style="width: 100%; height: 10em"></textarea>
+                </td>
+            </tr>
+
+        </table>
+
+    </div>
 
     <button type="button" class="btn btn-secondary" ng-click="makeRequest()">
         Make Request

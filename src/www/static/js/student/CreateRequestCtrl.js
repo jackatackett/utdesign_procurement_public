@@ -1,8 +1,9 @@
 app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', function($scope, $http, $timeout) {
 
-    var fieldKeys = ["description", "partNo", "quantity", "unitCost"];
+    $scope.fieldKeys = ["description", "partNo", "quantity", "unitCost"];
     $scope.fields = ["Description", "Catalog Part Number", "Quantity", "Estimated Unit Cost"];
     $scope.grid = [];
+    $scope.metadata = {};
 
     $scope.addRow = function() {
         $scope.grid.push(newRow());
@@ -10,10 +11,23 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', function($sc
 
     $scope.makeRequest = function() {
         console.log("makeRequest", $scope.grid);
-        $http.post('/procurementRequest', $scope.grid, function(data) {
-            console.log("Success", data)
+
+        //TODO validate the data
+
+        //TODO don't alias like a moron
+        var data = $scope.metadata;
+        data['items'] = $scope.grid;
+
+        //TODO use the SAML token and not this nonsense
+        data.token = 'goose';
+        data.groupID = 'group7';
+
+
+
+        $http.post('/api/procurementRequest', data).then(function(resp) {
+            console.log("Success", resp)
         }, function(err) {
-            console.error("Error", err)
+            console.error("Error", err.data)
         })
     }
 
