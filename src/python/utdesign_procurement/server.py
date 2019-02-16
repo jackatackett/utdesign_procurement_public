@@ -24,7 +24,7 @@ class Root(object):
 
     @cherrypy.expose
     def index(self):
-        template = self.templateLookup.get_template('LoginApp.html')
+        template = self.templateLookup.get_template('login/LoginApp.html')
         ret = template.render()
         cherrypy.log(str(type(ret)))
         return ret
