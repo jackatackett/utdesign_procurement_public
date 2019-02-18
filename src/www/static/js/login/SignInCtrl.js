@@ -1,6 +1,6 @@
 app.controller('SignInCtrl', ['$scope', '$http', function($scope, $http) {
 
-    $scope.credentials = {username: '', password: ''};
+    $scope.credentials = {email: '', password: ''};
 
     $scope.doSignIn = function() {
         console.log($scope.credentials);

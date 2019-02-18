@@ -526,20 +526,20 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        if 'username' not in data:
-            raise cherrypy.HTTPError(400, 'Missing username')
+        if 'email' not in data:
+            raise cherrypy.HTTPError(400, 'Missing email')
 
         if 'password' not in data:
             raise cherrypy.HTTPError(400, 'Missing password')
 
-        if self.verifyPassword(data['username'], data['password']):
+        if self.verifyPassword(data['email'], data['password']):
             return "<strong> You logged in! </strong>"
         else:
-            raise cherrypy.HTTPError(403, 'Invalid username/password pair.')
+            raise cherrypy.HTTPError(403, 'Invalid email/password pair.')
 
     #do not expose this function for any reason
-    def verifyPassword(self, username, password):
-        user = self.colUsers.find_one({'username': username})
+    def verifyPassword(self, email, password):
+        user = self.colUsers.find_one({'email': email})
 
         if user and 'salt' in user and 'hash' in user:
             return user['hash'] == Root.hashPassword(password, user['salt'])
