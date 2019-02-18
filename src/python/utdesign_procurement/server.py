@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
 import cherrypy
+import hashlib
 import os
 import pymongo as pm
+
 from bson.objectid import ObjectId
 from functools import reduce
-import hashlib
-from uuid import uuid4
-
 from mako.lookup import TemplateLookup
+from uuid import uuid4, UUID
 
 class Root(object):
 
@@ -21,16 +21,34 @@ class Root(object):
         db = client['procurement']
         self.colRequests = db['requests']
         self.colUsers = db['users']
+        self.colInvitations = db['invitations']
 
     # Pages go below
 
     @cherrypy.expose
     def index(self):
+        """
+        This is the login view.
+
+        TODO: If they're already logged in, then they get redirected to their proper view.
+        """
         template = self.templateLookup.get_template('login/LoginApp.html')
         ret = template.render()
         cherrypy.log(str(type(ret)))
         return ret
 
+    @cherrypy.expose
+    def verify(self, id):
+        """
+        This is the account setup page. Here, a user can set their password
+        for the first time.
+        """
+
+        #TODO make sure the id is actually correct
+        template = self.templateLookup.get_template('verify/VerifyApp.html')
+        ret = template.render(verifyUUID=id)
+        cherrypy.log(str(type(ret)))
+        return ret
 
     @cherrypy.expose
     def student(self):
@@ -368,6 +386,18 @@ class Root(object):
         """
         I've assumed that every student has:
         a groupID, firstName, lastName, netID, email, and course
+
+        Expected input::
+
+            {
+                "groupID": (string),
+                "firstName": (string),
+                "lastName": (string),
+                "netID": (string),
+                "email": (string),
+                "course": (string)
+            }
+
         """
         #check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -379,7 +409,7 @@ class Root(object):
         
         # set default value of value in dict
         myUser['status'] = 'current'
-        
+
         if 'groupID' in data:
             myGroupID = data['groupID']
             if isinstance(myGroupID, str):
@@ -441,9 +471,23 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(400, 'Missing course')    
        
-            
+
+        # TODO: make sure the user's email is unique
         # insert the data into the database
         self.colUsers.insert(myUser)
+
+        # create a link so the user can set a password
+
+        myInvitation = {
+            'uuid': str(uuid4()),
+            'expiration': None,
+            'email': myUser['email']
+        }
+
+        # TODO: email this link to the user
+        self.colInvitations.insert(myInvitation)
+        cherrypy.log('Created new user. Setup UUID: %s' % myInvitation['uuid'])
+        return {'uuid': myInvitation['uuid']}
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -519,6 +563,36 @@ class Root(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
+    def userVerify(self):
+        #check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        if not 'uuid' in data:
+            raise cherrypy.HTTPError(400, 'Missing UUID')
+        elif not 'email' in data:
+            raise cherrypy.HTTPError(400, 'Missing email')
+        elif not 'password' in data:
+            raise cherrypy.HTTPError(400, 'Missing password')
+
+        invitation = self.colInvitations.find_one({'uuid': data['uuid']})
+        cherrypy.log("Email: %s. Invitation: %s" % (data['email'], invitation))
+        if invitation and invitation.get('email', None) == data['email']:
+            salt = Root.generateSalt()
+            hash = Root.hashPassword(data['password'], salt)
+            self.colUsers.update({
+                'email': data['email']
+            }, {'$set': {
+                'salt': salt,
+                'password': hash
+            }})
+        else:
+            raise cherrypy.HTTPError(403, 'Invalid email for this invitation')
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
     def userLogin(self):
         #check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -541,15 +615,21 @@ class Root(object):
     def verifyPassword(self, email, password):
         user = self.colUsers.find_one({'email': email})
 
-        if user and 'salt' in user and 'hash' in user:
-            return user['hash'] == Root.hashPassword(password, user['salt'])
+        cherrypy.log("verifyPassword %s ::: %s" % (user['password'], Root.hashPassword(password, user['salt'])))
+        if user and 'salt' in user and 'password' in user:
+            return user['password'] == Root.hashPassword(password, user['salt'])
         else:
             return False
 
     #do not expose this function for any reason
     @staticmethod
     def hashPassword(password, salt):
-        return hashlib.pbkdf2_hmac('sha256', password, salt, 100000)
+        return hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 100000)
+
+    #do not expose this function for any reason
+    @staticmethod
+    def generateSalt():
+        return os.urandom(8)
 
 def main():
     cherrypy.Application.wwwDir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 

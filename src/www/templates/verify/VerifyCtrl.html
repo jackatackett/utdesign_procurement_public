@@ -1,0 +1,28 @@
+<div ng-controller="VerifyCtrl">
+    <p>
+        You have been invited to use the UTDesign Procurement System.
+        Set up your account.
+    </p>
+
+    <p ng-bind="id"></p>
+
+    <form ng-submit="doVerify()">
+        <table>
+            <tr>
+                <td>Email:</td>
+                <td><input type="text" ng-model="credentials.email"></td>
+            </tr>
+            <tr>
+                <td>New Password:</td>
+                <td><input type="password" ng-model="credentials.password"></td>
+            </tr>
+            <tr>
+                <td>Confirm Password:</td>
+                <td><input type="password" ng-model="confirmPassword"></td>
+            </tr>
+            <tr>
+                <td><button type="submit" class="btn btn-success">Register</button></td>
+            </tr>
+        </table>
+    </form>
+</div>
