@@ -1,3 +1,18 @@
-<div id="signInCtrlDiv">
-    <p>This is the sign in page for the login screen!</p>
+<div id="signInCtrlDiv" ng-controller="SignInCtrl">
+    <form ng-submit="doSignIn()">
+        <table>
+            <tr>
+                <td>Username:</td>
+                <td><input type="text" ng-model="credentials.username"></td>
+            </tr>
+            <tr>
+                <td>Password:</td>
+                <td><input type="password" ng-model="credentials.password"></td>
+            </tr>
+            <tr>
+                <td><button type="button" class="btn btn-danger">Forgot password?</button></td>
+                <td><button type="submit" class="btn btn-success">Sign In</button></td>
+            </tr>
+        </table>
+    </form>
 </div>

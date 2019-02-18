@@ -5,6 +5,8 @@ import os
 import pymongo as pm
 from bson.objectid import ObjectId
 from functools import reduce
+import hashlib
+from uuid import uuid4
 
 from mako.lookup import TemplateLookup
 
@@ -514,6 +516,40 @@ class Root(object):
                 raise cherrypy.HTTPError(400, 'object id not valid')
         else:
             raise cherrypy.HTTPError(400, 'data needs object id')
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    def userLogin(self):
+        #check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        if 'username' not in data:
+            raise cherrypy.HTTPError(400, 'Missing username')
+
+        if 'password' not in data:
+            raise cherrypy.HTTPError(400, 'Missing password')
+
+        if self.verifyPassword(data['username'], data['password']):
+            return "<strong> You logged in! </strong>"
+        else:
+            raise cherrypy.HTTPError(403, 'Invalid username/password pair.')
+
+    #do not expose this function for any reason
+    def verifyPassword(self, username, password):
+        user = self.colUsers.find_one({'username': username})
+
+        if user and 'salt' in user and 'hash' in user:
+            return user['hash'] == Root.hashPassword(password, user['salt'])
+        else:
+            return False
+
+    #do not expose this function for any reason
+    @staticmethod
+    def hashPassword(password, salt):
+        return hashlib.pbkdf2_hmac('sha256', password, salt, 100000)
 
 def main():
     cherrypy.Application.wwwDir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 
