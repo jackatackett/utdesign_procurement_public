@@ -24,7 +24,7 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', function($sc
 
 
 
-        $http.post('/api/procurementRequest', data).then(function(resp) {
+        $http.post('/procurementRequest', data).then(function(resp) {
             console.log("Success", resp)
         }, function(err) {
             console.error("Error", err.data)

@@ -1,4 +1,4 @@
-<html ng-app="StudentApp">
+<html ng-app="ManagerApp">
 <head>
     <title>UTDesign Procurement Management System</title>
 
@@ -12,15 +12,19 @@
     <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.7.0/angular.js"></script>
 
     <!--Our Code-->
-    <script src="/js/student/StudentApp.js"></script>
-    <script src="/js/student/ProcurementRequestCtrl.js"></script>
-    <link rel="stylesheet" type="text/css" href="/css/StudentApp.css">
+    <script src="/js/manager/ManagerApp.js"></script>
+    <script src="/js/manager/ManagerNavCtrl.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/Procurement.css">
 </head>
 
 <body>
 
-<%include file="studentNav.html"/>
-<%include file="ProcurementRequestCtrl.html"/>
+<%include file="ManagerNavCtrl.html"/>
+
+<div id="createRequestCtrlDiv">createRequestCtrlDiv</div>
+<div id="requestSummaryCtrlDiv">requestSummaryCtrlDiv</div>
+<div id="managerHelpDiv">Help!</div>
+
 
 
 </body>
