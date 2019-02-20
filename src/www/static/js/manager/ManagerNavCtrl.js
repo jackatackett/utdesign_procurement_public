@@ -6,26 +6,18 @@ app.controller('ManagerNavCtrl', ['$scope', '$location', function($scope, $locat
 
         var hash = $location.hash();
 
-        if (hash == 'create') {
-            //show create
-            $("#createRequestCtrlDiv").show();
-            $("#requestSummaryCtrlDiv").hide();
-            $("#managerHelpDiv").hide();
-
-        } else if (hash == 'status') {
+        if (hash == 'viewRequests') {
             //show status
-            $("#createRequestCtrlDiv").hide();
-            $("#requestSummaryCtrlDiv").show();
+            $("#viewRequestsCtrlDiv").show();
             $("#managerHelpDiv").hide();
 
         } else {
             //show help
-            $("#createRequestCtrlDiv").hide();
-            $("#requestSummaryCtrlDiv").hide();
+            $("#viewRequestsCtrlDiv").hide();
             $("#managerHelpDiv").show();
         }
 
-        console.log("moo", $location.hash());
+        console.log("manager stuff", $location.hash());
     });
 
 }]);
