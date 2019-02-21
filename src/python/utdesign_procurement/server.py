@@ -600,22 +600,28 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
+        # need email and password in data
         if 'email' not in data:
             raise cherrypy.HTTPError(400, 'Missing email')
 
         if 'password' not in data:
             raise cherrypy.HTTPError(400, 'Missing password')
 
+        # verify password of user
         if self.verifyPassword(data['email'], data['password']):
             return "<strong> You logged in! </strong>"
         else:
-            raise cherrypy.HTTPError(403, 'Invalid email/password pair.')
+            raise cherrypy.HTTPError(403, 'Invalid email or password.')
 
     #do not expose this function for any reason
     def verifyPassword(self, email, password):
+        # find one user with email (note: must be unique)
         user = self.colUsers.find_one({'email': email})
 
-        cherrypy.log("verifyPassword %s ::: %s" % (user['password'], Root.hashPassword(password, user['salt'])))
+        # logging password may be security hole; do not include this line in finished product
+        # cherrypy.log("verifyPassword %s ::: %s" % (user['password'], Root.hashPassword(password, user['salt'])))
+
+        # user['password'] is hashed password, not plaintext
         if user and 'salt' in user and 'password' in user:
             return user['password'] == Root.hashPassword(password, user['salt'])
         else:
@@ -624,12 +630,17 @@ class Root(object):
     #do not expose this function for any reason
     @staticmethod
     def hashPassword(password, salt):
+        # use pbkdf2 password hash algorithm, with sha-256 and 100,000 iterations
+        # by default, encode encodes string to utf-8
         return hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 100000)
 
     #do not expose this function for any reason
     @staticmethod
     def generateSalt():
-        return os.urandom(8)
+        # create 32 byte salt (note: changed from 8)
+        # string of random bytes
+        # platform-specific (windows uses CryptGenRandom())
+        return os.urandom(32)
 
 def main():
     cherrypy.Application.wwwDir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 
