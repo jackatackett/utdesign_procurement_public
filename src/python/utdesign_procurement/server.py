@@ -10,6 +10,37 @@ from functools import reduce
 from mako.lookup import TemplateLookup
 from uuid import uuid4, UUID
 
+def authorizedRoles(*acceptableRoles):
+    """
+    This is a decorator factory which checks the role of a user by their
+    session information. If their role is not in the given list of
+    authorized roles, then they are denied access. If they aren't logged
+    in at all, then they are redirected to the login page.
+    """
+
+    def decorator(func):
+
+        def decorated_function(*args, **kwargs):
+            role = cherrypy.session.get('role', None)
+
+            cherrypy.log("authorizedRoles called with user role %s and "
+                         "roles %s" % (role, acceptableRoles))
+
+            # no role means force a login
+            if role is None:
+                raise cherrypy.HTTPRedirect('/login')
+
+            # not authorized means raise hell!
+            if role not in acceptableRoles:
+                raise cherrypy.HTTPError(403)
+
+            # by now, they're surely authorized
+            return func(*args, **kwargs)
+
+        return decorated_function
+
+    return decorator
+
 class Root(object):
 
     def __init__(self):
@@ -23,20 +54,47 @@ class Root(object):
         self.colUsers = db['users']
         self.colInvitations = db['invitations']
 
-    # Pages go below
+    # Pages go below. DO EXPOSE THESE
 
+    #no authorization needed for the landing page
     @cherrypy.expose
     def index(self):
         """
-        This is the login view.
+        This will redirect users to the proper view
 
-        TODO: If they're already logged in, then they get redirected to their proper view.
+        :return:
         """
+
+        role = cherrypy.session.get('role', None)
+        if role is None:
+            raise cherrypy.HTTPRedirect('/login')
+        elif role == 'student':
+            raise cherrypy.HTTPRedirect('/student')
+        elif role == 'manager':
+            raise cherrypy.HTTPRedirect('/manager')
+        elif role == 'admin':
+            raise cherrypy.HTTPRedirect('/admin')
+        else:
+            cherrypy.log("Invalid user role at index. Role: %s" % role)
+            raise cherrypy.HTTPError(400, 'Invalid user role')
+
+    #no authorization needed for the login page
+    @cherrypy.expose
+    def login(self):
+        """
+        This is the login view.
+        """
+
+        role = cherrypy.session.get('role', None)
+        if role is not None:
+            raise cherrypy.HTTPRedirect('/')
+
         template = self.templateLookup.get_template('login/LoginApp.html')
         ret = template.render()
         cherrypy.log(str(type(ret)))
         return ret
 
+    #no authorization needed for the verify page
     @cherrypy.expose
     def verify(self, id):
         """
@@ -51,23 +109,27 @@ class Root(object):
         return ret
 
     @cherrypy.expose
+    @authorizedRoles("student")
     def student(self):
         template = self.templateLookup.get_template('student/StudentApp.html')
         ret = template.render()
         return ret
 
     @cherrypy.expose
+    @authorizedRoles("manager")
     def manager(self):
         template = self.templateLookup.get_template('manager/ManagerApp.html')
         ret = template.render()
         return ret
 
     @cherrypy.expose
+    @authorizedRoles("admin")
     def admin(self):
         template = self.templateLookup.get_template('admin/ AdminApp.html')
         ret = template.render()
         return ret
 
+    # no authorization needed, because this should be removed in production
     @cherrypy.expose
     def debug(self):
         template = self.templateLookup.get_template('debug/DebugApp.html')
@@ -75,7 +137,10 @@ class Root(object):
         cherrypy.log(str(type(ret)))
         return ret
 
-    # please rename helper functions
+    # TODO Move helper functions to the bottom with the others
+    # Helper functions below. DO NOT EXPOSE THESE
+
+    # TODO rename helper functions
     # checks if key value exists and is the right type
     def _helperFunc(self, key, data, dataType, optional=False, default=""):
         if key in data:
@@ -91,16 +156,19 @@ class Root(object):
             else:
                 return default
 
+    # TODO rename helper functions
     # checks if data has valid object ID
     def _helperFunc2(self, data):
         if '_id' in data:
+            myID = data['_id']
             if ObjectId.is_valid(myID):
-                return data['_id']
+                return myID
             else:
                 raise cherrypy.HTTPError(400, 'Object id not valid')
         else:
             raise cherrypy.HTTPError(400, 'data needs object id')
 
+    # TODO rename helper functions
     # is the use of myID valid? (myID is an expected part of the queries)
     # finds document in database and updates it using provided queries
     def _helperFunc3(self, myID, findQuery, updateQuery, updateRule):
@@ -109,11 +177,11 @@ class Root(object):
             else:
                 raise cherrypy.HTTPError(400, 'Request matching id and status not found in database')
 
-    # API Functions go below
+    # API Functions go below. DO EXPOSE THESE
 
     @cherrypy.expose
-    @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
+    @authorizedRoles("student")
     def procurementRequest(self):
         """
         Expected input::
@@ -161,7 +229,7 @@ class Root(object):
         for item in theirItems:
             theirDict = self._helperFunc(item, data, dict)
             myDict = dict()
-            for key in ("description", "partNo", "quantity", "partCost", "totalCost")
+            for key in ("description", "partNo", "quantity", "partCost", "totalCost"):
                 myDict[key] = self._helperFunc(key, theirDict, str)
             myItems.append(myDict)
 
@@ -175,6 +243,7 @@ class Root(object):
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
+    @authorizedRoles("student", "manager", "admin")
     def procurementStatuses(self):
         """
         Returns a list of procurement requests matching all provided 
@@ -208,11 +277,11 @@ class Root(object):
         
         # currently doesn't make use of filters
         listRequests = list(self.colRequests.find())
-
+        return listRequests
 
     @cherrypy.expose
-    @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
+    @authorizedRoles("student")
     def procurementCancel(self):
         """
         # TODO add words here
@@ -243,8 +312,8 @@ class Root(object):
         # TODO send email
 
     @cherrypy.expose
-    @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
+    @authorizedRoles("manager", "admin")
     def procurementApprove(self):
         """
         Need to make code pretty,
@@ -273,6 +342,7 @@ class Root(object):
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
+    @authorizedRoles("student")
     def procurementReview(self):
         """
         Need to make code pretty, check it works.
@@ -304,6 +374,7 @@ class Root(object):
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
+    @authorizedRoles("student")
     def procurementResubmit(self):
         """
         Need to make code pretty, check it works.
@@ -330,11 +401,9 @@ class Root(object):
 
         # TODO send email
 
-
-
     @cherrypy.expose
-    @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
+    @authorizedRoles("manager", "admin")
     def procurementReject(self):
         """
         Need to make code pretty, check it works.
@@ -367,6 +436,7 @@ class Root(object):
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
     def userAdd(self):
         """
         I've assumed that every student has:
@@ -380,7 +450,8 @@ class Root(object):
                 "lastName": (string),
                 "netID": (string),
                 "email": (string),
-                "course": (string)
+                "course": (string),
+                "role": (string)
             }
 
         """
@@ -424,8 +495,8 @@ class Root(object):
         return {'uuid': myInvitation['uuid']}
 
     @cherrypy.expose
-    @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
     def userEdit(self):
         #check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -470,8 +541,8 @@ class Root(object):
             #~ raise cherrypy.HTTPError(400, 'data needs object id')
 
     @cherrypy.expose
-    @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
     def userRemove(self):
         #check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -496,6 +567,7 @@ class Root(object):
 
         # TODO send email?
 
+    # don't need to authenticate for this
     @cherrypy.expose
     @cherrypy.tools.json_in()
     def userVerify(self):
@@ -526,6 +598,7 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(403, 'Invalid email for this invitation')
 
+    # don't need to authenticate for this
     @cherrypy.expose
     @cherrypy.tools.json_in()
     def userLogin(self):
