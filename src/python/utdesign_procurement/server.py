@@ -568,6 +568,10 @@ class Root(object):
         # "authenticated"
         return ret
 
+    @cherrypy.expose
+    def userLogout(self):
+        cherrypy.lib.sessions.expire()
+
     #do not expose this function for any reason
     def verifyPassword(self, user, password):
         # logging password may be security hole; do not include this line in finished product
