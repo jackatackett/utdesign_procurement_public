@@ -64,7 +64,7 @@ class Root(object):
 
     @cherrypy.expose
     def admin(self):
-        template = self.templateLookup.get_template('admin/ AdminApp.html')
+        template = self.templateLookup.get_template('admin/AdminApp.html')
         ret = template.render()
         return ret
 
