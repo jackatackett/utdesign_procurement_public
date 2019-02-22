@@ -608,16 +608,33 @@ class Root(object):
             raise cherrypy.HTTPError(400, 'Missing password')
 
         # verify password of user
-        if self.verifyPassword(data['email'], data['password']):
+        user = self.colUsers.find_one({'email': data['email']})
+        if user and self.verifyPassword(user, data['password']):
+            cherrypy.session['email'] = user['email']
+            cherrypy.session['role'] = user['role']
             return "<strong> You logged in! </strong>"
         else:
             raise cherrypy.HTTPError(403, 'Invalid email or password.')
 
-    #do not expose this function for any reason
-    def verifyPassword(self, email, password):
-        # find one user with email (note: must be unique)
-        user = self.colUsers.find_one({'email': email})
+    # this function is for debugging for now. If that never changes then
+    # TODO remove this function before production if it isn't needed
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def userInfo(self):
+        # auth is helpful for debugging
+        auth = 'role' in cherrypy.session
+        ret =  {'authenticated': auth}
 
+        if auth:
+            for k in ('role', 'email'):
+                ret[k] = cherrypy.session[k]
+
+        # ret is a JSON object containing role and email, and a boolean
+        # "authenticated"
+        return ret
+
+    #do not expose this function for any reason
+    def verifyPassword(self, user, password):
         # logging password may be security hole; do not include this line in finished product
         # cherrypy.log("verifyPassword %s ::: %s" % (user['password'], Root.hashPassword(password, user['salt'])))
 
