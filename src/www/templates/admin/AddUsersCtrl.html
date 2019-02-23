@@ -1,0 +1,21 @@
+<div id="addUsersCtrlDiv" ng-controller="AddUsersCtrl as $ctrl" style="margin: 2%; box-sizing: border-box;">
+
+    <table class="table" style="float: left; width: 50%;">
+
+        <tr ng-repeat="info in userData">
+            <td>
+                {{info}}
+            </td>
+            <td>
+                <input type="text">
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <button type="button" class="btn btn-primary" ng-click="addUser($event)" >Add User</button>
+                <button type="button" class="btn btn-primary" ng-click="uploadSpreadsheet($event)" >Upload Spreadsheet</button>
+            </td>
+        </tr>
+    </table>
+
+</div>

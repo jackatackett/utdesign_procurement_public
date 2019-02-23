@@ -7,12 +7,20 @@ app.controller('AdminNavCtrl', ['$scope', '$location', function($scope, $locatio
         var hash = $location.hash();
 
         if (hash == 'requestSummary') {
-            //show status
+            //show summary
+            $("#addUsersCtrlDiv").hide();
             $("#requestSummaryCtrlDiv").show();
+            $("#adminHelpDiv").hide();
+
+        } else if (hash == 'addUsers') {
+            //show add users
+            $("#addUsersCtrlDiv").show();
+            $("#requestSummaryCtrlDiv").hide();
             $("#adminHelpDiv").hide();
 
         } else {
             //show help
+            $("#addUsersCtrlDiv").hide();
             $("#requestSummaryCtrlDiv").hide();
             $("#adminHelpDiv").show();
         }
