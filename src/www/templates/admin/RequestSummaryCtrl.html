@@ -1,13 +1,20 @@
 <div id="requestSummaryCtrlDiv" ng-controller="RequestSummaryCtrl as $ctrl" style="margin: 2%; box-sizing: border-box;">
 
-    <div style="width:10%; float:left; font-size:20px;">
-        <label ng-repeat="filter in filters">
-            <input type="checkbox">{{filter}}
-        </label>
-        <button type="button" class="btn btn-primary" ng-click="regenerateTable($event)" >Refresh</button>
-    </div>
+    <table class="table" style="float: left; width: 15%;">
+        <tr ng-repeat="filter in filters">
+            <td>
+                <input type="checkbox">
+                {{filter}}
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button type="button" class="btn btn-primary" ng-click="regenerateTable($event)" >Refresh</button>
+            </td>
+        </tr>
+    </table>
 
-    <table class="table table-bordered" style="width: 90%; float: left;">
+    <table class="table table-bordered" style="width: 85%; float: left;">
         <thead>
             <tr>
                 <th ng-repeat="field in fields">{{field}}</th>
