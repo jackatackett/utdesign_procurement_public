@@ -6,7 +6,8 @@ $scope.fieldKeys = ["groupID", "status", "vendor", "URL", "justification", "addi
     $scope.itemFieldKeys = ["description", "partNo", "quantity", "unitCost", "total"];
     $scope.itemFields = ["Description", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
     $scope.teams = ["Procurement", "Clock-It", "Smart Glasses"];
-    $scope.filters = ["Pending", "Accepted", "Rejected", "Shipped", "Canceled", "Completed"];
+    $scope.statuses = ["Pending", "Accepted", "Rejected", "Shipped", "Canceled"];
+    $scope.filters = ["GroupID", "Vendor"];
 
     $scope.data = [ {
                         groupID: "123",

@@ -1,10 +1,21 @@
 <div id="requestSummaryCtrlDiv" ng-controller="RequestSummaryCtrl as $ctrl" style="margin: 2%; box-sizing: border-box;">
 
-    <table class="table" style="float: left; width: 15%;">
+    <table class="table" style="float: left; width: 10%;">
+        <tr>
+            <td>
+                <input type="text" placeholder="search">
+            </td>
+        </tr>
         <tr ng-repeat="filter in filters">
             <td>
-                <input type="checkbox">
                 {{filter}}
+                <input type="text">
+            </td>
+        </tr>
+        <tr ng-repeat="status in statuses">
+            <td>
+                <input type="checkbox">
+                {{status}}
             </td>
         </tr>
         <tr>
@@ -14,7 +25,7 @@
         </tr>
     </table>
 
-    <table class="table table-bordered" style="width: 85%; float: left;">
+    <table class="table table-bordered" style="width: 80%; float: left;">
         <thead>
             <tr>
                 <th ng-repeat="field in fields">{{field}}</th>
