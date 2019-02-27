@@ -10,6 +10,37 @@ from functools import reduce
 from mako.lookup import TemplateLookup
 from uuid import uuid4, UUID
 
+def authorizedRoles(*acceptableRoles):
+    """
+    This is a decorator factory which checks the role of a user by their
+    session information. If their role is not in the given list of
+    authorized roles, then they are denied access. If they aren't logged
+    in at all, then they are redirected to the login page.
+    """
+
+    def decorator(func):
+
+        def decorated_function(*args, **kwargs):
+            role = cherrypy.session.get('role', None)
+
+            cherrypy.log("authorizedRoles called with user role %s and "
+                         "roles %s" % (role, acceptableRoles))
+
+            # no role means force a login
+            if role is None:
+                raise cherrypy.HTTPRedirect('/login')
+
+            # not authorized means raise hell!
+            if role not in acceptableRoles:
+                raise cherrypy.HTTPError(403)
+
+            # by now, they're surely authorized
+            return func(*args, **kwargs)
+
+        return decorated_function
+
+    return decorator
+
 class Root(object):
 
     def __init__(self):
@@ -23,20 +54,47 @@ class Root(object):
         self.colUsers = db['users']
         self.colInvitations = db['invitations']
 
-    # Pages go below
+    # Pages go below. DO EXPOSE THESE
 
+    #no authorization needed for the landing page
     @cherrypy.expose
     def index(self):
         """
-        This is the login view.
+        This will redirect users to the proper view
 
-        TODO: If they're already logged in, then they get redirected to their proper view.
+        :return:
         """
+
+        role = cherrypy.session.get('role', None)
+        if role is None:
+            raise cherrypy.HTTPRedirect('/login')
+        elif role == 'student':
+            raise cherrypy.HTTPRedirect('/student')
+        elif role == 'manager':
+            raise cherrypy.HTTPRedirect('/manager')
+        elif role == 'admin':
+            raise cherrypy.HTTPRedirect('/admin')
+        else:
+            cherrypy.log("Invalid user role at index. Role: %s" % role)
+            raise cherrypy.HTTPError(400, 'Invalid user role')
+
+    #no authorization needed for the login page
+    @cherrypy.expose
+    def login(self):
+        """
+        This is the login view.
+        """
+
+        role = cherrypy.session.get('role', None)
+        if role is not None:
+            raise cherrypy.HTTPRedirect('/')
+
         template = self.templateLookup.get_template('login/LoginApp.html')
         ret = template.render()
         cherrypy.log(str(type(ret)))
         return ret
 
+    #no authorization needed for the verify page
     @cherrypy.expose
     def verify(self, id):
         """
@@ -51,23 +109,27 @@ class Root(object):
         return ret
 
     @cherrypy.expose
+    @authorizedRoles("student")
     def student(self):
         template = self.templateLookup.get_template('student/StudentApp.html')
         ret = template.render()
         return ret
 
     @cherrypy.expose
+    @authorizedRoles("manager")
     def manager(self):
         template = self.templateLookup.get_template('manager/ManagerApp.html')
         ret = template.render()
         return ret
 
     @cherrypy.expose
+    @authorizedRoles("admin")
     def admin(self):
         template = self.templateLookup.get_template('admin/AdminApp.html')
         ret = template.render()
         return ret
 
+    # no authorization needed, because this should be removed in production
     @cherrypy.expose
     def debug(self):
         template = self.templateLookup.get_template('debug/DebugApp.html')
@@ -75,15 +137,71 @@ class Root(object):
         cherrypy.log(str(type(ret)))
         return ret
 
-    # API Functions go below
+    # TODO Move helper functions to the bottom with the others
+    # Helper functions below. DO NOT EXPOSE THESE
+
+    # TODO rename helper functions
+    # checks if key value exists and is the right type
+    def _helperFunc(self, key, data, dataType, optional=False, default=""):
+        if key in data:
+            localVar = data[key]
+            if isinstance(localVar, dataType):
+                return localVar
+            else:
+                cherrypy.log("Expected %s of type %s. See: %s" % key, dataType, localVar)
+                raise cherrypy.HTTPError(400, 'Invalid %s format' % key)
+        else:
+            if(not optional):
+                raise cherrypy.HTTPError(400, 'Missing %s' % key)
+            else:
+                return default
+
+    # TODO rename helper functions
+    # checks if data has valid object ID
+    def _helperFunc2(self, data):
+        if '_id' in data:
+            myID = data['_id']
+            if ObjectId.is_valid(myID):
+                return myID
+            else:
+                raise cherrypy.HTTPError(400, 'Object id not valid')
+        else:
+            raise cherrypy.HTTPError(400, 'data needs object id')
+
+    # TODO rename helper functions
+    # is the use of myID valid? (myID is an expected part of the queries)
+    # finds document in database and updates it using provided queries
+    def _helperFunc3(self, myID, findQuery, updateQuery, updateRule):
+            if self.colRequests.find(findQuery).count() > 0:
+                self.colRequests.update_one(updateQuery, updateRule, upsert=False)
+            else:
+                raise cherrypy.HTTPError(400, 'Request matching id and status not found in database')
+
+    # API Functions go below. DO EXPOSE THESE
 
     @cherrypy.expose
-    @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
+    @authorizedRoles("student")
     def procurementRequest(self):
         """
-        Would like to rework the code to promote re-use and such.
-        Also check to make sure it all/any of it works.
+        Expected input::
+
+            {
+                "status": (string),
+                "vendor": (string),
+                "groupID": (string),
+                "URL": (string),
+                "justification": (string) optional,
+                "additionalInfo": (string) optional
+                "items": [
+                    {
+                    "description": (string),
+                    "partNo": (string),
+                    "quantity": (string),
+                    "unitCost": (string),
+                    }
+                ]
+            }
         """
         #check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -95,120 +213,37 @@ class Root(object):
         
         # set default value of value in dict
         myRequest['status'] = 'pending'
-        
-        # check for value in data, check value is of correct type, add value to dict
-        if 'vendor' in data:
-            myVendor = data['vendor']
-            if isinstance(myVendor, str):
-                myRequest['vendor'] = myVendor
-            else:
-                cherrypy.log("Expected vendor of type str. See: %s" % myVendor)
-                raise cherrypy.HTTPError(400, 'Invalid vendor format')
-        else:
-            raise cherrypy.HTTPError(400, 'Missing vendor')
-              
-        # check for value in data, check value is of correct type, add value to dict
-        if 'token' in data:
-            myToken = data['token']
-            if isinstance(myToken, str):
-                myRequest['token'] = myToken
-            else:
-                cherrypy.log("Expected token of type str. See: %s" % myToken)
-                raise cherrypy.HTTPError(400, 'Invalid token format')
-        else:
-            raise cherrypy.HTTPError(400, 'Missing token')
 
-        # check for value in data, check value is of correct type, add value to dict                
-        if 'groupID' in data:
-            myGroupID = data['groupID']
-            if isinstance(myGroupID, str):
-                myRequest['groupID'] = myGroupID
-            else:
-                cherrypy.log("Expected groupID of type str. See: %s" % myGroupID)
-                raise cherrypy.HTTPError(400, 'Invalid groupID format')
-        else:
-            raise cherrypy.HTTPError(400, 'Missing group ID')
+        for key in ("vendor", "URL", "groupID"):
+            myRequest[key] = self._helperFunc(key, data, str)
 
-        #TODO check that data['items'] exists
-        if hasattr(data['items'], '__iter__'):
-            myItem = dict()
-            for item in data['items']:
-                if isinstance(item, dict):
-                    if 'description' in item:
-                        myDescription = item['description']
-                        if isinstance(myGroupID, str):
-                            myRequest['groupID'] = myGroupID
-                        else:
-                            cherrypy.log("Expected description of type str. See: %s" % myGroupID)
-                            raise cherrypy.HTTPError(400, 'Invalid description format')
-                    else:
-                        raise cherrypy.HTTPError(400, 'Missing description')
+        for key in ("justification", "additionalInfo"):
+            myRequest[key] = self._helperFunc(key, data, str, True)
 
-                    if 'partNo' in item:
-                        myPartNo = item['partNo']
-                        if isinstance(myPartNo, str):
-                            myRequest['partNo'] = myPartNo
-                        else:
-                            cherrypy.log("Expected partNo of type str. See: %s" % myPartNo)
-                            raise cherrypy.HTTPError(400, 'Invalid partNo format')
-                    else:
-                        raise cherrypy.HTTPError(400, 'Missing partNo')
+        # items is a list of dicts (each dict is one item)
+        # theirItems is a list we receive
+        theirItems = self._helperFunc("items", data, list)
+        # myItems is the list we are creating and adding to the database
+        myItems = []
 
-                    if 'quantity' in item:
-                        myQuantity = item['quantity']
-                        if isinstance(myQuantity, str):
-                            myRequest['quantity'] = myQuantity
-                        else:
-                            cherrypy.log("Expected quantity of type str. See: %s" % myQuantity)
-                            raise cherrypy.HTTPError(400, 'Invalid quantity format')
-                    else:
-                        raise cherrypy.HTTPError(400, 'Missing quantity')
+        for item in theirItems:
+            theirDict = self._helperFunc(item, data, dict)
+            myDict = dict()
+            for key in ("description", "partNo", "quantity", "partCost", "totalCost"):
+                myDict[key] = self._helperFunc(key, theirDict, str)
+            myItems.append(myDict)
 
-                    if 'unitCost' in item:
-                        myUnitCost = item['unitCost']
-                        if isinstance(myUnitCost, str):
-                            myRequest['unitCost'] = myUnitCost
-                        else:
-                            cherrypy.log("Expected unitCost of type str. See: %s" % myUnitCost)
-                            raise cherrypy.HTTPError(400, 'Invalid unitCost format')
-                    else:
-                        raise cherrypy.HTTPError(400, 'Missing unitCost')
-
-                else:
-                    raise cherrypy.HTTPError(400, 'Invalid item format')
-        else:
-            raise cherrypy.HTTPError(400, 'Invalid item format')
-
-        # the following data fields are optional
-        if 'URL' in data:
-            myURL = data['URL']
-            if isinstance(myURL, str):
-                myRequest['URL'] = myURL
-            else:
-                raise cherrypy.HTTPError(400, 'Invalid URL format')
-
-            
-        if 'justification' in data:
-            myJust = data['justification']
-            if isinstance(myJust, str):
-                myRequest['justification'] = myJust
-            else:
-                raise cherrypy.HTTPError(400, 'Invalid justification format')
-            
-            
-        if 'additionalInfo' in data:
-            myAdd = data['additionalInfo']
-            if isinstance(myAdd, str):
-                myRequest['additionalInfo'] = myAdd
-            else:
-                raise cherrypy.HTTPError(400, 'Invalid additional info format')
+        myRequest["items"] = myItems
             
         # insert the data into the database
         self.colRequests.insert(myRequest)
 
+        #TODO send email
+
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
+    @authorizedRoles("student", "manager", "admin")
     def procurementStatuses(self):
         """
         Returns a list of procurement requests matching all provided 
@@ -242,39 +277,43 @@ class Root(object):
         
         # currently doesn't make use of filters
         listRequests = list(self.colRequests.find())
+        return listRequests
 
     @cherrypy.expose
-    @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
+    @authorizedRoles("student")
     def procurementCancel(self):
         """
-        
+        # TODO add words here
         """
         #check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
-            
-        if '_id' in data:
-            myID = data['_id']
-            if ObjectId.is_valid(myID):
-                # request exists in database matching id with status 'pending' or 'review'
-                if self.colRequests.find({ '$and': [ {'_id': ObjectId(myID)}, {'$or' : [ {'status': 'pending'}, {'status': 'review'} ] } ]  }).count() > 0:
-                    # update request to set status to cancelled
-                    self.colRequests.update_one({'_id': ObjectId(myID)}, {'$set': {'status': 'cancelled'}}, upsert=False )
-                else:
-                    raise cherrypy.HTTPError(400, 'Pending request matching id not found in database')
-            else:
-                raise cherrypy.HTTPError(400, 'object id not valid')
-        else:
-            raise cherrypy.HTTPError(400, 'data needs object id')
+
+        myID = self._helperFunc2(data)
+        findQuery = {
+            '$and': [
+                {'_id': ObjectId(myID)},
+                {'$or': [
+                    {'status': 'pending'},
+                    {'status': 'review'}
+                ]}
+            ]
+        }
+        updateQuery = {'_id': ObjectId(myID)}
+        updateRule = {'$set':
+                      {'status': 'cancelled'}
+                  }
+
+        self._helperFunc3(myID, findQuery, updateQuery, updateRule)
         
-        
+        # TODO send email
 
     @cherrypy.expose
-    @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
+    @authorizedRoles("manager", "admin")
     def procurementApprove(self):
         """
         Need to make code pretty,
@@ -285,23 +324,25 @@ class Root(object):
             data = cherrypy.request.json
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
-            
-        if '_id' in data:
-            myID = data['_id']
-            if ObjectId.is_valid(myID):
-                # if there exists a request with the given id whose status is 'pending', update the request's status to 'approved'
-                if self.colRequests.find({ '$and': [ {'_id': ObjectId(myID)}, {'status': 'pending'} ] } ).count() > 0:
-                    self.colRequests.update_one({'_id': ObjectId(myID)}, {'$set': {'status': 'approved'}}, upsert=False )
-                else:
-                    raise cherrypy.HTTPError(400, 'Pending request matching id not found in database')
-            else:
-                raise cherrypy.HTTPError(400, 'object id not valid')
-        else:
-            raise cherrypy.HTTPError(400, 'data needs object id')
+
+        myID = self._helperFunc2(data)
+        findQuery = {
+            '$and': [
+                {'_id': ObjectId(myID)},
+                {'status': 'pending'}
+        ]}
+        updateQuery = {'_id': ObjectId(myID)}
+        updateRule = {
+            '$set':
+                {'status': 'approved'}
+        }
+
+        self._helperFunc3(myID, findQuery, updateQuery, updateRule)
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
+    @authorizedRoles("student")
     def procurementReview(self):
         """
         Need to make code pretty, check it works.
@@ -312,22 +353,28 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        if '_id' in data:
-            myID = data['_id']
-            if ObjectId.is_valid(myID):
-                # if there exists a request with the given id whose status is 'approved' or 'pending', update the request's status to 'review'
-                if self.colRequests.find({ '$and': [ {'_id': ObjectId(myID)}, { '$or': [ {'status': 'approved'}, {'status': 'pending'} ]} ]}).count() > 0:
-                    self.colRequests.update({'_id': ObjectId(myID)}, {"$set": {'status': 'review'} }, upsert=False )
-                else:
-                    raise cherrypy.HTTPError(400, 'Pending request matching id not found in database')
-            else:
-                raise cherrypy.HTTPError(400, 'object id not valid')
-        else:
-            raise cherrypy.HTTPError(400, 'data needs object id')
+        myID = self._helperFunc2(data)
+        findQuery = {
+            '$and': [
+                {'_id': ObjectId(myID)},
+                {
+                    '$or': [
+                        {'status': 'approved'},
+                        {'status': 'pending'}
+                ]}
+        ]}
+        updateQuery = {'_id': ObjectId(myID)}
+        updateRule = {
+            "$set":
+                {'status': 'review'}
+        }
+
+        self._helperFunc3(myID, findQuery, updateQuery, updateRule)
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
+    @authorizedRoles("student")
     def procurementResubmit(self):
         """
         Need to make code pretty, check it works.
@@ -338,24 +385,25 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        if '_id' in data:
-            myID = data['_id']
-            if ObjectId.is_valid(myID):
-                # if there exists a request with the given id whose status is 'review', update the request's status to 'pending'
-                if self.colRequests.find({'$and': [{'_id': ObjectId(myID)}, {'status': 'review'}, ] } ).count() > 0:
-                    self.colRequests.update({'_id': ObjectId(myID)}, {"$set": {'status': 'pending'}}, upsert=False)
-                else:
-                    raise cherrypy.HTTPError(400, 'Pending request matching id not found in database')
-            else:
-                raise cherrypy.HTTPError(400, 'object id not valid')
-        else:
-            raise cherrypy.HTTPError(400, 'data needs object id')
+        myID = self._helperFunc2(data)
+        findQuery = {
+            '$and': [
+                {'_id': ObjectId(myID)},
+                {'status': 'review'}
+        ]}
+        updateQuery = {'_id': ObjectId(myID)}
+        updateRule = {
+            "$set":
+                {'status': 'pending'}
+        }
 
+        self._helperFunc3(myID, findQuery, updateQuery, updateRule)
 
+        # TODO send email
 
     @cherrypy.expose
-    @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
+    @authorizedRoles("manager", "admin")
     def procurementReject(self):
         """
         Need to make code pretty, check it works.
@@ -365,23 +413,30 @@ class Root(object):
             data = cherrypy.request.json
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
-            
-        if '_id' in data:
-            myID = data['_id']
-            if ObjectId.is_valid(myID):
-                # if there exists a request with the given id whose status is either 'pending' or 'approved', update the request's status to 'rejected'
-                if self.colRequests.find({ '$and': [ {'_id': ObjectId(myID)}, { '$or': [{'status': 'pending'}, {'status': 'approved' } ] } ] }).count() > 0:
-                    self.colRequests.update({'_id': ObjectId(myID)}, {"$set": {'status': 'rejected'} }, upsert=False )
-                else:
-                    raise cherrypy.HTTPError(400, 'Pending request matching id not found in database')
-            else:
-                raise cherrypy.HTTPError(400, 'object id not valid')
-        else:
-            raise cherrypy.HTTPError(400, 'data needs object id')
+
+        myID = self._helperFunc2(data)
+        findQuery = {
+            '$and': [
+                {'_id': ObjectId(myID)},
+                { '$or': [
+                    {'status': 'pending'},
+                    {'status': 'approved'}
+                ]}
+            ]}
+        updateQuery = {'_id': ObjectId(myID)}
+        updateRule = {
+            "$set":
+                {'status': 'rejected'}
+        }
+
+        self._helperFunc3(myID, findQuery, updateQuery, updateRule)
+
+        # TODO send email
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
     def userAdd(self):
         """
         I've assumed that every student has:
@@ -395,89 +450,39 @@ class Root(object):
                 "lastName": (string),
                 "netID": (string),
                 "email": (string),
-                "course": (string)
+                "course": (string),
+                "role": (string)
             }
 
         """
+
         #check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
-            
+
         myUser = dict()
-        
+
         # set default value of value in dict
         myUser['status'] = 'current'
 
-        if 'groupID' in data:
-            myGroupID = data['groupID']
-            if isinstance(myGroupID, str):
-                myUser['groupID'] = myGroupID
-            else:
-                cherrypy.log("Expected groupID of type str. See: %s" % myGroupID)
-                raise cherrypy.HTTPError(400, 'Invalid groupID format')
+        myRole = self._helperFunc("role", data, str)
+        if myRole in ("student", "manager", "admin"):
+            myUser['role'] = myRole
         else:
-            raise cherrypy.HTTPError(400, 'Missing group ID')
-        
-        if 'firstName' in data:
-            myFirstName = data['firstName']
-            if isinstance(myFirstName, str):
-                myUser['firstName'] = myFirstName
-            else:
-                cherrypy.log("Expected firstName of type str. See: %s" % myFirstName)
-                raise cherrypy.HTTPError(400, 'Invalid firstName format')
-        else:
-            raise cherrypy.HTTPError(400, 'Missing first name')
-            
-            
-        if 'lastName' in data:
-            myLastName = data['lastName']
-            if isinstance(myLastName, str):
-                myUser['lastName'] = myLastName
-            else:
-                cherrypy.log("Expected lastName of type str. See: %s" % myLastName)
-                raise cherrypy.HTTPError(400, 'Invalid lastName format')
-        else:
-            raise cherrypy.HTTPError(400, 'Missing last name')
-                
-        if 'netID' in data:
-            myNetID = data['netID']
-            if isinstance(myNetID, str):
-                myUser['netID'] = myNetID
-            else:
-                cherrypy.log("Expected netID of type str. See: %s" % myNetID)
-                raise cherrypy.HTTPError(400, 'Invalid netID format')
-        else:
-            raise cherrypy.HTTPError(400, 'Missing net id')
-            
-        if 'email' in data:
-            myEmail = data['email']
-            if isinstance(myEmail, str):
-                myUser['email'] = myEmail
-            else:
-                cherrypy.log("Expected email of type str. See: %s" % myEmail)
-                raise cherrypy.HTTPError(400, 'Invalid email format')
-        else:
-            raise cherrypy.HTTPError(400, 'Missing email')
-            
-        if 'course' in data:
-            myCourse = data['course']
-            if isinstance(myCourse, str):
-                myUser['course'] = myCourse
-            else:
-                cherrypy.log("Expected course of type str. See: %s" % myCourse)
-                raise cherrypy.HTTPError(400, 'Invalid course format')
-        else:
-            raise cherrypy.HTTPError(400, 'Missing course')    
-       
+            cherrypy.log('Expected role of value "student", "manager", or "admin". See: %s' % myRole)
+            raise cherrypy.HTTPError(400, 'Invalid role. Should be "student", "manager", or "admin".')
+
+        for key in ("firstName", "lastName", "groupID", "netID", "email", "course"):
+            myUser[key] = self._helperFunc(key, data, str)
+
 
         # TODO: make sure the user's email is unique
         # insert the data into the database
         self.colUsers.insert(myUser)
 
-        # create a link so the user can set a password
-
+        # create a link (invitation) so the user can set a password
         myInvitation = {
             'uuid': str(uuid4()),
             'expiration': None,
@@ -490,8 +495,8 @@ class Root(object):
         return {'uuid': myInvitation['uuid']}
 
     @cherrypy.expose
-    @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
     def userEdit(self):
         #check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -515,6 +520,8 @@ class Root(object):
                 raise cherrypy.HTTPError(400, 'object id not valid')
         else:
             raise cherrypy.HTTPError(400, 'data needs object id')
+
+        # TODO: what do we do with this stuff?
         #~ if '_id' in data:
             #~ myID = data['_id']
             #~ print(myID)
@@ -534,33 +541,33 @@ class Root(object):
             #~ raise cherrypy.HTTPError(400, 'data needs object id')
 
     @cherrypy.expose
-    @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
     def userRemove(self):
         #check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
-            
-        if '_id' in data:
-            myID = data['_id']
-            if ObjectId.is_valid(myID):
-                # if there exists a user with the given id whose status is 'current', update the user's status to 'removed'
-                if self.colUsers.find({ '$and': [ {'_id': ObjectId(myID)}, {'status': 'current'} ]  }).count() > 0:
-                    self.colUsers.update_one({'_id': ObjectId(myID)}, {'$set': {'status': 'removed'}}, upsert=False )
-                    
-                #~ usr = self.colUsers.find_one({'_id': ObjectId(myID)})
-                #~ if usr and 'status' in usr and usr['status'] == 'current':
-                    #~ cow = self.colUsers.update_one({'_id': ObjectId(myID)}, {'$set': {'status': 'removed'}}, upsert=False )
-                    
-                else:
-                    raise cherrypy.HTTPError(400, 'Current user matching id not found in database')
-            else:
-                raise cherrypy.HTTPError(400, 'object id not valid')
-        else:
-            raise cherrypy.HTTPError(400, 'data needs object id')
 
+        myID = self._helperFunc2(data)
+        findQuery = {
+            '$and': [
+                {'_id': ObjectId(myID)},
+                {'status': 'current'}
+            ]
+        }
+        updateQuery = {'_id': ObjectId(myID)}
+        updateRule = {
+            '$set':
+                {'status': 'removed'}
+        }
+
+        self._helperFunc3(myID, findQuery, updateQuery, updateRule)
+
+        # TODO send email?
+
+    # don't need to authenticate for this
     @cherrypy.expose
     @cherrypy.tools.json_in()
     def userVerify(self):
@@ -591,6 +598,7 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(403, 'Invalid email for this invitation')
 
+    # don't need to authenticate for this
     @cherrypy.expose
     @cherrypy.tools.json_in()
     def userLogin(self):
@@ -600,22 +608,49 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
+        # need email and password in data
         if 'email' not in data:
             raise cherrypy.HTTPError(400, 'Missing email')
 
         if 'password' not in data:
             raise cherrypy.HTTPError(400, 'Missing password')
 
-        if self.verifyPassword(data['email'], data['password']):
+        # verify password of user
+        user = self.colUsers.find_one({'email': data['email']})
+        if user and self.verifyPassword(user, data['password']):
+            cherrypy.session['email'] = user['email']
+            cherrypy.session['role'] = user['role']
             return "<strong> You logged in! </strong>"
         else:
-            raise cherrypy.HTTPError(403, 'Invalid email/password pair.')
+            raise cherrypy.HTTPError(403, 'Invalid email or password.')
+
+    # this function is for debugging for now. If that never changes then
+    # TODO remove this function before production if it isn't needed
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def userInfo(self):
+        # auth/authenticated is helpful for debugging
+        auth = 'role' in cherrypy.session
+        ret =  {'authenticated': auth}
+
+        if auth:
+            for k in ('role', 'email'):
+                ret[k] = cherrypy.session[k]
+
+        # ret is a JSON object containing role and email, and a boolean
+        # "authenticated"
+        return ret
+
+    @cherrypy.expose
+    def userLogout(self):
+        cherrypy.lib.sessions.expire()
 
     #do not expose this function for any reason
-    def verifyPassword(self, email, password):
-        user = self.colUsers.find_one({'email': email})
+    def verifyPassword(self, user, password):
+        # logging password may be security hole; do not include this line in finished product
+        # cherrypy.log("verifyPassword %s ::: %s" % (user['password'], Root.hashPassword(password, user['salt'])))
 
-        cherrypy.log("verifyPassword %s ::: %s" % (user['password'], Root.hashPassword(password, user['salt'])))
+        # user['password'] is hashed password, not plaintext
         if user and 'salt' in user and 'password' in user:
             return user['password'] == Root.hashPassword(password, user['salt'])
         else:
@@ -624,12 +659,17 @@ class Root(object):
     #do not expose this function for any reason
     @staticmethod
     def hashPassword(password, salt):
+        # use pbkdf2 password hash algorithm, with sha-256 and 100,000 iterations
+        # by default, encode encodes string to utf-8
         return hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 100000)
 
     #do not expose this function for any reason
     @staticmethod
     def generateSalt():
-        return os.urandom(8)
+        # create 32 byte salt (note: changed from 8)
+        # string of random bytes
+        # platform-specific (windows uses CryptGenRandom())
+        return os.urandom(32)
 
 def main():
     cherrypy.Application.wwwDir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 
