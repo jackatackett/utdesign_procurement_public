@@ -1,4 +1,4 @@
-app.controller('StudentBudgetCtrl', ['$scope', function($scope, $http) {
+app.controller('ManagerBudgetCtrl', ['$scope', function($scope, $http) {
     console.log("budget");
 
     $scope.fieldKeys = ["status", "vendor", "URL", "justification", "additionalInfo", "cost"];

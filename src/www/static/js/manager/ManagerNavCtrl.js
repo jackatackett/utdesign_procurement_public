@@ -9,11 +9,19 @@ app.controller('ManagerNavCtrl', ['$scope', '$location', function($scope, $locat
         if (hash == 'viewRequests') {
             //show status
             $("#viewRequestsCtrlDiv").show();
+            $("#viewBudgetDiv").hide();
             $("#managerHelpDiv").hide();
-
-        } else {
+        }
+        else if (hash == 'viewRequests') {
+            //show status
+            $("#viewRequestsCtrlDiv").hide();
+            $("#viewBudgetDiv").show();
+            $("#managerHelpDiv").hide();
+        }
+        else {
             //show help
             $("#viewRequestsCtrlDiv").hide();
+            $("#viewBudgetDiv").hide();
             $("#managerHelpDiv").show();
         }
 
