@@ -4,11 +4,11 @@ import cherrypy
 import hashlib
 import os
 import pymongo as pm
+import smtplib
 
 from bson.objectid import ObjectId
-from functools import reduce
 from mako.lookup import TemplateLookup
-from uuid import uuid4, UUID
+from uuid import uuid4
 
 def authorizedRoles(*acceptableRoles):
     """
@@ -43,7 +43,10 @@ def authorizedRoles(*acceptableRoles):
 
 class Root(object):
 
-    def __init__(self):
+    def __init__(self, email_user, email_password):
+        self.email_user = email_user
+        self.email_password = email_password
+
         templateDir = os.path.join(cherrypy.Application.wwwDir, 'templates')
         cherrypy.log("Template Dir: %s" % templateDir)
         self.templateLookup = TemplateLookup(directories=templateDir)
@@ -645,6 +648,27 @@ class Root(object):
     def userLogout(self):
         cherrypy.lib.sessions.expire()
 
+    # Email Functions
+
+    def emailDo(self, func):
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        server.ehlo()
+        server.login(self.email_user, self.email_password)
+        func(server)
+        server.quit()
+
+    def emailSend(self, to, subject, body):
+        email_text = '\n'.join((
+            'From: %s' % self.email_user,
+            'To: %s' % (to if isinstance(to, str) else ', '.join(to)),
+            'Subject: %s' % subject,
+            '',
+            body))
+
+        self.emailDo(
+            lambda server: server.sendmail(self.email_user, to, email_text))
+
+
     #do not expose this function for any reason
     def verifyPassword(self, user, password):
         # logging password may be security hole; do not include this line in finished product
@@ -678,7 +702,10 @@ def main():
     server_config = os.path.abspath(os.path.join(
         os.path.dirname(os.path.realpath(__file__)), 
         '..', '..', 'etc', 'server.conf'))
-    cherrypy.tree.mount(Root(), '/', config=server_config)
+
+    # TODO prompt for these credentials!
+    cherrypy.tree.mount(Root('noreplygettit@gmail.com', '0ddrun knows all'),
+                        '/', config=server_config)
 
     cherrypy.engine.start()
     input()
