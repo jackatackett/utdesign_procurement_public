@@ -137,46 +137,6 @@ class Root(object):
         cherrypy.log(str(type(ret)))
         return ret
 
-    # TODO Move helper functions to the bottom with the others
-    # Helper functions below. DO NOT EXPOSE THESE
-
-    # TODO rename helper functions
-    # checks if key value exists and is the right type
-    def _helperFunc(self, key, data, dataType, optional=False, default=""):
-        if key in data:
-            localVar = data[key]
-            if isinstance(localVar, dataType):
-                return localVar
-            else:
-                cherrypy.log("Expected %s of type %s. See: %s" % key, dataType, localVar)
-                raise cherrypy.HTTPError(400, 'Invalid %s format' % key)
-        else:
-            if(not optional):
-                raise cherrypy.HTTPError(400, 'Missing %s' % key)
-            else:
-                return default
-
-    # TODO rename helper functions
-    # checks if data has valid object ID
-    def _helperFunc2(self, data):
-        if '_id' in data:
-            myID = data['_id']
-            if ObjectId.is_valid(myID):
-                return myID
-            else:
-                raise cherrypy.HTTPError(400, 'Object id not valid')
-        else:
-            raise cherrypy.HTTPError(400, 'data needs object id')
-
-    # TODO rename helper functions
-    # is the use of myID valid? (myID is an expected part of the queries)
-    # finds document in database and updates it using provided queries
-    def _helperFunc3(self, myID, findQuery, updateQuery, updateRule):
-            if self.colRequests.find(findQuery).count() > 0:
-                self.colRequests.update_one(updateQuery, updateRule, upsert=False)
-            else:
-                raise cherrypy.HTTPError(400, 'Request matching id and status not found in database')
-
     # API Functions go below. DO EXPOSE THESE
 
     @cherrypy.expose
@@ -211,26 +171,30 @@ class Root(object):
         
         myRequest = dict()
         
-        # set default value of value in dict
+        # set default value of status to pending
         myRequest['status'] = 'pending'
 
+        # mandatory keys
         for key in ("vendor", "URL", "groupID"):
-            myRequest[key] = self._helperFunc(key, data, str)
+            myRequest[key] = self._checkValidData(key, data, str)
 
+        # optional keys
         for key in ("justification", "additionalInfo"):
-            myRequest[key] = self._helperFunc(key, data, str, True)
+            myRequest[key] = self._checkValidData(key, data, str, True)
 
-        # items is a list of dicts (each dict is one item)
-        # theirItems is a list we receive
-        theirItems = self._helperFunc("items", data, list)
+        # theirItems is a list of dicts (each dict is one item)
+        theirItems = self._checkValidData("items", data, list)
+
         # myItems is the list we are creating and adding to the database
         myItems = []
 
+        # iterate through list of items
         for item in theirItems:
-            theirDict = self._helperFunc(item, data, dict)
+            theirDict = self._checkValidData(item, data, dict)
             myDict = dict()
+            # iterate through keys of item dict
             for key in ("description", "partNo", "quantity", "partCost", "totalCost"):
-                myDict[key] = self._helperFunc(key, theirDict, str)
+                myDict[key] = self._checkValidData(key, theirDict, str)
             myItems.append(myDict)
 
         myRequest["items"] = myItems
@@ -292,7 +256,7 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        myID = self._helperFunc2(data)
+        myID = self._checkValidID(data)
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
@@ -307,7 +271,7 @@ class Root(object):
                       {'status': 'cancelled'}
                   }
 
-        self._helperFunc3(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
         
         # TODO send email
 
@@ -325,7 +289,7 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        myID = self._helperFunc2(data)
+        myID = self._checkValidID(data)
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
@@ -337,7 +301,7 @@ class Root(object):
                 {'status': 'approved'}
         }
 
-        self._helperFunc3(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -353,7 +317,7 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        myID = self._helperFunc2(data)
+        myID = self._checkValidID(data)
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
@@ -369,7 +333,7 @@ class Root(object):
                 {'status': 'review'}
         }
 
-        self._helperFunc3(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -385,7 +349,7 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        myID = self._helperFunc2(data)
+        myID = self._checkValidID(data)
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
@@ -397,7 +361,7 @@ class Root(object):
                 {'status': 'pending'}
         }
 
-        self._helperFunc3(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
         # TODO send email
 
@@ -414,7 +378,7 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        myID = self._helperFunc2(data)
+        myID = self._checkValidID(data)
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
@@ -429,7 +393,7 @@ class Root(object):
                 {'status': 'rejected'}
         }
 
-        self._helperFunc3(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
         # TODO send email
 
@@ -467,7 +431,7 @@ class Root(object):
         # set default value of value in dict
         myUser['status'] = 'current'
 
-        myRole = self._helperFunc("role", data, str)
+        myRole = self._checkValidData("role", data, str)
         if myRole in ("student", "manager", "admin"):
             myUser['role'] = myRole
         else:
@@ -475,7 +439,7 @@ class Root(object):
             raise cherrypy.HTTPError(400, 'Invalid role. Should be "student", "manager", or "admin".')
 
         for key in ("firstName", "lastName", "groupID", "netID", "email", "course"):
-            myUser[key] = self._helperFunc(key, data, str)
+            myUser[key] = self._checkValidData(key, data, str)
 
 
         # TODO: make sure the user's email is unique
@@ -521,25 +485,6 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(400, 'data needs object id')
 
-        # TODO: what do we do with this stuff?
-        #~ if '_id' in data:
-            #~ myID = data['_id']
-            #~ print(myID)
-            #~ # if ObjectId.is_valid(myID): #this takes the id as a string, not an ObjectId -> need to convert it if searching on ObjectId
-                #~ # if there exists a user with the given id, change its data and update it
-            #~ if self.colUsers.find({'_id': myID}).count() > 0:
-                #~ cherrypy.log("found ID")
-                #~ data.pop('_id')
-                #~ cherrypy.log("popped id")
-                #~ self.colUsers.update({'_id': myID}, {"$set": data })
-                #~ cherrypy.log("successful update")
-            #~ else:
-                #~ raise cherrypy.HTTPError(400, 'User matching id not found in database')
-            #~ # else:
-                #~ # raise cherrypy.HTTPError(400, 'object id not valid')
-        #~ else:
-            #~ raise cherrypy.HTTPError(400, 'data needs object id')
-
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @authorizedRoles("admin")
@@ -550,7 +495,7 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        myID = self._helperFunc2(data)
+        myID = self._checkValidID(data)
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
@@ -563,7 +508,7 @@ class Root(object):
                 {'status': 'removed'}
         }
 
-        self._helperFunc3(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
         # TODO send email?
 
@@ -670,6 +615,42 @@ class Root(object):
         # string of random bytes
         # platform-specific (windows uses CryptGenRandom())
         return os.urandom(32)
+
+    # Helper functions below. DO NOT EXPOSE THESE
+
+    # checks if key value exists and is the right type
+    def _checkValidData(self, key, data, dataType, optional=False, default=""):
+        if key in data:
+            localVar = data[key]
+            if isinstance(localVar, dataType):
+                return localVar
+            else:
+                cherrypy.log("Expected %s of type %s. See: %s" % key, dataType, localVar)
+                raise cherrypy.HTTPError(400, 'Invalid %s format' % key)
+        else:
+            if(not optional):
+                raise cherrypy.HTTPError(400, 'Missing %s' % key)
+            else:
+                return default
+
+    # checks if data has valid object ID
+    def _checkValidID(self, data):
+        if '_id' in data:
+            myID = data['_id']
+            if ObjectId.is_valid(myID):
+                return myID
+            else:
+                raise cherrypy.HTTPError(400, 'Object id not valid')
+        else:
+            raise cherrypy.HTTPError(400, 'data needs object id')
+
+    # is the use of myID valid? (myID is an expected part of the queries)
+    # finds document in database and updates it using provided queries
+    def _updateDocument(self, myID, findQuery, updateQuery, updateRule):
+            if self.colRequests.find(findQuery).count() > 0:
+                self.colRequests.update_one(updateQuery, updateRule, upsert=False)
+            else:
+                raise cherrypy.HTTPError(400, 'Request matching id and status not found in database')
 
 def main():
     cherrypy.Application.wwwDir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 
