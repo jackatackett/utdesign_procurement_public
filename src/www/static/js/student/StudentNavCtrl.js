@@ -1,4 +1,4 @@
-app.controller('StudentNavCtrl', ['$scope', '$location', function($scope, $location) {
+app.controller('StudentNavCtrl', ['$scope', '$location', '$window', '$http', function($scope, $location, $window, $http) {
 
     //add a listener for the nav bar
     $scope.$on('$locationChangeSuccess', function() {
@@ -35,5 +35,13 @@ app.controller('StudentNavCtrl', ['$scope', '$location', function($scope, $locat
 
         console.log("moo", $location.hash());
     });
+
+    $scope.doLogout = function() {
+        $http.post('/userLogout').then(function(resp) {
+            $window.location.href = '/login';
+        }, function(err) {
+            console.err("Fatal error logging out:", err);
+        });
+    };
 
 }]);

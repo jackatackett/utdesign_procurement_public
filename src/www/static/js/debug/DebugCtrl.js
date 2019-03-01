@@ -11,7 +11,7 @@ app.controller('DebugCtrl', ['$scope', '$http', '$sce', function($scope, $http, 
         $http.post($scope.url, $scope.data).then(function(data) {
             console.log(data);
             $scope.status = "green";
-            $scope.output = JSON.stringify(data);
+            $scope.output = JSON.stringify(data.data);
             $scope.showHTML = false;
         }, function(err) {
             console.log(err);

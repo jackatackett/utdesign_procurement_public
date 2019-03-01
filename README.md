@@ -24,9 +24,22 @@ For example:
 $ cd utdesign_procurement
 $ python3 -m virtualenv venvProcurement
 $ source venvProcurement/bin/activate
-$ python3 -m pip install cherrypy
-$ python3 -m pip install mako
+$ python3 -m pip install -r requirements.txt
 ```
+
+Also, to add one of each user for debugging, use this:
+
+```
+$ mongo scripts/debug_users.js
+```
+
+And users will be created as below:
+
+| Email                | Password | Role    |
+| -------------------- | ---------| ------- |
+| admin@utdallas.edu   | oddrun   | admin   |
+| manager@utdallas.edu | oddrun   | manager |
+| student@utdallas.edu | oddrun   | student |
 
 ## Running
 
