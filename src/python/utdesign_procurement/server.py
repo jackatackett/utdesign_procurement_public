@@ -631,31 +631,45 @@ class Root(object):
 
         # TODO send email?
 
-    # don't need to authenticate for this
+    # don't need to check role for this
     @cherrypy.expose
     @cherrypy.tools.json_in()
     def userVerify(self):
+        """
+        This REST endpoint checks that a provided email is matched with a given
+        UUID, and if so, creates and stores a password hash and salt.
 
+        Expected input::
+
+            {
+                "uuid": (string),
+                "email": (string),
+                "password": (string)
+            }
+        """
         #check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        if not 'uuid' in data:
-            raise cherrypy.HTTPError(400, 'Missing UUID')
-        elif not 'email' in data:
-            raise cherrypy.HTTPError(400, 'Missing email')
-        elif not 'password' in data:
-            raise cherrypy.HTTPError(400, 'Missing password')
+        myData = dict()
 
-        invitation = self.colInvitations.find_one({'uuid': data['uuid']})
+        # raises error if uuid, email, or password not in data
+        for key in ("uuid", "email", "password"):
+            myData[key] = self._checkValidData(key, data, str)
+
+        # find invitation with given uuid
+        invitation = self.colInvitations.find_one({'uuid': myData['uuid']})
+
         cherrypy.log("Email: %s. Invitation: %s" % (data['email'], invitation))
-        if invitation and invitation.get('email', None) == data['email']:
+
+        # invitation may not be None, email may be None
+        if invitation and invitation.get('email', None) == myData['email']:
             salt = Root.generateSalt()
-            hash = Root.hashPassword(data['password'], salt)
+            hash = Root.hashPassword(myData['password'], salt)
             self.colUsers.update({
-                'email': data['email']
+                'email': myData['email']
             }, {'$set': {
                 'salt': salt,
                 'password': hash
@@ -663,10 +677,21 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(403, 'Invalid email for this invitation')
 
-    # don't need to authenticate for this
+    # don't need to check role for this
     @cherrypy.expose
     @cherrypy.tools.json_in()
     def userLogin(self):
+        """
+        This REST endpoint takes an email and password, checks if the hash
+        is associated with the given email, and if so, logs in a user.
+
+        Expected input::
+
+            {
+                "email": (string),
+                "password": (string)
+            }
+        """
         #check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
@@ -674,15 +699,12 @@ class Root(object):
             raise cherrypy.HTTPError(400, 'No data was given')
 
         # need email and password in data
-        if 'email' not in data:
-            raise cherrypy.HTTPError(400, 'Missing email')
-
-        if 'password' not in data:
-            raise cherrypy.HTTPError(400, 'Missing password')
+        for key in ("email", "password"):
+            myData[key] = self._checkValidData(key, data, str)
 
         # verify password of user
-        user = self.colUsers.find_one({'email': data['email']})
-        if user and self.verifyPassword(user, data['password']):
+        user = self.colUsers.find_one({'email': myData['email']})
+        if user and self.verifyPassword(user, myData['password']):
             cherrypy.session['email'] = user['email']
             cherrypy.session['role'] = user['role']
             return "<strong> You logged in! </strong>"
@@ -708,15 +730,26 @@ class Root(object):
 
     @cherrypy.expose
     def userLogout(self):
+        """
+        Logs out a user by expiring their session.
+        """
         cherrypy.lib.sessions.expire()
 
     # Helper functions below. DO NOT EXPOSE THESE
 
     def verifyPassword(self, user, password):
+        """
+        This function hashes a password and checks if it matches the hash of
+        a given user.
+
+        :param user: a user document from database
+        :param password: a hashed password
+        """
         # logging password may be security hole; do not include this line in finished product
         # cherrypy.log("verifyPassword %s ::: %s" % (user['password'], Root.hashPassword(password, user['salt'])))
 
         # user['password'] is hashed password, not plaintext
+        # code assumes salt and password are type checked?
         if user and 'salt' in user and 'password' in user:
             return user['password'] == Root.hashPassword(password, user['salt'])
         else:
@@ -724,12 +757,24 @@ class Root(object):
 
     @staticmethod
     def hashPassword(password, salt):
+        """
+        This function hashes a password with a given salt.
+
+        :param password: a plaintext password
+        :param salt: a random salt
+        :return: the hashed password
+        """
         # use pbkdf2 password hash algorithm, with sha-256 and 100,000 iterations
         # by default, encode encodes string to utf-8
         return hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 100000)
 
     @staticmethod
     def generateSalt():
+        """
+        This function generates a random salt.
+
+        :return: random salt
+        """
         # create 32 byte salt (note: changed from 8)
         # string of random bytes
         # platform-specific (windows uses CryptGenRandom())
@@ -737,6 +782,18 @@ class Root(object):
 
     # checks if key value exists and is the right type
     def _checkValidData(self, key, data, dataType, optional=False, default=""):
+        """
+        This function takes a data dict, determines whether a key value exists
+        and is the right data type. Returns the data if it is, raises an
+        HTTP error if it isn't.
+
+        :param key: the key of the data dict
+        :param data: a dict of data
+        :param dataType: a data type
+        :param optional: True if the data did not need to be provided
+        :param default: default string is ""
+        :return: data, if conditions are met
+        """
         if key in data:
             localVar = data[key]
             if isinstance(localVar, dataType):
@@ -745,28 +802,46 @@ class Root(object):
                 cherrypy.log("Expected %s of type %s. See: %s" % (key, dataType, localVar))
                 raise cherrypy.HTTPError(400, 'Invalid %s format' % key)
         else:
-            if(not optional):
+            if not optional:
                 raise cherrypy.HTTPError(400, 'Missing %s' % key)
             else:
                 return default
 
-    # checks if key value exists and is the right type
+    # checks if key value exists and is the right type (Number)
     def _checkValidNumber(self, key, data, optional=False, default=""):
+        """
+        This function takes a data dict, determines whether a key value exists
+        and is a number. Returns the data if it is, raises an
+        HTTP error if it isn't.
+
+        :param key:
+        :param data:
+        :param optional:
+        :param default:
+        :return:
+        """
         if key in data:
             localVar = data[key]
-            if isinstance(localVar, float) or isinstance(localVar, int):
+            if isinstance(localVar, (float, int)):
                 return float(localVar)
             else:
                 cherrypy.log("Expected %s to be a number. See: %s" % (key, localVar))
                 raise cherrypy.HTTPError(400, 'Invalid %s format' % key)
         else:
-            if(not optional):
+            if not optional:
                 raise cherrypy.HTTPError(400, 'Missing %s' % key)
             else:
                 return default
 
     # checks if data has valid object ID
     def _checkValidID(self, data):
+        """
+        This function takes a data dict, determines whether it has a MongoDB
+        ObjectId and that the ID is valid.
+
+        :param data: data dict
+        :return: data, if conditions are met
+        """
         if '_id' in data:
             myID = data['_id']
             if ObjectId.is_valid(myID):
@@ -776,10 +851,18 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(400, 'data needs object id')
 
-    # is the use of myID valid? (myID is an expected part of the queries)
     # finds document in database and updates it using provided queries
     def _updateDocument(self, myID, findQuery, updateQuery, updateRule):
-            if self.colRequests.find(findQuery).count() > 0:
-                self.colRequests.update_one(updateQuery, updateRule, upsert=False)
-            else:
-                raise cherrypy.HTTPError(400, 'Request matching id and status not found in database')
+        """
+        This function updates a document. It finds the document in the
+        database and updates it using the provided queries/rules.
+
+        :param myID: ID of document to be updated
+        :param findQuery: query to find document
+        :param updateQuery: query to find document to update
+        :param updateRule: rule to update document to update
+        """
+        if self.colRequests.find(findQuery).count() > 0:
+            self.colRequests.update_one(updateQuery, updateRule, upsert=False)
+        else:
+            raise cherrypy.HTTPError(400, 'Request matching id and status not found in database')
