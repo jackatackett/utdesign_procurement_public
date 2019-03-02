@@ -1,7 +1,7 @@
 app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', function($scope, $http, $timeout) {
 
-    $scope.fieldKeys = ["description", "partNo", "quantity", "unitCost"];
-    $scope.fields = ["Description", "Catalog Part Number", "Quantity", "Estimated Unit Cost"];
+    $scope.fieldKeys = ["description", "partNo", "quantity", "unitCost", "totalCost"];
+    $scope.fields = ["Description", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
     $scope.grid = [];
     $scope.metadata = {};
 
@@ -28,7 +28,12 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', function($sc
             console.log("Success", resp)
         }, function(err) {
             console.error("Error", err.data)
-        })
+        });
+    }
+
+    $scope.updateCost = function(rowIdx) {
+        var item = $scope.grid[rowIdx];
+        item.totalCost = item.quantity * item.unitCost;
     }
 
     function newRow() {

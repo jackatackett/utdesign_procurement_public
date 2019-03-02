@@ -154,7 +154,6 @@ class Root(object):
         Expected input::
 
             {
-                "status": (string),
                 "vendor": (string),
                 "groupID": (string),
                 "URL": (string),
@@ -166,6 +165,7 @@ class Root(object):
                     "partNo": (string),
                     "quantity": (string),
                     "unitCost": (string),
+                    "totalCost": (number),
                     }
                 ]
             }
@@ -196,12 +196,13 @@ class Root(object):
         myItems = []
 
         # iterate through list of items
-        for item in theirItems:
-            theirDict = self._checkValidData(item, data, dict)
+        for theirDict in theirItems:
+            # theirDict = self._checkValidData(item, data, dict)
             myDict = dict()
             # iterate through keys of item dict
-            for key in ("description", "partNo", "quantity", "partCost", "totalCost"):
+            for key in ("description", "partNo", "quantity", "unitCost"):
                 myDict[key] = self._checkValidData(key, theirDict, str)
+            myDict[key] = self._checkValidNumber("totalCost", theirDict)
             myItems.append(myDict)
 
         myRequest["items"] = myItems
@@ -635,7 +636,22 @@ class Root(object):
             if isinstance(localVar, dataType):
                 return localVar
             else:
-                cherrypy.log("Expected %s of type %s. See: %s" % key, dataType, localVar)
+                cherrypy.log("Expected %s of type %s. See: %s" % (key, dataType, localVar))
+                raise cherrypy.HTTPError(400, 'Invalid %s format' % key)
+        else:
+            if(not optional):
+                raise cherrypy.HTTPError(400, 'Missing %s' % key)
+            else:
+                return default
+
+    # checks if key value exists and is the right type
+    def _checkValidNumber(self, key, data, optional=False, default=""):
+        if key in data:
+            localVar = data[key]
+            if isinstance(localVar, float) or isinstance(localVar, int):
+                return float(localVar)
+            else:
+                cherrypy.log("Expected %s to be a number. See: %s" % (key, localVar))
                 raise cherrypy.HTTPError(400, 'Invalid %s format' % key)
         else:
             if(not optional):
