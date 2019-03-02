@@ -42,10 +42,20 @@ def authorizedRoles(*acceptableRoles):
     return decorator
 
 class Root(object):
+    """
+    :param email_user: Username for Gmail
+    :param email_password: Password for Gmail
+    :param debug: Whether or not to show the debug view
+    :param email_inwardly: Whether or not to reroute all emails to self
+    """
 
-    def __init__(self, email_user, email_password):
+    def __init__(self, email_user, email_password, debug=False,
+                 email_inwardly=False):
+
         self.email_user = email_user
         self.email_password = email_password
+        self.show_debugger = debug
+        self.email_inwardly = email_inwardly
 
         templateDir = os.path.join(cherrypy.Application.wwwDir, 'templates')
         cherrypy.log("Template Dir: %s" % templateDir)
@@ -105,7 +115,6 @@ class Root(object):
         for the first time.
         """
 
-        #TODO make sure the id is actually correct
         template = self.templateLookup.get_template('verify/VerifyApp.html')
         ret = template.render(verifyUUID=id)
         cherrypy.log(str(type(ret)))
@@ -135,6 +144,10 @@ class Root(object):
     # no authorization needed, because this should be removed in production
     @cherrypy.expose
     def debug(self):
+        #disable this interface in production
+        if not self.show_debugger:
+            raise cherrypy.HTTPError(404)
+
         template = self.templateLookup.get_template('debug/DebugApp.html')
         ret = template.render()
         cherrypy.log(str(type(ret)))
@@ -456,9 +469,12 @@ class Root(object):
             'email': myUser['email']
         }
 
-        # TODO: email this link to the user
         self.colInvitations.insert(myInvitation)
         cherrypy.log('Created new user. Setup UUID: %s' % myInvitation['uuid'])
+
+        self.emailInvite(myInvitation['email'], myInvitation['uuid'],
+                         myInvitation['expiration'])
+
         return {'uuid': myInvitation['uuid']}
 
     @cherrypy.expose
@@ -593,7 +609,7 @@ class Root(object):
     def userLogout(self):
         cherrypy.lib.sessions.expire()
 
-    # Email Functions
+    # Helper functions below. DO NOT EXPOSE THESE
 
     def emailDo(self, func):
         server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
@@ -603,6 +619,10 @@ class Root(object):
         server.quit()
 
     def emailSend(self, to, subject, body):
+        if self.email_inwardly:
+            subject = '[DEBUG %s] %s' % (to, subject)
+            to = self.email_user
+
         email_text = '\n'.join((
             'From: %s' % self.email_user,
             'To: %s' % (to if isinstance(to, str) else ', '.join(to)),
@@ -613,8 +633,20 @@ class Root(object):
         self.emailDo(
             lambda server: server.sendmail(self.email_user, to, email_text))
 
+    def emailInvite(self, email, uuid, expiration=None):
+        # TODO make this message pretty
+        # TODO include expiration time in this email
+        body = ('You have been invited to use the UTDesign GettIt system!\n'
+                'Hooray!\n'
+                '\n'
+                '\n'
+                'Go to this link to set up your account:\n'
+                'http://localhost:8080/verify?id=%s\n')
 
-    #do not expose this function for any reason
+        body %= uuid
+
+        self.emailSend(email, 'UTDesign GettIt Invite', body)
+
     def verifyPassword(self, user, password):
         # logging password may be security hole; do not include this line in finished product
         # cherrypy.log("verifyPassword %s ::: %s" % (user['password'], Root.hashPassword(password, user['salt'])))
@@ -625,22 +657,18 @@ class Root(object):
         else:
             return False
 
-    #do not expose this function for any reason
     @staticmethod
     def hashPassword(password, salt):
         # use pbkdf2 password hash algorithm, with sha-256 and 100,000 iterations
         # by default, encode encodes string to utf-8
         return hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 100000)
 
-    #do not expose this function for any reason
     @staticmethod
     def generateSalt():
         # create 32 byte salt (note: changed from 8)
         # string of random bytes
         # platform-specific (windows uses CryptGenRandom())
         return os.urandom(32)
-
-    # Helper functions below. DO NOT EXPOSE THESE
 
     # checks if key value exists and is the right type
     def _checkValidData(self, key, data, dataType, optional=False, default=""):
@@ -685,8 +713,11 @@ def main():
         '..', '..', 'etc', 'server.conf'))
 
     # TODO prompt for these credentials!
-    cherrypy.tree.mount(Root('noreplygettit@gmail.com', '0ddrun knows all'),
-                        '/', config=server_config)
+    cherrypy.tree.mount(
+        Root('noreplygettit@gmail.com', '0ddrun knows all',
+             debug=True, email_inwardly=True),
+        '/',
+        config=server_config)
 
     cherrypy.engine.start()
     input()
