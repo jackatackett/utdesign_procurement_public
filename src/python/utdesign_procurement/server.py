@@ -151,6 +151,9 @@ class Root(object):
     @authorizedRoles("student")
     def procurementRequest(self):
         """
+        This REST endpoint takes data as an input as uses the data to create
+        a procurement request.
+
         Expected input::
 
             {
@@ -268,7 +271,15 @@ class Root(object):
     @authorizedRoles("student")
     def procurementCancel(self):
         """
-        # TODO add words here
+        This REST endpoint changes the status of a procurement request
+        with the effect that the request is cancelled by the students
+        and therefore unable to be edited or considered by any user.
+
+        Expected input::
+
+            {
+                "_id": (string)
+            }
         """
         #check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -300,8 +311,15 @@ class Root(object):
     @authorizedRoles("manager", "admin")
     def procurementApprove(self):
         """
-        Need to make code pretty,
-        check it works.
+        This REST endpoint changes the status of a procurement request
+        with the effect that a status submitted to the technical manager
+        is approved and sent to an administrator for review.
+
+        Expected input::
+
+            {
+                "_id": (string)
+            }
         """
         #check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -329,7 +347,15 @@ class Root(object):
     @authorizedRoles("student")
     def procurementReview(self):
         """
-        Need to make code pretty, check it works.
+        This REST endpoint changes the status of a procurement request
+        with the effect that the students who originally submitted it may
+        make changes to it or cancel it.
+
+        Expected input::
+
+            {
+                "_id": (string)
+            }
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -361,7 +387,16 @@ class Root(object):
     @authorizedRoles("student")
     def procurementResubmit(self):
         """
-        Need to make code pretty, check it works.
+        This REST endpoint changes the status of a procurement request
+        with the effect that a request that had previously been sent back
+        to the students for updates is now submitted back to the technical
+        manager.
+
+        Expected input::
+
+            {
+                "_id": (string)
+            }
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -390,7 +425,15 @@ class Root(object):
     @authorizedRoles("manager", "admin")
     def procurementReject(self):
         """
-        Need to make code pretty, check it works.
+        This REST endpoint changes the status of a procurement request
+        with the effect that a request is permanently rejected and unable
+        to be further edited or considered by any user.
+
+        Expected input::
+
+            {
+                "_id": (string)
+            }
         """
         #check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -423,8 +466,8 @@ class Root(object):
     @authorizedRoles("admin")
     def userAdd(self):
         """
-        I've assumed that every student has:
-        a groupID, firstName, lastName, netID, email, and course
+        This REST endpoint takes in data for a new user and uses it to create
+        a new user in the database.
 
         Expected input::
 
@@ -488,33 +531,83 @@ class Root(object):
     @cherrypy.tools.json_in()
     @authorizedRoles("admin")
     def userEdit(self):
+        """
+        This REST endpoint takes a MongoDB ObjectID and optional data fields
+        for a user. The ObjectID is used to identify the user whose information
+        will be edited and the optional data is what the data will be changed to.
+
+        Expected input::
+
+            {
+                "_id": (string)
+                “groupID”: (list of ints, optional),
+                "firstName": (string, optional),
+                "lastName": (string, optional),
+                "netID": (string, optional),
+                "course": (string, optional)
+            }
+
+        """
         #check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        if '_id' in data:
-            myID = data['_id']
-            if ObjectId.is_valid(myID): #this takes the id as a string, not an ObjectId -> need to convert it if searching on ObjectId
-                # if there exists a user with the given id, change its data and update it
-                if self.colUsers.find({'_id': ObjectId(myID)}).count() > 0:
-                    cherrypy.log("found ID")
-                    data.pop('_id')
-                    cherrypy.log("popped id")
-                    self.colUsers.update({'_id': ObjectId(myID)}, {"$set": data }) # TODO : doesn't check data is valid
-                    cherrypy.log("successful update")
-                else:
-                    raise cherrypy.HTTPError(400, 'User matching id not found in database')
-            else:
-                raise cherrypy.HTTPError(400, 'object id not valid')
-        else:
-            raise cherrypy.HTTPError(400, 'data needs object id')
+        myData = dict()
+
+        myID = self._checkValidID(data)
+        myData["_id"] = myID
+
+        # groupID is optional, may be int or list of ints, is converted to list if not a list
+        myGroupID = self.checkValidData("groupID", data, (int, list), True)
+        if isinstance(myData["groupID"], int):
+            # make list
+            newList = []
+            newList.append(myGroupID)
+            myData["groupID"] = newList
+        elif isinstance(myData["groupID"], list):
+            # make sure list has only ints
+            for groupID in myGroupID:
+                if not isinstance(groupID, int):
+                    raise cherrypy.HTTPError(400, 'groupID field must be int or list of only ints')
+            myData["groupID"] = myGroupID
+
+        # optional keys, string
+        for key in ("firstName", "lastName", "netID", "course"):
+            myData[key] = self._checkValidData(key, data, str, True)
+
+        findQuery = {'_id': ObjectId(myID)}
+        updateQuery = {'_id': ObjectId(myID)}
+
+
+        if self.colUsers.find(findQuery).count() > 0:
+            for key in ("groupID", "firstName", "lastName", "netID", "course"):
+                # create update query
+                updateRule = {
+                    '$set':
+                        {key: myData[key]}
+                }
+                # check that data is not default string
+                if not myData[key] == "":
+                    # update key
+                    self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @authorizedRoles("admin")
     def userRemove(self):
+        """
+        This REST endpoint changes the status of a user with the effect that
+        the user is "removed" from the system, meaning they are no longer
+        active and therefore no longer able to interact with the system.
+
+        Expected input::
+
+            {
+                "_id": (string)
+            }
+        """
         #check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
@@ -542,6 +635,7 @@ class Root(object):
     @cherrypy.expose
     @cherrypy.tools.json_in()
     def userVerify(self):
+
         #check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
