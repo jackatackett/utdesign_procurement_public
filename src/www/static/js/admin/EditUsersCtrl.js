@@ -1,4 +1,4 @@
-app.controller('AddUsersCtrl', ['$scope', '$location', function($scope, $location) {
+app.controller('EditUsersCtrl', ['$scope', '$location', function($scope, $location) {
 
     $scope.fieldKeys = ["groupID", "firstName", "lastName", "netID", "email", "course"];
     $scope.fields = ["Project Number", "First Name", "Last Name", "NetID", "Email", "Course"];
@@ -33,29 +33,14 @@ app.controller('AddUsersCtrl', ['$scope', '$location', function($scope, $locatio
                     }
                   ]
 
-    $scope.addUser = function(e) {
+    $scope.editUser = function(e) {
         var target = e.currentTarget;
-        console.log("adding user");
+        console.log(target);
+        document.getElementById("editModal").style.display = "block";
     };
 
-    $scope.uploadSpreadsheet = function(e) {
-        var target = e.currentTarget;
-        console.log("upload spreadsheet");
-    };
-
-    $scope.regeneratePage = function(e) {
-        var target = e.currentTarget;
-        var id = target.id;
-
-        if (id == "addUserButton") {
-            document.getElementById("addUserTable").style.display = "table";
-            document.getElementById("editUserTable").style.display = "none";
-            document.getElementById("editSearchBox").style.display = "none";
-        } else {
-            document.getElementById("editUserTable").style.display = "table";
-            document.getElementById("editSearchBox").style.display = "block";
-            document.getElementById("addUserTable").style.display = "none";
-        }
+    $scope.closeEditBox = function(e) {
+        document.getElementById("editModal").style.display = "none";
     };
 
 }]);
