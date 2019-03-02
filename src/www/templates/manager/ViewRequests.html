@@ -38,7 +38,7 @@
                         <tr>
                             <td colspan = "6" style="text-align:center">
                                 <button type="button" class="btn btn-success" ng-click="approveRequest($event, dictIdx)" style="width:49%">Approve</button>
-                                <button type="button" class="btn btn-danger" ng-click="rejectRequest($event)" style="width:49%">Reject</button>
+                                <button type="button" class="btn btn-danger" ng-click="rejectRequest($event, dictIdx)" style="width:49%">Reject</button>
                             </td>
                         </tr>
                     </table>
@@ -48,5 +48,26 @@
         </tbody>
 
     </table>
+
+    <div id="rejectModal" class="modal">
+        <div class="modal-content" style="width:50%;">
+            <div class="row">
+                <div class="col-md-12">
+                    <input type="text" id="rejectCommentBox" placeholder="comment" style="width:100%;">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-primary" ng-click="closeRejectBox($event)" style="float:left; width:100%;">Close</button>
+                </div>
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-primary" ng-click="permanentReject($event)" style="float:left; width:100%;">Permanent Reject</button>
+                </div>
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-primary" ng-click="sendForReview($event)" style="float:left; width:100%;">Send for Review</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </div>
