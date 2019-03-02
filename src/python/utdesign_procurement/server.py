@@ -115,6 +115,7 @@ class Root(object):
         for the first time.
         """
 
+        # TODO check for and alert for expired invitations
         template = self.templateLookup.get_template('verify/VerifyApp.html')
         ret = template.render(verifyUUID=id)
         cherrypy.log(str(type(ret)))
