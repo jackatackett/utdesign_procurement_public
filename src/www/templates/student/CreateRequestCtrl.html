@@ -47,9 +47,13 @@
                     <th scope="row" ng-bind="rowIdx + 1"></th>
 
                     <td class="cleanInputCell" ng-repeat="field in fieldKeys track by $index" ng-init="fieldIdx = $index">
-                        <input type="text" ng-model="grid[rowIdx][field]">
+                        <div ng-if="field == totalCost">
+                            <input type="text" ng-model="grid[rowIdx][field]" ng-change="updateCost(rowIdx)" readonly>
+                        </div>
+                        <div ng-if="field != totalCost">
+                            <input type="text" ng-model="grid[rowIdx][field]" ng-change="updateCost(rowIdx)">
+                        </div>
                     </td>
-
                 </tr>
             </tbody>
 
