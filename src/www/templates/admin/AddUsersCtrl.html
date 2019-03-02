@@ -1,13 +1,5 @@
 <div id="addUsersCtrlDiv" ng-controller="AddUsersCtrl as $ctrl" style="margin: 2%; box-sizing: border-box;">
 
-    <button type="button" id="addUserButton" class="btn btn-primary" ng-click="regeneratePage($event)">
-        Add Users
-    </button>
-    <button type="button" id="editUserButton" class="btn btn-primary" ng-click="regeneratePage($event)">
-        Edit Users
-    </button>
-    <input type="text" id="editSearchBox" placeholder="search" style="display:none; margin-top: 10px; margin-bottom:10px;">
-
     <table class="table" id="addUserTable" style="width: 50%; display:table;">
 
         <tr ng-repeat="info in fields">
@@ -24,27 +16,6 @@
                 <button type="button" class="btn btn-primary" ng-click="uploadSpreadsheet($event)" >Upload Spreadsheet</button>
             </td>
         </tr>
-    </table>
-
-    <table class="table table-bordered" id="editUserTable" style="display:none; border:0px;">
-        <thead>
-            <tr>
-                <th ng-repeat="col in columns">{{col}}</th>
-            </tr>
-        </thead>
-
-        <tbody>
-
-            <tr ng-repeat="user in users">
-                <td ng-repeat="fieldK in fieldKeys" ng-bind="user[fieldK]"></td>
-                <td style="border: 0px;">
-                    <button type="button" class="btn btn-primary" ng-click="editUser($event)">Edit</button>
-                </td>
-
-            </tr>
-
-        </tbody>
-
     </table>
 
 </div>

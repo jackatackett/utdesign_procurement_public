@@ -9,18 +9,28 @@ app.controller('AdminNavCtrl', ['$scope', '$location', '$window', '$http', funct
         if (hash == 'requestSummary') {
             //show summary
             $("#addUsersCtrlDiv").hide();
+            $("#editUsersCtrlDiv").hide();
             $("#requestSummaryCtrlDiv").show();
             $("#adminHelpDiv").hide();
 
         } else if (hash == 'addUsers') {
             //show add users
             $("#addUsersCtrlDiv").show();
+            $("#editUsersCtrlDiv").hide();
+            $("#requestSummaryCtrlDiv").hide();
+            $("#adminHelpDiv").hide();
+
+        } else if (hash == 'editUsers') {
+            //show add users
+            $("#addUsersCtrlDiv").hide();
+            $("#editUsersCtrlDiv").show();
             $("#requestSummaryCtrlDiv").hide();
             $("#adminHelpDiv").hide();
 
         } else {
             //show help
             $("#addUsersCtrlDiv").hide();
+            $("#editUsersCtrlDiv").hide();
             $("#requestSummaryCtrlDiv").hide();
             $("#adminHelpDiv").show();
         }
