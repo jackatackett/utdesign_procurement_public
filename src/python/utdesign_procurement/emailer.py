@@ -4,30 +4,30 @@ import smtplib
 
 from multiprocessing import Process, Queue
 
+def email_listen(emailer, queue):
+    function_lut = {
+        'invite': emailer.emailInvite,
+    }
+
+    while True:
+        packet = queue.get()
+
+        try:
+            header, kwargs = packet
+        except:
+            continue
+
+        func = function_lut.get(header, None)
+        if func:
+            func(**kwargs)
+        elif header == 'die':
+            break
+
+
 def fork_emailer(email_user, email_password, email_inwardly):
     queue = Queue()
     emailer = Emailer(queue, email_user, email_password, email_inwardly)
-
-    def listen():
-        function_lut = {
-            'invite': emailer.emailInvite,
-        }
-
-        while True:
-            packet = queue.get()
-
-            try:
-                header, kwargs = packet
-            except:
-                continue
-
-            func = function_lut.get(header, None)
-            if func:
-                func(**kwargs)
-            elif header == 'die':
-                break
-
-    process = Process(target=listen)
+    process = Process(target=email_listen, args=(emailer, queue))
     return process, queue
 
 class Emailer(object):
