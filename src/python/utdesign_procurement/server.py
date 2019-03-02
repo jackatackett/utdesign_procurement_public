@@ -4,11 +4,11 @@ import cherrypy
 import hashlib
 import os
 import pymongo as pm
+import smtplib
 
 from bson.objectid import ObjectId
-from functools import reduce
 from mako.lookup import TemplateLookup
-from uuid import uuid4, UUID
+from uuid import uuid4
 
 def authorizedRoles(*acceptableRoles):
     """
@@ -42,8 +42,21 @@ def authorizedRoles(*acceptableRoles):
     return decorator
 
 class Root(object):
+    """
+    :param email_user: Username for Gmail
+    :param email_password: Password for Gmail
+    :param debug: Whether or not to show the debug view
+    :param email_inwardly: Whether or not to reroute all emails to self
+    """
 
-    def __init__(self):
+    def __init__(self, email_user, email_password, debug=False,
+                 email_inwardly=False):
+
+        self.email_user = email_user
+        self.email_password = email_password
+        self.show_debugger = debug
+        self.email_inwardly = email_inwardly
+
         templateDir = os.path.join(cherrypy.Application.wwwDir, 'templates')
         cherrypy.log("Template Dir: %s" % templateDir)
         self.templateLookup = TemplateLookup(directories=templateDir)
@@ -102,7 +115,7 @@ class Root(object):
         for the first time.
         """
 
-        #TODO make sure the id is actually correct
+        # TODO check for and alert for expired invitations
         template = self.templateLookup.get_template('verify/VerifyApp.html')
         ret = template.render(verifyUUID=id)
         cherrypy.log(str(type(ret)))
@@ -132,50 +145,14 @@ class Root(object):
     # no authorization needed, because this should be removed in production
     @cherrypy.expose
     def debug(self):
+        #disable this interface in production
+        if not self.show_debugger:
+            raise cherrypy.HTTPError(404)
+
         template = self.templateLookup.get_template('debug/DebugApp.html')
         ret = template.render()
         cherrypy.log(str(type(ret)))
         return ret
-
-    # TODO Move helper functions to the bottom with the others
-    # Helper functions below. DO NOT EXPOSE THESE
-
-    # TODO rename helper functions
-    # checks if key value exists and is the right type
-    def _helperFunc(self, key, data, dataType, optional=False, default=""):
-        if key in data:
-            localVar = data[key]
-            if isinstance(localVar, dataType):
-                return localVar
-            else:
-                cherrypy.log("Expected %s of type %s. See: %s" % key, dataType, localVar)
-                raise cherrypy.HTTPError(400, 'Invalid %s format' % key)
-        else:
-            if(not optional):
-                raise cherrypy.HTTPError(400, 'Missing %s' % key)
-            else:
-                return default
-
-    # TODO rename helper functions
-    # checks if data has valid object ID
-    def _helperFunc2(self, data):
-        if '_id' in data:
-            myID = data['_id']
-            if ObjectId.is_valid(myID):
-                return myID
-            else:
-                raise cherrypy.HTTPError(400, 'Object id not valid')
-        else:
-            raise cherrypy.HTTPError(400, 'data needs object id')
-
-    # TODO rename helper functions
-    # is the use of myID valid? (myID is an expected part of the queries)
-    # finds document in database and updates it using provided queries
-    def _helperFunc3(self, myID, findQuery, updateQuery, updateRule):
-            if self.colRequests.find(findQuery).count() > 0:
-                self.colRequests.update_one(updateQuery, updateRule, upsert=False)
-            else:
-                raise cherrypy.HTTPError(400, 'Request matching id and status not found in database')
 
     # API Functions go below. DO EXPOSE THESE
 
@@ -211,26 +188,30 @@ class Root(object):
         
         myRequest = dict()
         
-        # set default value of value in dict
+        # set default value of status to pending
         myRequest['status'] = 'pending'
 
+        # mandatory keys
         for key in ("vendor", "URL", "groupID"):
-            myRequest[key] = self._helperFunc(key, data, str)
+            myRequest[key] = self._checkValidData(key, data, str)
 
+        # optional keys
         for key in ("justification", "additionalInfo"):
-            myRequest[key] = self._helperFunc(key, data, str, True)
+            myRequest[key] = self._checkValidData(key, data, str, True)
 
-        # items is a list of dicts (each dict is one item)
-        # theirItems is a list we receive
-        theirItems = self._helperFunc("items", data, list)
+        # theirItems is a list of dicts (each dict is one item)
+        theirItems = self._checkValidData("items", data, list)
+
         # myItems is the list we are creating and adding to the database
         myItems = []
 
+        # iterate through list of items
         for item in theirItems:
-            theirDict = self._helperFunc(item, data, dict)
+            theirDict = self._checkValidData(item, data, dict)
             myDict = dict()
+            # iterate through keys of item dict
             for key in ("description", "partNo", "quantity", "partCost", "totalCost"):
-                myDict[key] = self._helperFunc(key, theirDict, str)
+                myDict[key] = self._checkValidData(key, theirDict, str)
             myItems.append(myDict)
 
         myRequest["items"] = myItems
@@ -292,7 +273,7 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        myID = self._helperFunc2(data)
+        myID = self._checkValidID(data)
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
@@ -307,7 +288,7 @@ class Root(object):
                       {'status': 'cancelled'}
                   }
 
-        self._helperFunc3(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
         
         # TODO send email
 
@@ -325,7 +306,7 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        myID = self._helperFunc2(data)
+        myID = self._checkValidID(data)
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
@@ -337,7 +318,7 @@ class Root(object):
                 {'status': 'approved'}
         }
 
-        self._helperFunc3(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -353,7 +334,7 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        myID = self._helperFunc2(data)
+        myID = self._checkValidID(data)
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
@@ -369,7 +350,7 @@ class Root(object):
                 {'status': 'review'}
         }
 
-        self._helperFunc3(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -385,7 +366,7 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        myID = self._helperFunc2(data)
+        myID = self._checkValidID(data)
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
@@ -397,7 +378,7 @@ class Root(object):
                 {'status': 'pending'}
         }
 
-        self._helperFunc3(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
         # TODO send email
 
@@ -414,7 +395,7 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        myID = self._helperFunc2(data)
+        myID = self._checkValidID(data)
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
@@ -429,7 +410,7 @@ class Root(object):
                 {'status': 'rejected'}
         }
 
-        self._helperFunc3(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
         # TODO send email
 
@@ -467,7 +448,7 @@ class Root(object):
         # set default value of value in dict
         myUser['status'] = 'current'
 
-        myRole = self._helperFunc("role", data, str)
+        myRole = self._checkValidData("role", data, str)
         if myRole in ("student", "manager", "admin"):
             myUser['role'] = myRole
         else:
@@ -475,7 +456,7 @@ class Root(object):
             raise cherrypy.HTTPError(400, 'Invalid role. Should be "student", "manager", or "admin".')
 
         for key in ("firstName", "lastName", "groupID", "netID", "email", "course"):
-            myUser[key] = self._helperFunc(key, data, str)
+            myUser[key] = self._checkValidData(key, data, str)
 
 
         # TODO: make sure the user's email is unique
@@ -489,9 +470,12 @@ class Root(object):
             'email': myUser['email']
         }
 
-        # TODO: email this link to the user
         self.colInvitations.insert(myInvitation)
         cherrypy.log('Created new user. Setup UUID: %s' % myInvitation['uuid'])
+
+        self.emailInvite(myInvitation['email'], myInvitation['uuid'],
+                         myInvitation['expiration'])
+
         return {'uuid': myInvitation['uuid']}
 
     @cherrypy.expose
@@ -521,25 +505,6 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(400, 'data needs object id')
 
-        # TODO: what do we do with this stuff?
-        #~ if '_id' in data:
-            #~ myID = data['_id']
-            #~ print(myID)
-            #~ # if ObjectId.is_valid(myID): #this takes the id as a string, not an ObjectId -> need to convert it if searching on ObjectId
-                #~ # if there exists a user with the given id, change its data and update it
-            #~ if self.colUsers.find({'_id': myID}).count() > 0:
-                #~ cherrypy.log("found ID")
-                #~ data.pop('_id')
-                #~ cherrypy.log("popped id")
-                #~ self.colUsers.update({'_id': myID}, {"$set": data })
-                #~ cherrypy.log("successful update")
-            #~ else:
-                #~ raise cherrypy.HTTPError(400, 'User matching id not found in database')
-            #~ # else:
-                #~ # raise cherrypy.HTTPError(400, 'object id not valid')
-        #~ else:
-            #~ raise cherrypy.HTTPError(400, 'data needs object id')
-
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @authorizedRoles("admin")
@@ -550,7 +515,7 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        myID = self._helperFunc2(data)
+        myID = self._checkValidID(data)
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
@@ -563,7 +528,7 @@ class Root(object):
                 {'status': 'removed'}
         }
 
-        self._helperFunc3(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
         # TODO send email?
 
@@ -645,7 +610,44 @@ class Root(object):
     def userLogout(self):
         cherrypy.lib.sessions.expire()
 
-    #do not expose this function for any reason
+    # Helper functions below. DO NOT EXPOSE THESE
+
+    def emailDo(self, func):
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        server.ehlo()
+        server.login(self.email_user, self.email_password)
+        func(server)
+        server.quit()
+
+    def emailSend(self, to, subject, body):
+        if self.email_inwardly:
+            subject = '[DEBUG %s] %s' % (to, subject)
+            to = self.email_user
+
+        email_text = '\n'.join((
+            'From: %s' % self.email_user,
+            'To: %s' % (to if isinstance(to, str) else ', '.join(to)),
+            'Subject: %s' % subject,
+            '',
+            body))
+
+        self.emailDo(
+            lambda server: server.sendmail(self.email_user, to, email_text))
+
+    def emailInvite(self, email, uuid, expiration=None):
+        # TODO make this message pretty
+        # TODO include expiration time in this email
+        body = ('You have been invited to use the UTDesign GettIt system!\n'
+                'Hooray!\n'
+                '\n'
+                '\n'
+                'Go to this link to set up your account:\n'
+                'http://localhost:8080/verify?id=%s\n')
+
+        body %= uuid
+
+        self.emailSend(email, 'UTDesign GettIt Invite', body)
+
     def verifyPassword(self, user, password):
         # logging password may be security hole; do not include this line in finished product
         # cherrypy.log("verifyPassword %s ::: %s" % (user['password'], Root.hashPassword(password, user['salt'])))
@@ -656,20 +658,52 @@ class Root(object):
         else:
             return False
 
-    #do not expose this function for any reason
     @staticmethod
     def hashPassword(password, salt):
         # use pbkdf2 password hash algorithm, with sha-256 and 100,000 iterations
         # by default, encode encodes string to utf-8
         return hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 100000)
 
-    #do not expose this function for any reason
     @staticmethod
     def generateSalt():
         # create 32 byte salt (note: changed from 8)
         # string of random bytes
         # platform-specific (windows uses CryptGenRandom())
         return os.urandom(32)
+
+    # checks if key value exists and is the right type
+    def _checkValidData(self, key, data, dataType, optional=False, default=""):
+        if key in data:
+            localVar = data[key]
+            if isinstance(localVar, dataType):
+                return localVar
+            else:
+                cherrypy.log("Expected %s of type %s. See: %s" % key, dataType, localVar)
+                raise cherrypy.HTTPError(400, 'Invalid %s format' % key)
+        else:
+            if(not optional):
+                raise cherrypy.HTTPError(400, 'Missing %s' % key)
+            else:
+                return default
+
+    # checks if data has valid object ID
+    def _checkValidID(self, data):
+        if '_id' in data:
+            myID = data['_id']
+            if ObjectId.is_valid(myID):
+                return myID
+            else:
+                raise cherrypy.HTTPError(400, 'Object id not valid')
+        else:
+            raise cherrypy.HTTPError(400, 'data needs object id')
+
+    # is the use of myID valid? (myID is an expected part of the queries)
+    # finds document in database and updates it using provided queries
+    def _updateDocument(self, myID, findQuery, updateQuery, updateRule):
+            if self.colRequests.find(findQuery).count() > 0:
+                self.colRequests.update_one(updateQuery, updateRule, upsert=False)
+            else:
+                raise cherrypy.HTTPError(400, 'Request matching id and status not found in database')
 
 def main():
     cherrypy.Application.wwwDir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 
@@ -678,7 +712,13 @@ def main():
     server_config = os.path.abspath(os.path.join(
         os.path.dirname(os.path.realpath(__file__)), 
         '..', '..', 'etc', 'server.conf'))
-    cherrypy.tree.mount(Root(), '/', config=server_config)
+
+    # TODO prompt for these credentials!
+    cherrypy.tree.mount(
+        Root('noreplygettit@gmail.com', '0ddrun knows all',
+             debug=True, email_inwardly=True),
+        '/',
+        config=server_config)
 
     cherrypy.engine.start()
     input()
