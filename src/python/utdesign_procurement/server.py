@@ -221,7 +221,15 @@ class Root(object):
         Returns a list of procurement requests matching all provided 
         filters. Currently matches with any combination of vendor, 
         token, groupID, and URL, but also that doesn't work yet.
+
+        {
+            vendor: (string, optional),
+            groupID: (string, optional),
+            URL: (string, optional)
+        }
+
         """
+
         #check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
@@ -235,10 +243,6 @@ class Root(object):
             myVendor = data['vendor']
             filters.append(myVendor)
                 
-        if 'token' in data:
-            myToken = data['token']
-            filters.append(myToken)
-                
         if 'groupID' in data:
             myGroupID = data['groupID']
             filters.append(myGroupID)
@@ -246,9 +250,17 @@ class Root(object):
         if 'URL' in data:
             myURL = data['URL']
             filters.append(myURL)
-        
-        # currently doesn't make use of filters
-        listRequests = list(self.colRequests.find())
+
+        if filters:
+            bigFilter = {'$and': filters}
+        else:
+            bigFilter = {}
+
+        listRequests = []
+        for request in self.colRequests.find(bigFilter):
+            request['_id'] = str(request['_id'])
+            listRequests.append(request)
+
         return listRequests
 
     @cherrypy.expose

@@ -1,4 +1,4 @@
-app.controller('ViewRequestsCtrl', ['$scope', '$location', function($scope, $location) {
+app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', function($scope, $location, $http) {
 
 $scope.fieldKeys = ["groupID", "status", "vendor", "URL", "justification", "additionalInfo"];
     $scope.fields = ["Group ID", "Status", "Vendor", "URL", "Justification", "Additional Info"];
@@ -57,5 +57,12 @@ $scope.fieldKeys = ["groupID", "status", "vendor", "URL", "justification", "addi
         var target = e.currentTarget;
         console.log("change table");
     };
+
+    $http.post('/procurementStatuses', {}).then(function(resp) {
+        console.log("Success", resp)
+        $scope.data = resp.data;
+    }, function(err) {
+        console.error("Error", err.data)
+    });
 
 }]);
