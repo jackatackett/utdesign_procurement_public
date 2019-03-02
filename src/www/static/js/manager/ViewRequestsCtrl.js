@@ -48,6 +48,8 @@ $scope.fieldKeys = ["groupID", "status", "vendor", "URL", "justification", "addi
                     }
                   ]
 
+    $scope.currentRow = 0;
+
     $scope.toggleCollapse = function(e) {
         var target = e.currentTarget;
         $(target.nextElementSibling).toggle();
@@ -56,6 +58,41 @@ $scope.fieldKeys = ["groupID", "status", "vendor", "URL", "justification", "addi
     $scope.regenerateTable = function(e) {
         var target = e.currentTarget;
         console.log("change table");
+    };
+
+    $scope.approveRequest = function(e, rowIdx) {
+        console.log($scope.data);
+        console.log(rowIdx);
+        $http.post('/procurementApprove', {'_id':$scope.data[rowIdx]._id}).then(function(resp) {
+            console.log("Success", resp)
+        }, function(err) {
+            console.error("Error", err.data)
+        });
+    };
+
+    $scope.rejectRequest = function(e, rowIdx) {
+        $("#rejectModal").show();
+        currentRow = rowIdx;
+    };
+
+    $scope.permanentReject = function(e, rowIdx) {
+        $http.post('/procurementReject', {'_id':$scope.data[currentRow]._id}).then(function(resp) {
+            console.log("Success", resp)
+        }, function(err) {
+            console.error("Error", err.data)
+        });
+    };
+
+    $scope.sendForReview = function(e) {
+        $http.post('/procurementReview', {'_id':$scope.data[currentRow]._id}).then(function(resp) {
+            console.log("Success", resp)
+        }, function(err) {
+            console.error("Error", err.data)
+        });
+    };
+
+    $scope.closeRejectBox = function(e) {
+        $("#rejectModal").hide();
     };
 
     $http.post('/procurementStatuses', {}).then(function(resp) {

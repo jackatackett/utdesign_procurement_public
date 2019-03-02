@@ -344,7 +344,7 @@ class Root(object):
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
-    @authorizedRoles("student")
+    @authorizedRoles("manager")
     def procurementReview(self):
         """
         This REST endpoint changes the status of a procurement request
