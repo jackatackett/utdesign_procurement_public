@@ -33,14 +33,25 @@ app.controller('EditUsersCtrl', ['$scope', '$location', function($scope, $locati
                     }
                   ]
 
-    $scope.editUser = function(e) {
-        var target = e.currentTarget;
-        console.log(target);
-        document.getElementById("editModal").style.display = "block";
+    $scope.selectedUser = {};
+
+    $scope.editUser = function(e, rowIdx) {
+        $("#editModal").show();
+        $scope.selectedUser = {};
+        var user = $scope.users[rowIdx];
+        for (var key in user) {
+            if (user.hasOwnProperty(key)) {
+                $scope.selectedUser[key] = user[key];
+            }
+        }
     };
 
     $scope.closeEditBox = function(e) {
         document.getElementById("editModal").style.display = "none";
     };
+
+    $scope.saveUserEdit = function() {
+        console.log($scope.selectedUser);
+    }
 
 }]);

@@ -11,10 +11,10 @@
 
         <tbody>
 
-            <tr ng-repeat="user in users | filter : editFilter" id="">
+            <tr ng-repeat="user in users | filter : editFilter" id="user[email]" ng-init="rowIdx = $index">
                 <td ng-repeat="fieldK in fieldKeys" ng-bind="user[fieldK]"></td>
                 <td style="border: 0px;">
-                    <button type="button" class="btn btn-primary" ng-click="editUser($event)">Edit</button>
+                    <button type="button" class="btn btn-primary" ng-click="editUser($event, rowIdx)">Edit</button>
                 </td>
             </tr>
 
@@ -25,12 +25,12 @@
         <div class="modal-content">
             <table class="table" id="editLightBoxTable" style="margin: 0; width: 100%; display:table;">
 
-                <tr ng-repeat="info in fields">
+                <tr ng-repeat="info in fields track by $index" ng-init="rowIdx = $index">
                     <td>
                         {{info}}
                     </td>
                     <td>
-                        <input type="text">
+                        <input type="text" ng-model="selectedUser[fieldKeys[rowIdx]]">
                     </td>
                 </tr>
                 <tr>
