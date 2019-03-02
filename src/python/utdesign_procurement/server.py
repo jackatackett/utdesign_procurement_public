@@ -698,6 +698,8 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
+        myData = dict()
+
         # need email and password in data
         for key in ("email", "password"):
             myData[key] = self._checkValidData(key, data, str)
