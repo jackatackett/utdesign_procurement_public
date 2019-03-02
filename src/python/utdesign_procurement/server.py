@@ -4,7 +4,6 @@ import cherrypy
 import hashlib
 import os
 import pymongo as pm
-import smtplib
 
 from bson.objectid import ObjectId
 from mako.lookup import TemplateLookup
@@ -42,20 +41,11 @@ def authorizedRoles(*acceptableRoles):
     return decorator
 
 class Root(object):
-    """
-    :param email_user: Username for Gmail
-    :param email_password: Password for Gmail
-    :param debug: Whether or not to show the debug view
-    :param email_inwardly: Whether or not to reroute all emails to self
-    """
 
-    def __init__(self, email_user, email_password, debug=False,
-                 email_inwardly=False):
+    def __init__(self, email_queue, debug=False):
 
-        self.email_user = email_user
-        self.email_password = email_password
+        self.email_queue = email_queue
         self.show_debugger = debug
-        self.email_inwardly = email_inwardly
 
         templateDir = os.path.join(cherrypy.Application.wwwDir, 'templates')
         cherrypy.log("Template Dir: %s" % templateDir)
@@ -473,8 +463,11 @@ class Root(object):
         self.colInvitations.insert(myInvitation)
         cherrypy.log('Created new user. Setup UUID: %s' % myInvitation['uuid'])
 
-        self.emailInvite(myInvitation['email'], myInvitation['uuid'],
-                         myInvitation['expiration'])
+        self.email_queue.put(('invite', {
+            'email': myInvitation['email'],
+            'uuid':  myInvitation['uuid'],
+            'expiration': myInvitation['expiration']
+        }))
 
         return {'uuid': myInvitation['uuid']}
 
@@ -612,42 +605,6 @@ class Root(object):
 
     # Helper functions below. DO NOT EXPOSE THESE
 
-    def emailDo(self, func):
-        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-        server.ehlo()
-        server.login(self.email_user, self.email_password)
-        func(server)
-        server.quit()
-
-    def emailSend(self, to, subject, body):
-        if self.email_inwardly:
-            subject = '[DEBUG %s] %s' % (to, subject)
-            to = self.email_user
-
-        email_text = '\n'.join((
-            'From: %s' % self.email_user,
-            'To: %s' % (to if isinstance(to, str) else ', '.join(to)),
-            'Subject: %s' % subject,
-            '',
-            body))
-
-        self.emailDo(
-            lambda server: server.sendmail(self.email_user, to, email_text))
-
-    def emailInvite(self, email, uuid, expiration=None):
-        # TODO make this message pretty
-        # TODO include expiration time in this email
-        body = ('You have been invited to use the UTDesign GettIt system!\n'
-                'Hooray!\n'
-                '\n'
-                '\n'
-                'Go to this link to set up your account:\n'
-                'http://localhost:8080/verify?id=%s\n')
-
-        body %= uuid
-
-        self.emailSend(email, 'UTDesign GettIt Invite', body)
-
     def verifyPassword(self, user, password):
         # logging password may be security hole; do not include this line in finished product
         # cherrypy.log("verifyPassword %s ::: %s" % (user['password'], Root.hashPassword(password, user['salt'])))
@@ -704,25 +661,3 @@ class Root(object):
                 self.colRequests.update_one(updateQuery, updateRule, upsert=False)
             else:
                 raise cherrypy.HTTPError(400, 'Request matching id and status not found in database')
-
-def main():
-    cherrypy.Application.wwwDir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 
-        os.path.join('..', '..', 'www'))
-
-    server_config = os.path.abspath(os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), 
-        '..', '..', 'etc', 'server.conf'))
-
-    # TODO prompt for these credentials!
-    cherrypy.tree.mount(
-        Root('noreplygettit@gmail.com', '0ddrun knows all',
-             debug=True, email_inwardly=True),
-        '/',
-        config=server_config)
-
-    cherrypy.engine.start()
-    input()
-    cherrypy.engine.stop()
-
-if __name__ == '__main__':
-    main()
