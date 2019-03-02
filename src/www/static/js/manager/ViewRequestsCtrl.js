@@ -58,6 +58,24 @@ $scope.fieldKeys = ["groupID", "status", "vendor", "URL", "justification", "addi
         console.log("change table");
     };
 
+    $scope.approveRequest = function(e, rowIdx) {
+        console.log($scope.data);
+        console.log(rowIdx);
+        $http.post('/procurementApprove', {'_id':$scope.data[rowIdx]._id}).then(function(resp) {
+            console.log("Success", resp)
+        }, function(err) {
+            console.error("Error", err.data)
+        });
+    };
+
+    $scope.rejectRequest = function(e) {
+//        $http.post('/procurementReject', $scope.data[]).then(function(resp) {
+//            console.log("Success", resp)
+//        }, function(err) {
+//            console.error("Error", err.data)
+//        });
+    };
+
     $http.post('/procurementStatuses', {}).then(function(resp) {
         console.log("Success", resp)
         $scope.data = resp.data;

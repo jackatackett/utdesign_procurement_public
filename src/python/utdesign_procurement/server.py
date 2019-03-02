@@ -302,6 +302,11 @@ class Root(object):
         """
         Need to make code pretty,
         check it works.
+
+        {
+            '_id': (string)
+        }
+
         """
         #check that we actually have json
         if hasattr(cherrypy.request, 'json'):
