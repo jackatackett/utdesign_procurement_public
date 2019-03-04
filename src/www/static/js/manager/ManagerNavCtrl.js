@@ -9,17 +9,26 @@ app.controller('ManagerNavCtrl', ['$scope', '$location', '$window', '$http', fun
         if (hash == 'viewRequests') {
             //show status
             $("#viewRequestsCtrlDiv").show();
+            $("#viewBudgetDiv").hide();
             $("#managerHelpDiv").hide();
-
-        } else {
+        }
+        else if (hash == 'budget') {
+            //show status
+            $("#viewRequestsCtrlDiv").hide();
+            $("#viewBudgetDiv").show();
+            $("#managerHelpDiv").hide();
+        }
+        else {
             //show help
             $("#viewRequestsCtrlDiv").hide();
+            $("#viewBudgetDiv").hide();
             $("#managerHelpDiv").show();
         }
 
         console.log("manager stuff", $location.hash());
     });
 
+//~ <<<<<<< HEAD
     $scope.doLogout = function() {
         $http.post('/userLogout').then(function(resp) {
             $window.location.href = '/login';
@@ -29,3 +38,6 @@ app.controller('ManagerNavCtrl', ['$scope', '$location', '$window', '$http', fun
     };
 
 }]);
+//~ =======
+//~ }]);
+//~ >>>>>>> budget
