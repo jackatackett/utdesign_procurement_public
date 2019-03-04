@@ -41,6 +41,7 @@ app.controller('AddUsersCtrl', ['$scope', '$location', function($scope, $locatio
     $scope.uploadSpreadsheet = function(e) {
         var target = e.currentTarget;
         console.log("upload spreadsheet");
+        $("#spreadsheetField").click();
     };
 
     $scope.regeneratePage = function(e) {
