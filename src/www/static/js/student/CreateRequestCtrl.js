@@ -25,9 +25,11 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', function($sc
 
 
         $http.post('/procurementRequest', data).then(function(resp) {
-            console.log("Success", resp)
+            console.log("Success", resp);
+            alert("Success!");
         }, function(err) {
             console.error("Error", err.data)
+            alert("Error");
         });
     }
 

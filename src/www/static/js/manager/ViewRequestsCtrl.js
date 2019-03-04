@@ -1,4 +1,4 @@
-app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', function($scope, $location, $http) {
+app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', function($scope, $location, $http, $window) {
 
 $scope.fieldKeys = ["groupID", "status", "vendor", "URL", "justification", "additionalInfo"];
     $scope.fields = ["Project Number", "Status", "Vendor", "URL", "Justification", "Additional Info"];
@@ -64,9 +64,12 @@ $scope.fieldKeys = ["groupID", "status", "vendor", "URL", "justification", "addi
         console.log($scope.data);
         console.log(rowIdx);
         $http.post('/procurementApprove', {'_id':$scope.data[rowIdx]._id}).then(function(resp) {
-            console.log("Success", resp)
+            console.log("Success", resp);
+            alert("Success!");
+            $window.location.reload();
         }, function(err) {
             console.error("Error", err.data)
+            alert("Error")
         });
     };
 
@@ -77,17 +80,23 @@ $scope.fieldKeys = ["groupID", "status", "vendor", "URL", "justification", "addi
 
     $scope.permanentReject = function(e, rowIdx) {
         $http.post('/procurementReject', {'_id':$scope.data[currentRow]._id}).then(function(resp) {
-            console.log("Success", resp)
+            console.log("Success", resp);
+            alert("Success!");
+            $window.location.reload();
         }, function(err) {
             console.error("Error", err.data)
+            alert("Error")
         });
     };
 
     $scope.sendForReview = function(e) {
         $http.post('/procurementReview', {'_id':$scope.data[currentRow]._id}).then(function(resp) {
-            console.log("Success", resp)
+            console.log("Success", resp);
+            alert("Success!");
+            $window.location.reload();
         }, function(err) {
             console.error("Error", err.data)
+            alert("Error")
         });
     };
 
