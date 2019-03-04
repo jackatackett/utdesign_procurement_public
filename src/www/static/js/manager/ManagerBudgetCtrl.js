@@ -102,8 +102,10 @@ app.controller('ManagerBudgetCtrl', ['$scope', function($scope, $http) {
         var targ = e.target.id.substring(6, e.target.id.length);
         if (targ == "All") {
             $scope.data = $scope.allData;
+            $("#currentGroupBudget").hide();
         }
         else {
+            $("#currentGroupBudget").show();
             $scope.data = [];
             for (var i = 0; i < $scope.allData.length; i++) {
                 if ($scope.allData[i]["projectID"] == $scope.teams[targ]) {
@@ -114,4 +116,6 @@ app.controller('ManagerBudgetCtrl', ['$scope', function($scope, $http) {
         }
         //~ $scope.data.reload();
     };
+
+    //~ $("#btnTabAll").trigger("click");
 }]);
