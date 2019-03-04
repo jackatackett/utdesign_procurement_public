@@ -98,7 +98,6 @@ app.controller('ManagerBudgetCtrl', ['$scope', function($scope, $http) {
     };
 
     $scope.regenerateTable = function(e) {
-        var target = e.currentTarget;
         var targ = e.target.id.substring(6, e.target.id.length);
         if (targ == "All") {
             $scope.data = $scope.allData;
@@ -112,10 +111,6 @@ app.controller('ManagerBudgetCtrl', ['$scope', function($scope, $http) {
                     $scope.data.push($scope.allData[i]);
                 }
             }
-            console.log($scope.data);
         }
-        //~ $scope.data.reload();
     };
-
-    //~ $("#btnTabAll").trigger("click");
 }]);

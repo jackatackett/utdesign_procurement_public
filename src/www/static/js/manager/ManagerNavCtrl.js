@@ -28,7 +28,6 @@ app.controller('ManagerNavCtrl', ['$scope', '$location', '$window', '$http', fun
         console.log("manager stuff", $location.hash());
     });
 
-//~ <<<<<<< HEAD
     $scope.doLogout = function() {
         $http.post('/userLogout').then(function(resp) {
             $window.location.href = '/login';
@@ -38,6 +37,3 @@ app.controller('ManagerNavCtrl', ['$scope', '$location', '$window', '$http', fun
     };
 
 }]);
-//~ =======
-//~ }]);
-//~ >>>>>>> budget
