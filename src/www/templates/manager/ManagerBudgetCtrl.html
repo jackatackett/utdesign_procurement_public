@@ -1,8 +1,16 @@
-<div id="viewBudgetDiv" ng-controller="ManagerBudgetCtrl as $ctrl">
-    <h3>Budget Limit: {{getMaxBudgetStr()}}</h3>
-    <h3>Budget Available: {{getTotalStr()}}</h3>
-    <h3>Budget Pending: {{getPendingStr()}}</h3>
+<div id="viewBudgetDiv" ng-controller="ManagerBudgetCtrl as $ctrl" style="margin: 2%; box-sizing: border-box;">
+    <button type="button" class="btn btn-primary" style="inline-block" ng-repeat="(team, id) in teams" ng-click="regenerateTable($event)" id="btnTab{{team}}">
+        {{team}}
+    </button>
 
+    <h5></h5>
+
+    <div id="currentGroupBudget">
+        <h3>Budget Limit: {{getMaxBudgetStr()}}</h3>
+        <h3>Budget Available: {{getTotalStr()}}</h3>
+        <h3>Budget Pending: {{getPendingStr()}}</h3>
+    </div>
+    
     <table class="table table-bordered">
         <thead>
             <tr>

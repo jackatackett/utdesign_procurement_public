@@ -12,7 +12,7 @@ app.controller('ManagerNavCtrl', ['$scope', '$location', function($scope, $locat
             $("#viewBudgetDiv").hide();
             $("#managerHelpDiv").hide();
         }
-        else if (hash == 'viewRequests') {
+        else if (hash == 'budget') {
             //show status
             $("#viewRequestsCtrlDiv").hide();
             $("#viewBudgetDiv").show();
