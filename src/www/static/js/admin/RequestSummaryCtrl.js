@@ -1,13 +1,13 @@
 app.controller('RequestSummaryCtrl', ['$scope', '$location', function($scope, $location) {
 
 $scope.fieldKeys = ["groupID", "status", "vendor", "URL", "justification", "additionalInfo"];
-    $scope.fields = ["Group ID", "Status", "Vendor", "URL", "Justification", "Additional Info"];
+    $scope.fields = ["Project Number", "Status", "Vendor", "URL", "Justification", "Additional Info"];
     $scope.grid = [];
     $scope.itemFieldKeys = ["description", "partNo", "quantity", "unitCost", "total"];
     $scope.itemFields = ["Description", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
     $scope.teams = ["Procurement", "Clock-It", "Smart Glasses"];
     $scope.statuses = ["Pending", "Accepted", "Rejected", "Shipped", "Canceled"];
-    $scope.filters = ["GroupID", "Vendor"];
+    $scope.filters = ["Project Number", "Vendor"];
 
     $scope.data = [ {
                         groupID: "123",
