@@ -221,9 +221,11 @@ class Root(object):
     @authorizedRoles("student", "manager", "admin")
     def procurementStatuses(self):
         """
-        Returns a list of procurement requests matching all provided 
-        filters. Currently matches with any combination of vendor, 
-        token, groupID, and URL, but also that doesn't work yet.
+        Returns a list of procurement requests matching all provided filters.
+        Currently matches with any combination of vendor, groupID, and URL.
+        For non-admin users, groupID will be restricted only to those
+        groupIDs which the user is authorized to view. Ignores groupIDs that
+        are not authorized.
 
         {
             vendor: (string, optional),
@@ -243,16 +245,21 @@ class Root(object):
         filters = []
         
         if 'vendor' in data:
-            myVendor = data['vendor']
-            filters.append(myVendor)
-                
+            myVendor = self._checkValidData('vendor', data, str)
+            filters.append({'vendor': {'$eq': myVendor}})
+
         if 'groupID' in data:
-            myGroupID = data['groupID']
-            filters.append(myGroupID)
-            
+            myGroupID = self._checkValidData('groupID', data, str)
+            if (cherrypy.session['role'] == 'admin'
+                    or myGroupID == cherrypy.session['groupID']):
+                filters.append({'groupID': {'$eq': myGroupID}})
+        elif cherrypy.session['role'] != 'admin':
+            filters.append({'groupID': {'$eq': cherrypy.session['groupID']}})
+
+
         if 'URL' in data:
-            myURL = data['URL']
-            filters.append(myURL)
+            myURL = self._checkValidData('URL', data, str)
+            filters.append({'URL': {'$eq': myURL}})
 
         if filters:
             bigFilter = {'$and': filters}
@@ -709,6 +716,7 @@ class Root(object):
         if user and self.verifyPassword(user, myData['password']):
             cherrypy.session['email'] = user['email']
             cherrypy.session['role'] = user['role']
+            cherrypy.session['groupID'] = user.get('groupID', [])
             return "<strong> You logged in! </strong>"
         else:
             raise cherrypy.HTTPError(403, 'Invalid email or password.')

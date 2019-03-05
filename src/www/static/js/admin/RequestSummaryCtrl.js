@@ -1,4 +1,4 @@
-app.controller('RequestSummaryCtrl', ['$scope', '$location', function($scope, $location) {
+app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', function($scope, $location, $http) {
 
 $scope.fieldKeys = ["groupID", "status", "vendor", "URL", "justification", "additionalInfo"];
     $scope.fields = ["Project Number", "Status", "Vendor", "URL", "Justification", "Additional Info"];
@@ -59,5 +59,12 @@ $scope.fieldKeys = ["groupID", "status", "vendor", "URL", "justification", "addi
         var target = e.currentTarget;
         console.log("refresh admin table");
     };
+
+    $http.post('/procurementStatuses', {}).then(function(resp) {
+        console.log("Success", resp)
+        $scope.data = resp.data;
+    }, function(err) {
+        console.error("Error", err.data)
+    });
 
 }]);

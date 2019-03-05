@@ -17,12 +17,7 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', function($sc
         //TODO don't alias like a moron
         var data = $scope.metadata;
         data['items'] = $scope.grid;
-
-        //TODO use the SAML token and not this nonsense
-        data.token = 'goose';
-        data.groupID = 'group7';
-
-
+        data.groupID = '844';
 
         $http.post('/procurementRequest', data).then(function(resp) {
             console.log("Success", resp);

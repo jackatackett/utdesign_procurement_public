@@ -52,4 +52,11 @@ app.controller('RequestSummaryCtrl', ['$scope', '$http', function($scope, $http)
         $(target.nextElementSibling).toggle();
     };
 
+    $http.post('/procurementStatuses', {}).then(function(resp) {
+        console.log("Success", resp)
+        $scope.data = resp.data;
+    }, function(err) {
+        console.error("Error", err.data)
+    });
+
 }]);
