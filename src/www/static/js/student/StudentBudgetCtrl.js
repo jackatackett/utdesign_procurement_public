@@ -10,7 +10,7 @@ app.controller('StudentBudgetCtrl', ['$scope', function($scope, $http) {
     $scope.maxBudget = 2000.00;             //need to pull this from a defaults list
 
     $scope.data = [ {
-                        groupID: "123",
+                        projectNumber: 123,
                         status: "pending",
                         vendor: "Home Depot",
                         URL: "homedepot.com",
@@ -34,7 +34,7 @@ app.controller('StudentBudgetCtrl', ['$scope', function($scope, $http) {
                         cost: 5     //is this stored in the database? if not, need to calculate it: needs to include shipping/taxes/etc if needed
                     },
                     {
-                        groupID: "124",
+                        projectNumber: 124,
                         status: "approved",
                         vendor: "The Plastic Store",
                         URL: "gmail.com",

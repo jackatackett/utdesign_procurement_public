@@ -1,6 +1,6 @@
 app.controller('AddUsersCtrl', ['$scope', '$location', function($scope, $location) {
 
-    $scope.fieldKeys = ["groupID", "firstName", "lastName", "netID", "email", "course"];
+    $scope.fieldKeys = ["projectNumber", "firstName", "lastName", "netID", "email", "course"];
     $scope.fields = ["Project Number", "First Name", "Last Name", "NetID", "Email", "Course"];
     $scope.grid = [];
     $scope.itemFieldKeys = ["description", "partNo", "quantity", "unitCost", "total"];
@@ -8,7 +8,7 @@ app.controller('AddUsersCtrl', ['$scope', '$location', function($scope, $locatio
     $scope.columns = ["Project Number", "First Name", "Last Name", "NetID", "Email", "Course"];
 
     $scope.users = [ {
-                        "groupID": "123",
+                        "projectNumber": 123,
                         "firstName": "Mack",
                         "lastName": "Packett",
                         "netID": "mpp123456",
@@ -16,7 +16,7 @@ app.controller('AddUsersCtrl', ['$scope', '$location', function($scope, $locatio
                         "course": "CS 4485"
                     },
                     {
-                        "groupID": "456",
+                        "projectNumber": 456,
                         "firstName": "Bob",
                         "lastName": "Builder",
                         "netID": "bbb111111",
@@ -24,7 +24,7 @@ app.controller('AddUsersCtrl', ['$scope', '$location', function($scope, $locatio
                         "course": "CS 4485"
                     },
                     {
-                        "groupID": "222",
+                        "projectNumber": 222,
                         "firstName": "Monika",
                         "lastName": "Mulder",
                         "netID": "mmm987654",

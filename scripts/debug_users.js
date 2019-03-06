@@ -4,14 +4,11 @@ db = conn.getDB("procurement");
 
 
 db.users.insert({
-    "netID" : "N/A", 
     "email" : "admin@utdallas.edu", 
     "role" : "admin", 
     "status" : "current", 
-    "course" : "N/A", 
     "lastName" : "Mahaffey", 
-    "firstName" : "Oddrun", 
-    "groupID" : "N/A", 
+    "firstName" : "Oddrun",
     "password" : BinData(0,"LB334CiGuSIEpWpUJewb1ykHOkiqWEX7xIYeg9KN7yE="), 
     "salt" : BinData(0,"uh2SlTzR1UhYzJ03Qr4UGsHExgRAXNOxJRNUFOFzouA=") 
 })
@@ -25,7 +22,7 @@ db.users.insert({
     "course" : "CS 4485.001", 
     "lastName" : "Joshi",
     "firstName" : "Dhwanika", 
-    "groupID" : "844", 
+    "projectNumbers" : [844],
     "password" : BinData(0,"LB334CiGuSIEpWpUJewb1ykHOkiqWEX7xIYeg9KN7yE="), 
     "salt" : BinData(0,"uh2SlTzR1UhYzJ03Qr4UGsHExgRAXNOxJRNUFOFzouA=") 
 })
@@ -39,7 +36,27 @@ db.users.insert({
     "course" : "CS 4485.001", 
     "lastName" : "Tackett",
     "firstName" : "Jack", 
-    "groupID" : "844", 
+    "projectNumbers" : [844],
     "password" : BinData(0,"LB334CiGuSIEpWpUJewb1ykHOkiqWEX7xIYeg9KN7yE="), 
     "salt" : BinData(0,"uh2SlTzR1UhYzJ03Qr4UGsHExgRAXNOxJRNUFOFzouA=") 
+})
+
+db.requests.insert({
+    "vendor" : "Bunning's warehouse",
+    "URL" : "https://www.bunnings.com.au/",
+    "justification" : "They're fluffy!",
+    "status" : "pending",
+    "projectNumber" : 844,
+    "additionalInfo" : "I want them",
+    "items" : [ {
+        "description" : "Bunny",
+        "partNo" : "1",
+        "quantity" : "2",
+        "unitCost" : 6.42
+    }, {
+        "description" : "Squirrel",
+        "partNo" : "2",
+        "quantity" : "1",
+        "unitCost" : 4.32
+    } ]
 })

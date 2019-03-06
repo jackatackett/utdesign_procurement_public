@@ -158,7 +158,7 @@ class Root(object):
 
             {
                 "vendor": (string),
-                "groupID": (string),
+                "projectNumber": (int or list of int),
                 "URL": (string),
                 "justification": (string) optional,
                 "additionalInfo": (string) optional
@@ -184,8 +184,11 @@ class Root(object):
         # set default value of status to pending
         myRequest['status'] = 'pending'
 
+        # mandatory projectNumber
+        myRequest['projectNumber'] = self._checkValidData('projectNumber', data, int)
+
         # mandatory keys
-        for key in ("vendor", "URL", "groupID"):
+        for key in ("vendor", "URL"):
             myRequest[key] = self._checkValidData(key, data, str)
 
         # optional keys
@@ -222,14 +225,14 @@ class Root(object):
     def procurementStatuses(self):
         """
         Returns a list of procurement requests matching all provided filters.
-        Currently matches with any combination of vendor, groupID, and URL.
-        For non-admin users, groupID will be restricted only to those
-        groupIDs which the user is authorized to view. Ignores groupIDs that
-        are not authorized.
+        Currently matches with any combination of vendor, projectNumbers, and
+        URL. For non-admin users, projectNumbers will be restricted only to
+        those projectNumbers which the user is authorized to view. Ignores
+        projectNumbers that the user is not authorized to view.
 
         {
             vendor: (string, optional),
-            groupID: (string, optional),
+            projectNumbers: (int or list of ints, optional),
             URL: (string, optional)
         }
 
@@ -248,14 +251,28 @@ class Root(object):
             myVendor = self._checkValidData('vendor', data, str)
             filters.append({'vendor': {'$eq': myVendor}})
 
-        if 'groupID' in data:
-            myGroupID = self._checkValidData('groupID', data, str)
-            if (cherrypy.session['role'] == 'admin'
-                    or myGroupID == cherrypy.session['groupID']):
-                filters.append({'groupID': {'$eq': myGroupID}})
-        elif cherrypy.session['role'] != 'admin':
-            filters.append({'groupID': {'$eq': cherrypy.session['groupID']}})
+        if 'projectNumbers' in data:
+            myProjects = self._checkProjectNumbers(data)
+            if cherrypy.session['role'] == 'admin':
+                filters.append({'projectNumber': {'$in': myProjects}})
 
+            #non-admins are limited to their projectNumbers
+            else:
+                validPNos = []
+                for pNo in cherrypy.session['projectNumbers']:
+                    if pNo in myProjects:
+                        validPNos.append(pNo)
+
+                if validPNos:
+                    filters.append({'projectNumber': {'$in': validPNos}})
+
+        #non-admins are limited to their projectNumbers
+        elif cherrypy.session['role'] != 'admin':
+            filters.append({
+                'projectNumber': {
+                    '$in': cherrypy.session['projectNumbers']
+                }
+            })
 
         if 'URL' in data:
             myURL = self._checkValidData('URL', data, str)
@@ -479,7 +496,7 @@ class Root(object):
         Expected input::
 
             {
-                "groupID": (string),
+                "projectNumbers": (int or list of ints),
                 "firstName": (string),
                 "lastName": (string),
                 "netID": (string),
@@ -508,7 +525,9 @@ class Root(object):
             cherrypy.log('Expected role of value "student", "manager", or "admin". See: %s' % myRole)
             raise cherrypy.HTTPError(400, 'Invalid role. Should be "student", "manager", or "admin".')
 
-        for key in ("firstName", "lastName", "groupID", "netID", "email", "course"):
+        myUser['projectNumbers'] = self._checkProjectNumbers(data)
+
+        for key in ("firstName", "lastName", "netID", "email", "course"):
             myUser[key] = self._checkValidData(key, data, str)
 
 
@@ -547,7 +566,7 @@ class Root(object):
 
             {
                 "_id": (string)
-                “groupID”: (list of ints, optional),
+                “projectNumbers”: (list of ints, optional),
                 "firstName": (string, optional),
                 "lastName": (string, optional),
                 "netID": (string, optional),
@@ -561,44 +580,25 @@ class Root(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
+        # the newly changed fields
         myData = dict()
 
+        # the MongoDB _id of the record to change
         myID = self._checkValidID(data)
-        myData["_id"] = myID
 
-        # groupID is optional, may be int or list of ints, is converted to list if not a list
-        myGroupID = self.checkValidData("groupID", data, (int, list), True)
-        if isinstance(myData["groupID"], int):
-            # make list
-            newList = []
-            newList.append(myGroupID)
-            myData["groupID"] = newList
-        elif isinstance(myData["groupID"], list):
-            # make sure list has only ints
-            for groupID in myGroupID:
-                if not isinstance(groupID, int):
-                    raise cherrypy.HTTPError(400, 'groupID field must be int or list of only ints')
-            myData["groupID"] = myGroupID
+        # the optional projectNumbers of the user
+        if 'projectNumbers' in data:
+            myData = self._checkProjectNumbers(data)
 
         # optional keys, string
         for key in ("firstName", "lastName", "netID", "course"):
-            myData[key] = self._checkValidData(key, data, str, True)
+            if key in data:
+                myData[key] = self._checkValidData(key, data, str)
 
-        findQuery = {'_id': ObjectId(myID)}
+        # update the document
         updateQuery = {'_id': ObjectId(myID)}
-
-
-        if self.colUsers.find(findQuery).count() > 0:
-            for key in ("groupID", "firstName", "lastName", "netID", "course"):
-                # create update query
-                updateRule = {
-                    '$set':
-                        {key: myData[key]}
-                }
-                # check that data is not default string
-                if not myData[key] == "":
-                    # update key
-                    self._updateDocument(myID, findQuery, updateQuery, updateRule)
+        updateRule = {'$set': myData}
+        self._updateDocument(myID, updateQuery, updateQuery, updateRule)
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -716,10 +716,27 @@ class Root(object):
         if user and self.verifyPassword(user, myData['password']):
             cherrypy.session['email'] = user['email']
             cherrypy.session['role'] = user['role']
-            cherrypy.session['groupID'] = user.get('groupID', [])
+            cherrypy.session['projectNumbers'] = user.get('projectNumbers', [])
             return "<strong> You logged in! </strong>"
         else:
             raise cherrypy.HTTPError(403, 'Invalid email or password.')
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @authorizedRoles("student", "manager")
+    def userProjects(self):
+        """
+        This REST endpoint returns a list of projectNumbers associated with
+        the authenticated user.
+
+        Returns ::
+
+            {
+                'projectNumbers': (list of ints)
+            }
+
+        """
+        return cherrypy.session.get('projectNumbers', [])
 
     # this function is for debugging for now. If that never changes then
     # TODO remove this function before production if it isn't needed
@@ -731,7 +748,7 @@ class Root(object):
         ret =  {'authenticated': auth}
 
         if auth:
-            for k in ('role', 'email'):
+            for k in ('role', 'email', 'projectNumbers'):
                 ret[k] = cherrypy.session[k]
 
         # ret is a JSON object containing role and email, and a boolean
@@ -789,6 +806,32 @@ class Root(object):
         # string of random bytes
         # platform-specific (windows uses CryptGenRandom())
         return os.urandom(32)
+
+    def _checkProjectNumbers(self, data, default=None):
+        """
+        Return a list of project numbers from the given dict if possible.
+        If not found, return a default value if given, else raise a 400 error.
+
+        :param data: The dict from which to obtain project numbers
+        :param default: A default value to return if no project numbers are
+            found.
+        :return:
+        """
+        if 'projectNumbers' in data:
+            myPNo = data['projectNumbers']
+            if isinstance(myPNo, int):
+                myPNo = [myPNo]
+
+            if all(isinstance(pNo, int) for pNo in myPNo):
+                return myPNo
+            else:
+                raise cherrypy.HTTPError(
+                    400, 'Expected project number to be int or list of int.'
+                         'See: %s' % myPNo)
+        elif default:
+            return default
+        else:
+            raise cherrypy.HTTPError(400, 'Project Number not found.')
 
     # checks if key value exists and is the right type
     def _checkValidData(self, key, data, dataType, optional=False, default=""):

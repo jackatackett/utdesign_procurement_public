@@ -1,13 +1,13 @@
 app.controller('RequestSummaryCtrl', ['$scope', '$http', function($scope, $http) {
 
-    $scope.fieldKeys = ["groupID", "status", "vendor", "URL", "justification", "additionalInfo"];
+    $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification", "additionalInfo"];
     $scope.fields = ["Project Number", "Status", "Vendor", "URL", "Justification", "Additional Info"];
     $scope.grid = [];
     $scope.itemFieldKeys = ["description", "partNo", "quantity", "unitCost", "total"];
     $scope.itemFields = ["Description", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
 
     $scope.data = [ {
-                        groupID: "123",
+                        projectNumber: 123,
                         status: "pending",
                         vendor: "Home Depot",
                         URL: "homedepot.com",
@@ -30,7 +30,7 @@ app.controller('RequestSummaryCtrl', ['$scope', '$http', function($scope, $http)
                         ]
                     },
                     {
-                        groupID: "124",
+                        projectNumber: 124,
                         status: "approved",
                         vendor: "The Plastic Store",
                         URL: "gmail.com",
@@ -53,7 +53,7 @@ app.controller('RequestSummaryCtrl', ['$scope', '$http', function($scope, $http)
     };
 
     $http.post('/procurementStatuses', {}).then(function(resp) {
-        console.log("Success", resp)
+        console.log("procurementStatuses success", resp)
         $scope.data = resp.data;
     }, function(err) {
         console.error("Error", err.data)

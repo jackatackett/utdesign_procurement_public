@@ -1,6 +1,6 @@
 app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', function($scope, $location, $http, $window) {
 
-$scope.fieldKeys = ["groupID", "status", "vendor", "URL", "justification", "additionalInfo"];
+$scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification", "additionalInfo"];
     $scope.fields = ["Project Number", "Status", "Vendor", "URL", "Justification", "Additional Info"];
     $scope.grid = [];
     $scope.itemFieldKeys = ["description", "partNo", "quantity", "unitCost", "total"];
@@ -8,7 +8,7 @@ $scope.fieldKeys = ["groupID", "status", "vendor", "URL", "justification", "addi
     $scope.teams = ["Procurement", "Clock-It", "Smart Glasses"];
 
     $scope.data = [ {
-                        groupID: "123",
+                        projectNumber: 123,
                         status: "pending",
                         vendor: "Home Depot",
                         URL: "homedepot.com",
@@ -31,7 +31,7 @@ $scope.fieldKeys = ["groupID", "status", "vendor", "URL", "justification", "addi
                         ]
                     },
                     {
-                        groupID: "124",
+                        projectNumber: 124,
                         status: "approved",
                         vendor: "The Plastic Store",
                         URL: "gmail.com",
