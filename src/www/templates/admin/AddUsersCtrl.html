@@ -2,12 +2,12 @@
 
     <table class="table" id="addUserTable" style="width: 50%; display:table;">
 
-        <tr ng-repeat="info in fields">
+        <tr ng-repeat="info in fields track by $index">
             <td>
                 {{info}}
             </td>
             <td>
-                <input type="text">
+                <input type="text" ng-model="userInfo[fieldKeys[$index]]">
             </td>
         </tr>
         <tr>

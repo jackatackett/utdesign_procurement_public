@@ -1,4 +1,4 @@
-app.controller('AddUsersCtrl', ['$scope', '$location', function($scope, $location) {
+app.controller('AddUsersCtrl', ['$scope', '$location', '$http', '$window', function($scope, $location, $http, $window) {
 
     $scope.fieldKeys = ["projectNumber", "firstName", "lastName", "netID", "email", "course"];
     $scope.fields = ["Project Number", "First Name", "Last Name", "NetID", "Email", "Course"];
@@ -6,6 +6,7 @@ app.controller('AddUsersCtrl', ['$scope', '$location', function($scope, $locatio
     $scope.itemFieldKeys = ["description", "partNo", "quantity", "unitCost", "total"];
     $scope.itemFields = ["Description", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
     $scope.columns = ["Project Number", "First Name", "Last Name", "NetID", "Email", "Course"];
+    $scope.userInfo = {};
 
     $scope.users = [ {
                         "projectNumber": 123,
@@ -35,7 +36,15 @@ app.controller('AddUsersCtrl', ['$scope', '$location', function($scope, $locatio
 
     $scope.addUser = function(e) {
         var target = e.currentTarget;
-        console.log("adding user");
+
+        $http.post('/userAdd', {'projectNumbers':Number($scope.userInfo.projectNumber), 'firstName':$scope.userInfo.firstName, 'lastName':$scope.userInfo.lastName, 'netID':$scope.userInfo.netID, 'email':$scope.userInfo.email, 'course':$scope.userInfo.course, 'role':'student'}).then(function(resp) {
+            console.log("Success", resp);
+            alert("Success!");
+            $window.location.reload();
+        }, function(err) {
+            console.error("Error", err.data);
+            alert("Error")
+        });
     };
 
     $scope.uploadSpreadsheet = function(e) {
