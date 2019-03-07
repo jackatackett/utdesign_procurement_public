@@ -22,6 +22,17 @@ class ApiGateway(object):
         self.colUsers = db['users']
         self.colInvitations = db['invitations']
 
+        self.status_pending = "pending"
+        self.status_approved = "approved"
+        self.status_rejected = "rejected"
+        self.status_cancelled = "cancelled"
+        self.status_saved = "saved"
+        self.status_needs_updates = "needs updates"
+        self.status_needs_changes = "needs changes"
+        self.status_ordered = "ordered"
+        self.status_ready_for_pickup = "ready for pickup"
+        self.status_complete = "complete"
+
     # API Functions go below. DO EXPOSE THESE
 
     @cherrypy.expose
@@ -57,7 +68,7 @@ class ApiGateway(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        myRequest = requestCreate(data, status="pending")
+        myRequest = requestCreate(data, status=self.status_pending)
 
         # insert the data into the database
         self.colRequests.insert(myRequest)
@@ -75,7 +86,7 @@ class ApiGateway(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        myRequest = requestCreate(data, status="saved", optional=True)
+        myRequest = requestCreate(data, status=self.status_saved, optional=True)
 
         self.colRequests.insert(myRequest)
 
@@ -180,16 +191,16 @@ class ApiGateway(object):
                 {'_id': ObjectId(myID)},
                 {
                     '$or': [
-                        {'status': 'updates needed'},
-                        {'status': 'changes needed'},
-                        {'status': 'saved'}
+                        {'status': self.status_needs_updates},
+                        {'status': self.status_needs_changes},
+                        {'status': self.status_saved}
                     ]
                 }
             ]
         }
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {'$set':
-                          {'status': 'cancelled'}
+                          {'status': self.status_cancelled}
                       }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -221,12 +232,12 @@ class ApiGateway(object):
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
-                {'status': 'pending'}
+                {'status': self.status_pending}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             '$set':
-                {'status': 'approved'}
+                {'status': self.status_approved}
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -259,14 +270,14 @@ class ApiGateway(object):
                 {'_id': ObjectId(myID)},
                 {
                     '$or': [
-                        {'status': 'approved'},
-                        {'status': 'pending'}
+                        {'status': self.status_approved},
+                        {'status': self.status_pending}
                     ]}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': 'updates needed'}
+                {'status': self.status_needs_updates}
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -298,12 +309,12 @@ class ApiGateway(object):
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
-                {'status': 'updates needed'}
+                {'status': self.status_needs_updates}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': 'pending'}
+                {'status': self.status_pending}
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -335,12 +346,12 @@ class ApiGateway(object):
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
-                {'status': 'needs changes'}
+                {'status': self.status_needs_changes}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': 'approved'}
+                {'status': self.status_approved}
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -372,12 +383,12 @@ class ApiGateway(object):
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
-                {'status': 'approved'}
+                {'status': self.status_approved}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': 'needs changes'}
+                {'status': self.status_needs_changes}
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -408,12 +419,12 @@ class ApiGateway(object):
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
-                {'status': 'approved'}
+                {'status': self.status_approved}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': 'ordered'}
+                {'status': self.status_ordered}
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -445,12 +456,12 @@ class ApiGateway(object):
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
-                {'status': 'ordered'}
+                {'status': self.status_ordered}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': 'ready for pickup'}
+                {'status': self.status_ready_for_pickup}
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -482,12 +493,12 @@ class ApiGateway(object):
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
-                {'status': 'ready for pickup'}
+                {'status': self.status_ready_for_pickup}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': 'picked up'}
+                {'status': self.status_complete}
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -521,14 +532,14 @@ class ApiGateway(object):
             '$and': [
                 {'_id': ObjectId(myID)},
                 { '$or': [
-                    {'status': 'pending'},
-                    {'status': 'approved'}
+                    {'status': self.status_pending},
+                    {'status': self.status_approved}
                 ]}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': 'rejected'}
+                {'status': self.status_rejected}
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
