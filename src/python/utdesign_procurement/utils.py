@@ -174,3 +174,39 @@ def checkValidID(data):
             raise cherrypy.HTTPError(400, 'Object id not valid')
     else:
         raise cherrypy.HTTPError(400, 'data needs object id')
+
+def requestCreate(data, status, optional=False):
+    myRequest = dict()
+
+    myRequest['status'] = status
+
+    # mandatory projectNumber
+    myRequest['projectNumber'] = checkValidData('projectNumber', data, int, optional)
+
+    # mandatory keys
+    for key in ("vendor", "URL"):
+        myRequest[key] = checkValidData(key, data, str, optional)
+
+    # optional keys
+    for key in ("justification", "additionalInfo"):
+        myRequest[key] = checkValidData(key, data, str, True)
+
+    # theirItems is a list of dicts (each dict is one item)
+    theirItems = checkValidData("items", data, list, optional)
+
+    # myItems is the list we are creating and adding to the database
+    myItems = []
+
+    # iterate through list of items
+    for theirDict in theirItems:
+        # theirDict = checkValidData(item, data, dict)
+        myDict = dict()
+        # iterate through keys of item dict
+        for key in ("description", "partNo", "quantity", "unitCost"):
+            myDict[key] = checkValidData(key, theirDict, str, optional)
+        myDict['totalCost'] = checkValidNumber("totalCost", theirDict, optional)
+        myItems.append(myDict)
+
+    myRequest["items"] = myItems
+
+    return myRequest

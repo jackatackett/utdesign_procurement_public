@@ -8,7 +8,7 @@ from uuid import uuid4
 
 from utdesign_procurement.utils import authorizedRoles, generateSalt, hashPassword, \
     checkProjectNumbers, checkValidData, checkValidID, checkValidNumber, \
-    verifyPassword
+    verifyPassword, requestCreate
 
 class ApiGateway(object):
 
@@ -57,44 +57,27 @@ class ApiGateway(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        myRequest = dict()
-
-        # set default value of status to pending
-        myRequest['status'] = 'pending'
-
-        # mandatory projectNumber
-        myRequest['projectNumber'] = checkValidData('projectNumber', data, int)
-
-        # mandatory keys
-        for key in ("vendor", "URL"):
-            myRequest[key] = checkValidData(key, data, str)
-
-        # optional keys
-        for key in ("justification", "additionalInfo"):
-            myRequest[key] = checkValidData(key, data, str, True)
-
-        # theirItems is a list of dicts (each dict is one item)
-        theirItems = checkValidData("items", data, list)
-
-        # myItems is the list we are creating and adding to the database
-        myItems = []
-
-        # iterate through list of items
-        for theirDict in theirItems:
-            # theirDict = checkValidData(item, data, dict)
-            myDict = dict()
-            # iterate through keys of item dict
-            for key in ("description", "partNo", "quantity", "unitCost"):
-                myDict[key] = checkValidData(key, theirDict, str)
-            myDict['totalCost'] = checkValidNumber("totalCost", theirDict)
-            myItems.append(myDict)
-
-        myRequest["items"] = myItems
+        myRequest = requestCreate(data, status="pending")
 
         # insert the data into the database
         self.colRequests.insert(myRequest)
 
         # TODO send email
+
+    # TODO change status of unsubmitted request to pending?
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @authorizedRoles("student")
+    def procurementSave(self):
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myRequest = requestCreate(data, status="saved", optional=True)
+
+        self.colRequests.insert(myRequest)
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -200,8 +183,9 @@ class ApiGateway(object):
                         {'status': 'updates needed'},
                         {'status': 'changes needed'},
                         {'status': 'saved'}
-                ]
-            }
+                    ]
+                }
+            ]
         }
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {'$set':
