@@ -1,3 +1,8 @@
+//first drop the original database (inside mongo client):
+//use procurement
+//db.dropDatabase()
+//then run this (outside mongo client):
+//mongo scripts/debug_users.js
 
 conn = new Mongo();
 db = conn.getDB("procurement");
@@ -91,8 +96,6 @@ db.users.insert({
     "password" : BinData(0,"LB334CiGuSIEpWpUJewb1ykHOkiqWEX7xIYeg9KN7yE="), 
     "salt" : BinData(0,"uh2SlTzR1UhYzJ03Qr4UGsHExgRAXNOxJRNUFOFzouA=") 
 })
-
-db.
 
 db.users.insert({ 
     "netID" : "abc123456", 
