@@ -639,6 +639,18 @@ class ApiGateway(object):
         return ret
 
     @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @authorizedRoles("admin")
+    def userPages(self):
+        """
+            returns an int
+        """
+
+        pageSize = 10 # TODO make this configurable
+        d, m = divmod(self.colUsers.find().count(), pageSize)
+        return d+1 if m else d
+
+    @cherrypy.expose
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
     @authorizedRoles("admin")
