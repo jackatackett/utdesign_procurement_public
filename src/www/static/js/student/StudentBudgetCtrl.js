@@ -10,45 +10,60 @@ app.controller('StudentBudgetCtrl', ['$scope', function($scope, $http) {
     $scope.maxBudget = 2000.00;             //need to pull this from a defaults list
 
     $scope.data = [ {
-                        projectNumber: 123,
-                        status: "pending",
-                        vendor: "Home Depot",
-                        URL: "homedepot.com",
-                        justification: "Because he told me toooooo",
-                        additionalInfo: "He is Plankton",
-                        items: [ {
-                                description: "A big thing",
-                                partNo: "9001",
-                                quantity: "25",
-                                unitCost: "1000000000",
-                                total: "25000000000"
+                        "vendor" : "Bunning's warehouse",
+                        "URL" : "https://www.bunnings.com.au/",
+                        "justification" : "They're fluffy!",
+                        "status" : "pending",
+                        "projectNumber" : 844,
+                        "additionalInfo" : "I want them",
+                        "items" : [
+                            {
+                                "description" : "Bunny",
+                                "partNo" : "1",
+                                "quantity" : 2,
+                                "unitCost" : 642,
+                                "totalCost" : 1284,
+                                "itemURL" : "bunnyurl"
                             },
                             {
-                                description: "A small thing",
-                                partNo: "9002",
-                                quantity: "250",
-                                unitCost: "10",
-                                total: "2500"
+                                "description" : "Squirrel",
+                                "partNo" : "2",
+                                "quantity" : 1,
+                                "unitCost" : 432,
+                                "totalCost" : 432,
+                                "itemURL" : "squirrelurl"
                             }
                         ],
-                        cost: 5     //is this stored in the database? if not, need to calculate it: needs to include shipping/taxes/etc if needed
+                        "requestTotal" : 1716,
+                        "history" : [ ]
                     },
                     {
-                        projectNumber: 124,
-                        status: "approved",
-                        vendor: "The Plastic Store",
-                        URL: "gmail.com",
-                        justification: "O Captain, My Captain",
-                        additionalInfo: "He is dead, Jim",
-                        items: [ {
-                                description: "A hunk of plastic",
-                                partNo: "9003",
-                                quantity: "1",
-                                unitCost: "10",
-                                total: "10"
+                        "vendor" : "vendor2",
+                        "URL" : "requestor2URL",
+                        "justification" : "",
+                        "status" : "approved",
+                        "projectNumber" : 844,
+                        "additionalInfo" : "",
+                        "items" : [
+                            {
+                                "description" : "item1",
+                                "partNo" : "part2",
+                                "quantity" : 3,
+                                "unitCost" : 600,
+                                "totalCost" : 900,
+                                "itemURL" : "item1url"
                             }
                         ],
-                        cost: 10
+                        "requestTotal" : 900,
+                        "history" : [
+                            {
+                                "actor" : "manager@utdallas.edu",
+                                "timestamp" : "2019-03-01T15:00:00Z",
+                                "comment" : "approved",
+                                "oldState" : "pending",
+                                "newState" : "approved"
+                            }
+                        ]
                     }
                   ]
 
@@ -88,4 +103,6 @@ app.controller('StudentBudgetCtrl', ['$scope', function($scope, $http) {
     $scope.getPendingStr = function() {
         return "$" + $scope.getPending();
     };
+
+    console.log($scope);
 }]);

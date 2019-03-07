@@ -217,3 +217,11 @@ db.requests.insert({
         "newState": "approved"
     }]
 })
+
+db.costs.insert({
+    "type": "shipping",
+    "amount": 1000,
+    "comment": "shipping cost for item1 from vendor2",
+    "actor": "admin@utdallas.edu",
+    "projectNumber": 844
+})
