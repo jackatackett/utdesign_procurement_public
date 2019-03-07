@@ -1,6 +1,6 @@
-app.controller('StudentBudgetCtrl', ['$scope', function($scope, $http) {
+app.controller('StudentBudgetCtrl', ['$scope', '$location', '$http', '$window', function($scope, $location, $http, $window) {
     console.log("budget");
-
+/*
     $scope.fieldKeys = ["status", "vendor", "URL", "justification", "additionalInfo", "cost"];
     $scope.fields = ["Status", "Vendor", "URL", "Justification", "Additional Info", "Cost"];
     $scope.grid = [];
@@ -105,4 +105,51 @@ app.controller('StudentBudgetCtrl', ['$scope', function($scope, $http) {
     };
 
     console.log($scope);
+    * */
+
+    $scope.procurementData = []
+    $http.post('/procurementStatuses', {}).then(function(resp) {
+        console.log("Status Success", resp)
+        $scope.procurementData = resp.data;
+    }, function(err) {
+        console.error("Status Error", err.data)
+    });
+
+    $scope.costData = []
+    $http.post('/getCosts', {}).then(function(resp) {
+        console.log("Costs Success", resp)
+        $scope.costData = resp.data;
+    }, function(err) {
+        console.error("Costs Error", err.data)
+    });
+
+    $scope.projectData = []
+    $http.post('/findProject', {}).then(function(resp) {
+        console.log("Project Success", resp)
+        $scope.projectData = resp.data;
+    }, function(err) {
+        console.error("Project Error", err.data)
+    });
+
+    $scope.getMaxBudgetStr = function() {
+        console.log($scope.projectData);
+        if ($scope.projectData.length != 0) {
+            return "$" + $scope.projectData[0]["defaultBudget"];
+        }
+        return "$0";
+    };
+
+    $scope.getTotalStr = function() {
+        if ($scope.projectData.length != 0) {
+            return "$" + $scope.projectData[0]["availableBudget"];
+        }
+        return "$0";
+    };
+
+    $scope.getPendingStr = function() {
+        if ($scope.projectData.length != 0) {
+            return "$" + $scope.projectData[0]["pendingBudget"];
+        }
+        return "$0";
+    };
 }]);
