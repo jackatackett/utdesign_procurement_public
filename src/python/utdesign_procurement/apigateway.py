@@ -10,6 +10,8 @@ from utdesign_procurement.utils import authorizedRoles, generateSalt, hashPasswo
     checkProjectNumbers, checkValidData, checkValidID, checkValidNumber, \
     verifyPassword, requestCreate
 
+# TODO integrate existing code with these changes
+
 class ApiGateway(object):
 
     def __init__(self, email_queue):
@@ -22,6 +24,7 @@ class ApiGateway(object):
         self.colUsers = db['users']
         self.colInvitations = db['invitations']
 
+        # TODO create separate ocnstants file?
         self.statusPending = "pending"
         self.statusApproved = "approved"
         self.statusRejected = "rejected"
@@ -76,6 +79,7 @@ class ApiGateway(object):
         # TODO send email
 
     # TODO change status of unsubmitted request to pending?
+    # TODO project number shouldn't be optional?
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @authorizedRoles("student")
@@ -558,6 +562,80 @@ class ApiGateway(object):
                     {'status': self.statusPending},
                     {'status': self.statusApproved}
                 ]}
+            ]}
+        updateQuery = {'_id': ObjectId(myID)}
+        updateRule = {
+            "$set":
+                {'status': self.statusRejected}
+        }
+
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+
+        # TODO send email
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @authorizedRoles("manager")
+    def procurementRejectManager(self):
+        """
+        This REST endpoint changes the status of a procurement request
+        with the effect that a request is permanently rejected and unable
+        to be further edited or considered by any user.
+
+        Expected input::
+
+            {
+                "_id": (string)
+            }
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myID = checkValidID(data)
+        findQuery = {
+            '$and': [
+                {'_id': ObjectId(myID)},
+                {'status': self.statusPending}
+            ]}
+        updateQuery = {'_id': ObjectId(myID)}
+        updateRule = {
+            "$set":
+                {'status': self.statusRejected}
+        }
+
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+
+        # TODO send email
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def procurementRejectAdmin(self):
+        """
+        This REST endpoint changes the status of a procurement request
+        with the effect that a request is permanently rejected and unable
+        to be further edited or considered by any user.
+
+        Expected input::
+
+            {
+                "_id": (string)
+            }
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myID = checkValidID(data)
+        findQuery = {
+            '$and': [
+                {'_id': ObjectId(myID)},
+                {'status': self.statusApproved}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
