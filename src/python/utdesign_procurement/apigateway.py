@@ -639,6 +639,87 @@ class ApiGateway(object):
         return ret
 
     @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    @authorizedRoles("admin")
+    def userData(self):
+        """
+
+        Incoming ::
+        {
+            'sortBy': (string in projectNumbers, firstName, lastName, netID,
+                email, course, role, status)
+                (Optional. Default "email")
+            'order': (string in 'ascending', 'descending')
+                (Optional. Default: "ascending")
+            'pageNumber': (int)
+                (Optional. Default: 0)
+        }
+
+        Outgoing ::
+        [
+            {
+                “projectNumbers”: (list of ints),
+                "firstName": (string),
+                "lastName": (string),
+                "netID": (string),
+                "email": (string),
+                "course": (string),
+                “role”: “student”,
+                “status”: (string), //”current” or “removed”
+            }
+        ]
+
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        sortBy = checkValidData('sortBy', data, str, default='email',
+                                optional=True)
+
+        if sortBy not in ('projectNumbers', 'firstName', 'lastName', 'netID',
+                'email', 'course', 'role', 'status'):
+            raise cherrypy.HTTPError(
+                400, 'sortBy must be any of projectNumbers, firstName, '
+                     'lastName, netID, email, course, role, status. Not %s'
+                     % sortBy)
+
+        order = checkValidData('order', data, str, default='ascending',
+                                optional=True)
+
+        if order not in ('ascending', 'descending'):
+            raise cherrypy.HTTPError(
+                400, 'order must be ascending or descending. Not %s.' % order)
+
+        direction = pm.ASCENDING if order == 'ascending' else pm.DESCENDING
+
+        pageNumber = checkValidData('pageNumber', data, int, default=0,
+                                optional=True)
+
+        pageSize = 10 # TODO stretch goal make this configurable
+
+        userCursor = self.colUsers.find().sort(sortBy, direction)
+
+        retUsers = []
+        for user in userCursor[pageSize*pageNumber: pageSize*(pageNumber+1)]:
+            myUser = dict()
+            for key in ('firstName', 'lastName', 'email', 'status', 'role'):
+                myUser[key] = user[key]
+
+            myUser['netID'] = user.get('netID', '')
+
+            if myUser['role'] != 'admin':
+                for key in ('projectNumbers', 'course'):
+                    myUser[key] = user[key]
+
+            retUsers.append(myUser)
+
+        return retUsers
+
+    @cherrypy.expose
     def userLogout(self):
         """
         Logs out a user by expiring their session.
