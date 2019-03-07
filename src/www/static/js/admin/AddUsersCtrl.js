@@ -1,11 +1,11 @@
 app.controller('AddUsersCtrl', ['$scope', '$location', '$http', '$window', function($scope, $location, $http, $window) {
 
-    $scope.fieldKeys = ["projectNumber", "firstName", "lastName", "netID", "email", "course"];
-    $scope.fields = ["Project Number", "First Name", "Last Name", "NetID", "Email", "Course"];
+    $scope.fieldKeys = ["projectNumbers", "firstName", "lastName", "netID", "email", "course"];
+    $scope.fields = ["Project Number(s)", "First Name", "Last Name", "NetID", "Email", "Course"];
     $scope.grid = [];
     $scope.itemFieldKeys = ["description", "partNo", "quantity", "unitCost", "total"];
     $scope.itemFields = ["Description", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
-    $scope.columns = ["Project Number", "First Name", "Last Name", "NetID", "Email", "Course"];
+    $scope.columns = ["Project Number(s)", "First Name", "Last Name", "NetID", "Email", "Course"];
     $scope.userInfo = {};
 
     $scope.users = [ {
@@ -37,7 +37,12 @@ app.controller('AddUsersCtrl', ['$scope', '$location', '$http', '$window', funct
     $scope.addUser = function(e) {
         var target = e.currentTarget;
 
-        $http.post('/userAdd', {'projectNumbers':Number($scope.userInfo.projectNumber), 'firstName':$scope.userInfo.firstName, 'lastName':$scope.userInfo.lastName, 'netID':$scope.userInfo.netID, 'email':$scope.userInfo.email, 'course':$scope.userInfo.course, 'role':'student'}).then(function(resp) {
+        var prjNumsAry = $scope.userInfo.projectNumbers.replace(' ', '').split(',');
+        for(var n in prjNumsAry) {
+            prjNumsAry[n] = Number(prjNumsAry[n]);
+        }
+
+        $http.post('/userAdd', {'projectNumbers':prjNumsAry, 'firstName':$scope.userInfo.firstName, 'lastName':$scope.userInfo.lastName, 'netID':$scope.userInfo.netID, 'email':$scope.userInfo.email, 'course':$scope.userInfo.course, 'role':'student'}).then(function(resp) {
             console.log("Success", resp);
             alert("Success!");
             $window.location.reload();
