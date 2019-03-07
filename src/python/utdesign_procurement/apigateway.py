@@ -706,6 +706,7 @@ class ApiGateway(object):
         retUsers = []
         for user in userCursor[pageSize*pageNumber: pageSize*(pageNumber+1)]:
             myUser = dict()
+            myUser['_id'] = str(user['_id'])
             for key in ('firstName', 'lastName', 'email', 'status', 'role'):
                 myUser[key] = user[key]
 
