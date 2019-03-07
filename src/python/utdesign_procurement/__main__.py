@@ -2,8 +2,8 @@
 
 import cherrypy, os
 
-from server import Root
-from emailer import fork_emailer
+from utdesign_procurement.server import Root
+from utdesign_procurement.emailer import fork_emailer
 
 def main():
 

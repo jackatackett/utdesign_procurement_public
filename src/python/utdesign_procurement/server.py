@@ -5,8 +5,8 @@ import os
 
 from mako.lookup import TemplateLookup
 
-from apigateway import ApiGateway
-from utils import authorizedRoles
+from utdesign_procurement.apigateway import ApiGateway
+from utdesign_procurement.utils import authorizedRoles
 
 class Root(ApiGateway):
 
