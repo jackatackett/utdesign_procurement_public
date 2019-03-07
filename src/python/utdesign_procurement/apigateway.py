@@ -41,7 +41,7 @@ class ApiGateway(object):
     def procurementRequest(self):
         """
         This REST endpoint takes data as an input as uses the data to create
-        a procurement request.
+        a procurement request and submit it to a technical manager.
 
         Expected input::
 
@@ -80,6 +80,29 @@ class ApiGateway(object):
     @cherrypy.tools.json_in()
     @authorizedRoles("student")
     def procurementSave(self):
+        """
+        This REST endpoint takes data as an input as uses the data to create
+        a procurement request and save it without submitting.
+
+        Expected input::
+
+            {
+                "vendor": (string) optional,
+                "projectNumber": (int or list of int) optional,
+                "URL": (string) optional,
+                "justification": (string) optional,
+                "additionalInfo": (string) optional
+                "items": [
+                    {
+                    "description": (string) optional,
+                    "partNo": (string) optional,
+                    "quantity": (string) optional,
+                    "unitCost": (string) optional,
+                    "totalCost": (number) optional,
+                    }
+                ]
+            }
+            """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
