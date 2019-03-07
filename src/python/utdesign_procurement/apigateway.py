@@ -195,11 +195,13 @@ class ApiGateway(object):
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
-                {'$or': [
-                    {'status': 'pending'},
-                    {'status': 'review'}
-                ]}
-            ]
+                {
+                    '$or': [
+                        {'status': 'updates needed'},
+                        {'status': 'changes needed'},
+                        {'status': 'saved'}
+                ]
+            }
         }
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {'$set':
@@ -212,7 +214,7 @@ class ApiGateway(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
-    @authorizedRoles("manager", "admin")
+    @authorizedRoles("manager")
     def procurementApprove(self):
         """
         This REST endpoint changes the status of a procurement request
@@ -280,7 +282,7 @@ class ApiGateway(object):
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': 'review'}
+                {'status': 'updates needed'}
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -312,7 +314,7 @@ class ApiGateway(object):
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
-                {'status': 'review'}
+                {'status': 'updates needed'}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
@@ -323,6 +325,191 @@ class ApiGateway(object):
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
         # TODO send email
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @authorizedRoles("student")
+    def procurementResubmitToAdmin(self):
+        """
+        This REST endpoint changes the status of a procurement request
+        with the effect that a request that had previously been sent back
+        to the students for changes is now submitted back to the admin.
+
+        Expected input::
+
+            {
+                "_id": (string)
+            }
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myID = checkValidID(data)
+        findQuery = {
+            '$and': [
+                {'_id': ObjectId(myID)},
+                {'status': 'needs changes'}
+            ]}
+        updateQuery = {'_id': ObjectId(myID)}
+        updateRule = {
+            "$set":
+                {'status': 'approved'}
+        }
+
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+
+        # TODO send email
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def procurementNeedsChanges(self):
+        """
+        This REST endpoint changes the status of a procurement request
+        with the effect that a request is sent back to the students who
+        originally submitted it in order to make small changes.
+
+        Expected input::
+
+            {
+                "_id": (string)
+            }
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myID = checkValidID(data)
+        findQuery = {
+            '$and': [
+                {'_id': ObjectId(myID)},
+                {'status': 'approved'}
+            ]}
+        updateQuery = {'_id': ObjectId(myID)}
+        updateRule = {
+            "$set":
+                {'status': 'needs changes'}
+        }
+
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+
+        # TODO send email
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def procurementOrder(self):
+        """
+        This REST endpoint changes the status of a procurement request
+        to reflect that its items have been ordered by an admin.
+
+        Expected input::
+
+            {
+                "_id": (string)
+            }
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myID = checkValidID(data)
+        findQuery = {
+            '$and': [
+                {'_id': ObjectId(myID)},
+                {'status': 'approved'}
+            ]}
+        updateQuery = {'_id': ObjectId(myID)}
+        updateRule = {
+            "$set":
+                {'status': 'ordered'}
+        }
+
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+
+        # TODO send email
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def procurementReady(self):
+        """
+        This REST endpoint changes the status of a procurement request
+        to reflect that its items are ready to be picked up by the students
+        who requested them.
+
+        Expected input::
+
+            {
+                "_id": (string)
+            }
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myID = checkValidID(data)
+        findQuery = {
+            '$and': [
+                {'_id': ObjectId(myID)},
+                {'status': 'ordered'}
+            ]}
+        updateQuery = {'_id': ObjectId(myID)}
+        updateRule = {
+            "$set":
+                {'status': 'ready for pickup'}
+        }
+
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+
+        # TODO send email
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def procurementComplete(self):
+        """
+        This REST endpoint changes the status of a procurement request
+        to reflect that its items have been picked up and no further
+        actions need to be taken.
+
+        Expected input::
+
+            {
+                "_id": (string)
+            }
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myID = checkValidID(data)
+        findQuery = {
+            '$and': [
+                {'_id': ObjectId(myID)},
+                {'status': 'ready for pickup'}
+            ]}
+        updateQuery = {'_id': ObjectId(myID)}
+        updateRule = {
+            "$set":
+                {'status': 'picked up'}
+        }
+
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+
+        # TODO send email
+
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
