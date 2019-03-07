@@ -120,7 +120,7 @@ class ApiGateway(object):
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
         else:
-            data = None
+            data = dict()
 
 
         filters = []
@@ -164,7 +164,8 @@ class ApiGateway(object):
         listRequests = []
         for request in self.colRequests.find(bigFilter):
             request['_id'] = str(request['_id'])
-            del request['timestamp'] #TODO marshal the timestamp properly
+            if 'history' in request:
+                del request['history'] #TODO marshal the timestamp properly
             listRequests.append(request)
 
         return listRequests
