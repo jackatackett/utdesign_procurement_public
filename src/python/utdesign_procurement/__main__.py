@@ -24,7 +24,7 @@ def main():
         '..', '..', 'etc', 'server.conf'))
 
     cherrypy.tree.mount(
-        Root(email_queue, debug=True),
+        Root(email_queue, show_debugger=True),
         '/',
         config=server_config)
 
