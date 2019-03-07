@@ -5,4 +5,4 @@ if [ -d venvProcurement ]; then
 fi
 
 cd src/python
-python3 utdesign_procurement
+python3 -m utdesign_procurement

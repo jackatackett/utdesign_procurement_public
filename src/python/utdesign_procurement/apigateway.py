@@ -6,7 +6,7 @@ import pymongo as pm
 from bson.objectid import ObjectId
 from uuid import uuid4
 
-from utils import authorizedRoles, generateSalt, hashPassword, \
+from utdesign_procurement.utils import authorizedRoles, generateSalt, hashPassword, \
     checkProjectNumbers, checkValidData, checkValidID, checkValidNumber, \
     verifyPassword
 
