@@ -10,7 +10,7 @@ from utdesign_procurement.utils import authorizedRoles, generateSalt, hashPasswo
     checkProjectNumbers, checkValidData, checkValidID, checkValidNumber, \
     verifyPassword, requestCreate
 
-# TODO integrate existing code with these changes
+# TODO integrate existing code with these changes?
 
 class ApiGateway(object):
 
@@ -78,7 +78,7 @@ class ApiGateway(object):
 
         # TODO send email
 
-    # TODO change status of unsubmitted request to pending?
+    # TODO ability to change status of unsubmitted request to pending?
     # TODO project number shouldn't be optional?
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -117,6 +117,8 @@ class ApiGateway(object):
 
         self.colRequests.insert(myRequest)
 
+        # TODO send email?
+
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
@@ -134,9 +136,7 @@ class ApiGateway(object):
             projectNumbers: (int or list of ints, optional),
             URL: (string, optional)
         }
-
         """
-
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
@@ -177,6 +177,7 @@ class ApiGateway(object):
             myURL = checkValidData('URL', data, str)
             filters.append({'URL': {'$eq': myURL}})
 
+        # if list isn't empty
         if filters:
             bigFilter = {'$and': filters}
         else:
@@ -211,6 +212,8 @@ class ApiGateway(object):
             data = cherrypy.request.json
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
+
+        # TODO check this action is allowed
 
         myID = checkValidID(data)
         findQuery = {
@@ -255,6 +258,8 @@ class ApiGateway(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
+        # TODO check this action is allowed
+
         myID = checkValidID(data)
         findQuery = {
             '$and': [
@@ -295,11 +300,7 @@ class ApiGateway(object):
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
-                {
-                    '$or': [
-                        {'status': "approved"},
-                        {'status': "pending"}
-                    ]}
+                {'status': "pending"}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
@@ -331,6 +332,8 @@ class ApiGateway(object):
             data = cherrypy.request.json
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
+
+        # TODO check this action is allowed
 
         myID = checkValidID(data)
         findQuery = {
@@ -368,6 +371,8 @@ class ApiGateway(object):
             data = cherrypy.request.json
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
+
+        # TODO check this action is allowed
 
         myID = checkValidID(data)
         findQuery = {
@@ -554,6 +559,8 @@ class ApiGateway(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
+        # TODO check this action is allowed
+
         myID = checkValidID(data)
         findQuery = {
             '$and': [
@@ -593,6 +600,8 @@ class ApiGateway(object):
             data = cherrypy.request.json
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
+
+        # TODO check this action is allowed
 
         myID = checkValidID(data)
         findQuery = {
@@ -889,6 +898,7 @@ class ApiGateway(object):
         else:
             raise cherrypy.HTTPError(403, 'Invalid email or password.')
 
+    # TODO should this be a rest endpoint?
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @authorizedRoles("student", "manager")
@@ -931,7 +941,7 @@ class ApiGateway(object):
             returns an int
         """
 
-        pageSize = 10 # TODO make this configurable
+        pageSize = 10 # TODO stretch goal make this configurable
         d, m = divmod(self.colUsers.find().count(), pageSize)
         return d+1 if m else d
 
