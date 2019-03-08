@@ -176,6 +176,33 @@ def checkValidID(data):
         raise cherrypy.HTTPError(400, 'data needs object id')
 
 def requestCreate(data, status, optional=False):
+    """
+    Takes data as an input as uses the data to create
+    a procurement request (dict).
+
+    Expected input::
+
+        {
+            "vendor": (string),
+            "projectNumber": (int or list of int),
+            "URL": (string),
+            "justification": (string) optional,
+            "additionalInfo": (string) optional
+            "items": [
+                {
+                "description": (string),
+                "partNo": (string),
+                "quantity": (string),
+                "unitCost": (string),
+                "totalCost": (number),
+                }
+            ]
+        }
+    :param data: a dict containing data to be stored in the request
+    :param status: what will be the initial status of the request?
+    :param optional: if True, all fields of data will be optional
+    :return: procurement request, stored as a dict
+    """
     myRequest = dict()
 
     myRequest['status'] = status
@@ -183,11 +210,11 @@ def requestCreate(data, status, optional=False):
     # mandatory projectNumber
     myRequest['projectNumber'] = checkValidData('projectNumber', data, int, optional)
 
-    # mandatory keys
+    # mandatory keys (unless optional is True)
     for key in ("vendor", "URL"):
         myRequest[key] = checkValidData(key, data, str, optional)
 
-    # optional keys
+    # always optional keys
     for key in ("justification", "additionalInfo"):
         myRequest[key] = checkValidData(key, data, str, True)
 
@@ -199,7 +226,7 @@ def requestCreate(data, status, optional=False):
 
     # iterate through list of items
     for theirDict in theirItems:
-        # theirDict = checkValidData(item, data, dict)
+        # theirDict = checkValidData(item, data, dict) #check dict is actually a dict?
         myDict = dict()
         # iterate through keys of item dict
         for key in ("description", "partNo", "quantity", "unitCost"):
