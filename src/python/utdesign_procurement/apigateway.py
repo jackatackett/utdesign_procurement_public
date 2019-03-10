@@ -46,7 +46,7 @@ class ApiGateway(object):
                     {
                     "description": (string),
                     "partNo": (string),
-                    "quantity": (string),
+                    "quantity": (integer),
                     "unitCost": (string),
                     "totalCost": (number),
                     }
@@ -86,9 +86,9 @@ class ApiGateway(object):
             # theirDict = checkValidData(item, data, dict)
             myDict = dict()
             # iterate through keys of item dict
-            for key in ("description", "partNo", "quantity", "unitCost"):
+            for key in ("description", "partNo", "unitCost", "totalCost"):
                 myDict[key] = checkValidData(key, theirDict, str)
-            myDict['totalCost'] = checkValidNumber("totalCost", theirDict)
+            myDict['quantity'] = checkValidData("quantity", theirDict, int)
             myItems.append(myDict)
 
         myRequest["items"] = myItems
