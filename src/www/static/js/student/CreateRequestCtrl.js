@@ -42,8 +42,8 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', function($sc
             console.log("Success", resp);
             alert("Success!");
         }, function(err) {
-            console.error("Error", err.data)
-            alert("Error");
+            $scope.errorText = "Infrastructure error. Please refresh page. Contact staff if problem persists.";
+            console.error(err);
         });
     }
 

@@ -10,7 +10,8 @@
 
 .errbar {
     background-color: #be2d28;
-    height: 3em;
+    height: 3.2em;
+    overflow: auto;
 }
 
 .errtext {
