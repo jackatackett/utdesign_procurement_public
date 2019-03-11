@@ -84,10 +84,12 @@ $scope.fieldKeys = ["requestNumber", "projectNumber", "status", "vendor", "URL",
             console.log("Success", resp);
             alert("Success!");
             $scope.refreshStatuses();
+            $scope.closeRejectBox();
         }, function(err) {
             console.error("Error", err.data);
             alert("Error");
             $scope.refreshStatuses();
+            $scope.closeRejectBox();
         });
     };
 
@@ -96,10 +98,12 @@ $scope.fieldKeys = ["requestNumber", "projectNumber", "status", "vendor", "URL",
             console.log("Success", resp);
             alert("Success!");
             $scope.refreshStatuses();
+            $scope.closeRejectBox();
         }, function(err) {
             console.error("Error", err.data);
             alert("Error");
             $scope.refreshStatuses();
+            $scope.closeRejectBox();
         });
     };
 
@@ -108,10 +112,12 @@ $scope.fieldKeys = ["requestNumber", "projectNumber", "status", "vendor", "URL",
             console.log("Success", resp);
             alert("Success!");
             $scope.refreshStatuses();
+            $scope.closeRejectBox();
         }, function(err) {
             console.error("Error", err.data);
             alert("Error");
             $scope.refreshStatuses();
+            $scope.closeRejectBox();
         });
     };
 
