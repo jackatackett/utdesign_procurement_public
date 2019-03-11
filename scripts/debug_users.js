@@ -161,9 +161,9 @@ db.projects.insert({
     "sponsorName": "sponsor2",
     "projectName": "project3",
     "membersEmails": ["manager2@utdallas.edu", "student3@utdallas.edu"],
-    "defaultBudget": 150050,
-    "availableBudget": 150050,
-    "pendingBudget": 150050
+    "defaultBudget": 100000,
+    "availableBudget": 100000,
+    "pendingBudget": 100000
 })
 
 db.requests.insert({
@@ -225,4 +225,20 @@ db.requests.insert({
 db.sequence.insert({
     "name" : "requests",
     "number" : 3
+})
+
+db.costs.insert({
+    "type": "shipping",
+    "amount": 1000,
+    "comment": "shipping cost for item1 from vendor2",
+    "actor": "admin@utdallas.edu",
+    "projectNumber": 844
+})
+
+db.costs.insert({
+    "type": "refund",
+    "amount": 1000,
+    "comment": "test",
+    "actor": "admin@utdallas.edu",
+    "projectNumber": 844
 })

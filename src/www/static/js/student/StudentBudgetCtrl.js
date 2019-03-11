@@ -1,6 +1,6 @@
-app.controller('StudentBudgetCtrl', ['$scope', function($scope, $http) {
+app.controller('StudentBudgetCtrl', ['$scope', '$location', '$http', '$window', function($scope, $location, $http, $window) {
     console.log("budget");
-
+/*
     $scope.fieldKeys = ["status", "vendor", "URL", "justification", "additionalInfo", "cost"];
     $scope.fields = ["Status", "Vendor", "URL", "Justification", "Additional Info", "Cost"];
     $scope.grid = [];
@@ -10,45 +10,60 @@ app.controller('StudentBudgetCtrl', ['$scope', function($scope, $http) {
     $scope.maxBudget = 2000.00;             //need to pull this from a defaults list
 
     $scope.data = [ {
-                        projectNumber: 123,
-                        status: "pending",
-                        vendor: "Home Depot",
-                        URL: "homedepot.com",
-                        justification: "Because he told me toooooo",
-                        additionalInfo: "He is Plankton",
-                        items: [ {
-                                description: "A big thing",
-                                partNo: "9001",
-                                quantity: "25",
-                                unitCost: "1000000000",
-                                total: "25000000000"
+                        "vendor" : "Bunning's warehouse",
+                        "URL" : "https://www.bunnings.com.au/",
+                        "justification" : "They're fluffy!",
+                        "status" : "pending",
+                        "projectNumber" : 844,
+                        "additionalInfo" : "I want them",
+                        "items" : [
+                            {
+                                "description" : "Bunny",
+                                "partNo" : "1",
+                                "quantity" : 2,
+                                "unitCost" : 642,
+                                "totalCost" : 1284,
+                                "itemURL" : "bunnyurl"
                             },
                             {
-                                description: "A small thing",
-                                partNo: "9002",
-                                quantity: "250",
-                                unitCost: "10",
-                                total: "2500"
+                                "description" : "Squirrel",
+                                "partNo" : "2",
+                                "quantity" : 1,
+                                "unitCost" : 432,
+                                "totalCost" : 432,
+                                "itemURL" : "squirrelurl"
                             }
                         ],
-                        cost: 5     //is this stored in the database? if not, need to calculate it: needs to include shipping/taxes/etc if needed
+                        "requestTotal" : 1716,
+                        "history" : [ ]
                     },
                     {
-                        projectNumber: 124,
-                        status: "approved",
-                        vendor: "The Plastic Store",
-                        URL: "gmail.com",
-                        justification: "O Captain, My Captain",
-                        additionalInfo: "He is dead, Jim",
-                        items: [ {
-                                description: "A hunk of plastic",
-                                partNo: "9003",
-                                quantity: "1",
-                                unitCost: "10",
-                                total: "10"
+                        "vendor" : "vendor2",
+                        "URL" : "requestor2URL",
+                        "justification" : "",
+                        "status" : "approved",
+                        "projectNumber" : 844,
+                        "additionalInfo" : "",
+                        "items" : [
+                            {
+                                "description" : "item1",
+                                "partNo" : "part2",
+                                "quantity" : 3,
+                                "unitCost" : 600,
+                                "totalCost" : 900,
+                                "itemURL" : "item1url"
                             }
                         ],
-                        cost: 10
+                        "requestTotal" : 900,
+                        "history" : [
+                            {
+                                "actor" : "manager@utdallas.edu",
+                                "timestamp" : "2019-03-01T15:00:00Z",
+                                "comment" : "approved",
+                                "oldState" : "pending",
+                                "newState" : "approved"
+                            }
+                        ]
                     }
                   ]
 
@@ -87,5 +102,140 @@ app.controller('StudentBudgetCtrl', ['$scope', function($scope, $http) {
 
     $scope.getPendingStr = function() {
         return "$" + $scope.getPending();
+    };
+
+    console.log($scope);
+    * */
+
+    function convertCosts(value) {
+        value = String(value);
+        return value.slice(0, -2) + "." + value.slice(value.length-2);
+    }
+
+    var numProjects = -1;   //TODO: what happens if this is 0 or -1?
+    
+    //~ var currentProj = projectData[0]["projectNumber"]    //used to select which tab is shown
+    var currentProj = 0   //used to select which tab is shown
+
+    $scope.requestKeys = ["status", "vendor", "requestTotal"];
+    $scope.requestFields = ["Status", "Vendor", "Cost"];
+
+    $scope.costKeys = ["type", "comment", "amount"];
+    $scope.costFields = ["Type", "Comment", "Amount"];
+
+    $scope.curRequestData = [];
+    $scope.curCostData = [];
+    
+    var procurementData = [];
+    
+    var costData = [];
+    
+    $scope.projects = []
+
+    var projectData = [];
+    $http.post('/findProject', {}).then(function(resp) {
+        console.log("Project Success", resp);
+        projectData = resp.data;
+
+        numProjects = projectData.length;
+        console.log("number projects: " + numProjects);
+
+        for (var pr in projectData) {
+            var tempData = {}
+            tempData["number"] = projectData[pr]["projectNumber"];
+            tempData["name"] = projectData[pr]["projectName"];
+            $scope.projects.push(tempData);
+            //~ $scope.projects.push({"number": pr["projectNumber"], "name": pr["projectName"]});
+        }
+        console.log("project mapping:");
+        console.log($scope.projects);
+    }, function(err) {
+        console.error("Project Error", err.data)
+    }).then(function(resp) {
+        $http.post('/procurementStatuses', {}).then(function(resp) {
+            console.log("Status Success", resp);
+            procurementData = resp.data;
+            filterRequests();
+            console.log("current requests:");
+            console.log($scope.curRequestData);
+        }, function(err) {
+            console.error("Status Error", err.data);
+        });
+    }).then(function(resp) {
+        $http.post('/getCosts', {}).then(function(resp) {
+            console.log("Costs Success", resp);
+            costData = resp.data;
+            filterCosts();
+        }, function(err) {
+            console.error("Costs Error", err.data);
+        });
+    });
+
+    function filterRequests() {
+        $scope.curRequestData = [];
+        for (var req in procurementData) {
+            procurementData[req]["requestTotal"] = "-$" + convertCosts(procurementData[req]["requestTotal"]);
+            if (procurementData[req]["projectNumber"] == $scope.projects[currentProj]["number"]) {
+                $scope.curRequestData.push(procurementData[req]);
+            }
+        }
+    }
+
+    function filterCosts() {
+        $scope.curCostData = [];
+        for (var co in costData) {
+            if (costData[co]["type"] == "refund") {
+                costData[co]["amount"] = "+$" + convertCosts(costData[co]["amount"]);
+            }
+            else {
+                costData[co]["amount"] = "-$" + convertCosts(costData[co]["amount"]);
+            }
+            if (costData[co]["projectNumber"] == $scope.projects[currentProj]["number"]) {
+                $scope.curCostData.push(costData[co]);
+            }
+        }
+    }
+    
+    $scope.getMaxBudgetStr = function() {
+        //~ console.log(projectData);
+        if (numProjects > 0) {
+            return "$" + convertCosts(projectData[currentProj]["defaultBudget"]);
+        }
+        return "$0";
+    };
+
+    $scope.getTotalStr = function() {
+        if (numProjects > 0) {
+            return "$" + convertCosts(projectData[currentProj]["availableBudget"]);
+        }
+        return "$0";
+    };
+
+    $scope.getPendingStr = function() {
+        if (numProjects > 0) {
+            return "$" + convertCosts(projectData[currentProj]["pendingBudget"]);
+        }
+        return "$0";
+    };
+
+    $scope.regenerateTable = function(e) {
+        var targ = e.target.id.substring(6, e.target.id.length);
+        currentProj = targ;
+        filterRequests();
+        filterCosts();
+        
+        /*if (targ == "All") {        //taken from old manager code; "All" should only be for manager
+            $scope.data = $scope.allData;
+            $("#currentGroupBudget").hide();
+        }
+        else {
+            $("#currentGroupBudget").show();
+            $scope.data = [];
+            for (var i = 0; i < $scope.allData.length; i++) {
+                if ($scope.allData[i]["projectID"] == $scope.teams[targ]) {
+                    $scope.data.push($scope.allData[i]);
+                }
+            }
+        }*/
     };
 }]);

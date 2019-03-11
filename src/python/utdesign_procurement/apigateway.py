@@ -25,6 +25,8 @@ class ApiGateway(object):
         self.colRequests = db['requests']
         self.colUsers = db['users']
         self.colInvitations = db['invitations']
+        self.costs = db['costs']
+        self.projects = db['projects']
 
         self.colSequence = db['sequence']
 
@@ -176,7 +178,6 @@ class ApiGateway(object):
         }
 
         If the user is a manager, they will not be able to see "saved" requests
-
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -229,8 +230,12 @@ class ApiGateway(object):
         else:
             bigFilter = {}
 
+        print("whoami:", cherrypy.session['role'])
+        print("filtering on:", bigFilter)
+
         listRequests = []
         for request in self.colRequests.find(bigFilter):
+            print(request)
             request['_id'] = str(request['_id'])
             if 'history' in request:
                 for hist in range(len(request['history'])):
@@ -766,6 +771,172 @@ class ApiGateway(object):
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
         # TODO send email
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def addCost(self):
+        """
+        This adds a cost (refund, reimbursement, or shipping) to a project, and can only be done by the admin
+        {
+            projectNumber: (int)
+        }
+        """
+
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        raise cherrypy.HTTPError(101, "not yet implemented")
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    @authorizedRoles("student", "manager", "admin")
+    def getCosts(self):
+        """
+        This returns all the costs associated with project numbers.
+        {
+            projectNumbers: (list of ints, optional)
+        }
+        """
+
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            data = dict()
+
+        validNum = []
+        result = []
+        if 'projectNumbers' in data:
+            # if not admin, find only authorized projects
+            if cherrypy.session['role'] == 'admin':
+                validNum = data['projectNumbers']
+            else:
+                for pNum in data['projectNumbers']:
+                    if pNum in cherrypy.session['projectNumbers']:
+                        validNum.append(pNum)
+
+            for project in validNum:
+                for res in self.costs.find({'projectNumber': project}):
+                    res['_id'] = str(res['_id'])
+                    result.append(res)
+            return result
+        else:
+            if cherrypy.session['role'] != 'admin':
+                validNum = cherrypy.session['projectNumbers']
+                for project in validNum:
+                    for res in self.costs.find({'projectNumber': project}):
+                        res['_id'] = str(res['_id'])
+                        result.append(res)
+                return result
+            else:   # is admin
+                for res in self.costs.find({}):
+                    res['_id'] = str(res['_id'])
+                    result.append(res)
+                return result
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def addProject(self):
+        """
+        This adds a project, and can only be done by the admin.
+        {
+            “projectNumber”: (int),
+            “sponsorName”: (string),
+            “projectName”: (string),
+            “membersEmails: [(string), …],
+            “defaultBudget”: (int),
+            “availableBudget”: (int),
+            “pendingBudget”: (int)
+        }
+        """
+
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        raise cherrypy.HTTPError(101, "not yet implemented")
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    @authorizedRoles("student", "manager", "admin")
+    def findProject(self):
+        """
+        This finds all projects with the given project numbers. If none given, then all authorized projects are returned.
+        {
+            projectNumbers: (list of ints, optional)
+        }
+        """
+
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            data = dict()
+
+        validNum = []
+        result = []
+        if 'projectNumbers' in data:
+            # if not admin, find only authorized projects
+            if cherrypy.session['role'] == 'admin':
+                validNum = data['projectNumbers']
+            else:
+                for pNum in data['projectNumbers']:
+                    if pNum in cherrypy.session['projectNumbers']:
+                        validNum.append(pNum)
+
+            for project in validNum:
+                for res in self.projects.find({'projectNumber': project}):
+                    res['_id'] = str(res['_id'])
+                    result.append(res)
+            return result
+        else:
+            if cherrypy.session['role'] != 'admin':
+                validNum = cherrypy.session['projectNumbers']
+                for project in validNum:
+                    for res in self.projects.find({'projectNumber': project}):
+                        res['_id'] = str(res['_id'])
+                        result.append(res)
+                return result
+            else:   # is admin
+                for res in self.projects.find({}):
+                    res['_id'] = str(res['_id'])
+                    result.append(res)
+                return result
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def modifyProject(self):
+        """
+        This changes a project's values. It can only be done by an admin.
+        Changing the budget will 
+        {
+            projectNumber: (int),
+            sponsorName: (string, optional),
+            projectName: (string, optional),
+            membersEmails: [(string), …, optional]
+        }
+        """
+
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            data = dict()
+
+        raise cherrypy.HTTPError(101, "not yet implemented")
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
