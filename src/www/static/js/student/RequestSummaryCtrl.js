@@ -1,10 +1,10 @@
-app.controller('RequestSummaryCtrl', ['$scope', '$http', function($scope, $http) {
+app.controller('RequestSummaryCtrl', ['$scope', '$http', '$location', 'dispatcher', function($scope, $http, $location, dispatcher) {
 
-    $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification", "additionalInfo"];
-    $scope.fields = ["Project Number", "Status", "Vendor", "URL", "Justification", "Additional Info"];
+    $scope.fieldKeys = ["projectNumber", "manager", "status", "vendor", "URL", "justification", "additionalInfo"];
+    $scope.fields = ["Project Number", "Assigned Manager Email", "Status", "Vendor", "URL", "Justification", "Additional Info"];
     $scope.grid = [];
-    $scope.itemFieldKeys = ["description", "partNo", "quantity", "unitCost", "total"];
-    $scope.itemFields = ["Description", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
+    $scope.itemFieldKeys = ["description", "itemURL", "partNo", "quantity", "unitCost", "total"];
+    $scope.itemFields = ["Description", "Item URL", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
 
     $scope.data = [ {
                         projectNumber: 123,
@@ -51,6 +51,16 @@ app.controller('RequestSummaryCtrl', ['$scope', '$http', function($scope, $http)
         var target = e.currentTarget;
         $(target.nextElementSibling).toggle();
     };
+
+    $scope.editRequest = function(request) {
+        console.log("editRequest", request);
+        dispatcher.publish('editRequest', request);
+        $location.hash('create');
+    }
+
+    $scope.canEdit = function(status) {
+        return status == "saved" || status == "updates for manager" || status == "updates for admin";
+    }
 
     $http.post('/procurementStatuses', {}).then(function(resp) {
         console.log("procurementStatuses success", resp)

@@ -1,9 +1,10 @@
-app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', function($scope, $http, $timeout) {
+app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher', function($scope, $http, $timeout, dispatcher) {
 
     $scope.errorText = "";
     $scope.projectNumbers = [];
-    $scope.fieldKeys = ["description", "partNo", "quantity", "unitCost", "totalCost"];
-    $scope.fields = ["Description", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
+    $scope.projectManagers = [];
+    $scope.fieldKeys = ["description", "itemURL", "partNo", "quantity", "unitCost", "totalCost"];
+    $scope.fields = ["Description", "Item URL", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
     $scope.request = {
         vendor: '',
         URL: '',
@@ -26,10 +27,13 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', function($sc
     }
 
     /**
-        Submits $scope.request to the /procurementRequest REST endpoint
-        if the $scope.request is valid.
+        Saves $scope.request with the /procurementSave REST endpoint
+        with the submit flag False.
+
+        If the $scope.request is invalid, a warning is shown and the
+        request is not submitted.
     */
-    $scope.makeRequest = function() {
+    $scope.saveRequest = function(submit) {
 
         // validate and format the request
         if (!validateRequest()) {
@@ -37,8 +41,11 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', function($sc
         }
         formatRequest();
 
+        // set the submit flag true or false
+        $scope.request.submit = submit;
+
         // send the request to the REST endpoint
-        $http.post('/procurementRequest', $scope.request).then(function(resp) {
+        $http.post('/procurementSave', $scope.request).then(function(resp) {
             console.log("Success", resp);
             alert("Success!");
         }, function(err) {
@@ -73,6 +80,12 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', function($sc
             //no empty description
             if (!item.description || item.description.trim().length == 0) {
                 $scope.errorText = "Description should not be empty in item " + (x+1);
+                return false;
+            }
+
+            //no empty description
+            if (!item.itemURL || item.itemURL .trim().length == 0) {
+                $scope.errorText = "Item URL should not be empty in item " + (x+1);
                 return false;
             }
 
@@ -146,5 +159,32 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', function($sc
     }, function(err) {
         console.error(err);
     });
+
+    $scope.refreshManagers = function() {
+        var projectNumber = $scope.request.projectNumber;
+        if (projectNumber && projectNumber != -1) {
+            $http.post('/managerList', {projectNumber: projectNumber}).then(function(resp) {
+                $scope.projectManagers = resp.data;
+                $scope.errorText = "";
+            }, function(err) {
+                console.error(err);
+                $scope.errorText = "Unable to find managers for project number " + projectNumber;
+            });
+        }
+    }
+
+    $scope.newRequest = function() {
+        $scope.request = {
+            vendor: '',
+            URL: '',
+            projectNumber: -1,
+            items: []
+        };
+    }
+
+    dispatcher.subscribe('editRequest', function(request) {
+        $scope.request = request;
+        $scope.refreshManagers();
+    })
 
 }]);
