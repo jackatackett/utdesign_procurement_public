@@ -43,6 +43,7 @@ class ApiGateway(object):
 
             {
                 "submit": (Boolean),
+                "requestNumber": (int) optional,
                 "manager": (string), //email of manager who can approve this
                 "vendor": (string),
                 "projectNumber": (int or list of int),
@@ -76,11 +77,15 @@ class ApiGateway(object):
             status = "saved"
             optional = True
 
+        if "requestNumber" in data:
+            myRequestNumber = data["requestNumber"]
+        else:
+            myRequestNumber = self.sequence()
+
         myRequest = requestCreate(data, status, optional)
+        myRequest['requestNumber'] = myRequestNumber
 
-        myRequest['requestNumber'] = self.sequence()
-
-        query = {"requestNumber": myRequest["requestNumber"]}
+        query = {"requestNumber": myRequestNumber}
 
         # insert the data into the database
         self.colRequests.replace_one(query, myRequest, upsert=True)
@@ -95,7 +100,12 @@ class ApiGateway(object):
         """
 
         query = {"name": "requests"}
-        current = self.colSequence.find(query)
+        current = self.colSequence.find_one(query)
+
+        if not current or 'number' not in current:
+            raise cherrypy.HTTPError(500, "Fatal error! No sequence found for requests.")
+
+        current = current['number']
 
         updateRule = {"$set":
                           {"number": current + 1}
