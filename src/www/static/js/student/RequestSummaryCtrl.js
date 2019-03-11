@@ -67,9 +67,11 @@ app.controller('RequestSummaryCtrl', ['$scope', '$http', '$location', '$timeout'
             $http.post('/procurementCancel', {_id: request._id}).then(function(resp) {
                 console.log(resp);
                 alert("Success!");
+                $scope.refreshStatuses();
             }, function(err) {
                 console.error(err);
-                alert("Error!")
+                alert("Error!");
+                $scope.refreshStatuses();
             })
         } else {
             console.error("Cancel Request cannot proceed without _id. See:", request);
