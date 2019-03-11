@@ -82,7 +82,7 @@ class ApiGateway(object):
         if mySubmit:
             status = "pending"
             optional = False
-        else
+        else:
             status = "saved"
             optional = True
 
@@ -92,6 +92,46 @@ class ApiGateway(object):
         self.colRequests.insert(myRequest)
 
         # TODO send email
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @authorizedRoles("student")
+    def managerList(self):
+        """
+        Takes a projectNumber and returns a list of technical managers who
+        are assigned to that project
+
+        Expected input::
+
+            {
+                "projectNumber": (int)
+            }
+        :return:
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myProjectNumber = checkValidNumber("projectNumber", data)
+
+        if myProjectNumber not in cherrypy.session['projectNumbers']:
+            raise cherrypy.HTTPError(403, "invalid projectNumber")
+
+        query = {
+            "$and": [
+                {"role": "manager"},
+                {"projectNumbers": myProjectNumber}
+            ]
+        }
+
+        managers = []
+
+        for man in self.colUsers.find(query):
+            managers.append(man['email'])
+
+        return managers
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
