@@ -280,7 +280,7 @@ class ApiGateway(object):
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @authorizedRoles("manager")
-    def procurementManagerApprove(self):
+    def procurementApproveManager(self):
         """
         This REST endpoint changes the status of a procurement request
         with the effect that a status submitted to the technical manager
@@ -470,7 +470,7 @@ class ApiGateway(object):
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @authorizedRoles("admin")
-    def procurementAdminApprove(self):
+    def procurementApproveAdmin(self):
         """
         This REST endpoint changes the status of a procurement request
         to reflect that its items have been ordered by an admin.
