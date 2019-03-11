@@ -10,13 +10,10 @@
 
             <tr ng-repeat-start="dict in data" ng-click="toggleCollapse($event)">
                 <td ng-repeat="fieldK in fieldKeys">{{dict[fieldK]}}</td>
-                <td style="height: inherit; padding: 0px; vertical-align: middle;">
-                    <button type="button" class="btn btn-secondary" ng-click="editRequest(dict)" ng-if="canEdit(dict.status)"> Edit </button>
-                </td>
             </tr>
 
-            <tr ng-repeat-end  style="background-color: #999">
-                <td colspan="7" style="padding: 0px;">
+            <tr ng-repeat-end  style="background-color: #999; display: none;">
+                <td colspan="8" style="padding: 0px;">
                     <table class="table table-bordered" style="margin-bottom: 0px; margin-left: 10px; width: calc(100% - 10px);">
                         <tr style="border-bottom: 1.5px solid black">
                             <td scope="col" style="background-color: #eee;">#</td>
@@ -32,6 +29,15 @@
                             </td>
 
                         </tr>
+
+                        <tr>
+                            <td colspan = "8" style="text-align:center">
+                                <button type="button" class="btn btn-success col-md-3" ng-click="editRequest(dict)" ng-if="canEdit(dict.status)"> Edit </button>
+                                <button type="button" class="btn btn-secondary col-md-3" ng-click="cloneRequest(dict)"> Clone </button>
+                                <button type="button" class="btn btn-danger col-md-3" ng-click="cancelRequest(dict)"  ng-if="canEdit(dict.status)"> Cancel </button>
+                            </td>
+                        </tr>
+
                     </table>
                 </td>
             </tr>

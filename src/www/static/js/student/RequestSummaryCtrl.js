@@ -1,7 +1,7 @@
-app.controller('RequestSummaryCtrl', ['$scope', '$http', '$location', 'dispatcher', function($scope, $http, $location, dispatcher) {
+app.controller('RequestSummaryCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatcher', function($scope, $http, $location, $timeout, dispatcher) {
 
-    $scope.fieldKeys = ["projectNumber", "manager", "status", "vendor", "URL", "justification", "additionalInfo"];
-    $scope.fields = ["Project Number", "Assigned Manager Email", "Status", "Vendor", "URL", "Justification", "Additional Info"];
+    $scope.fieldKeys = ["requestNumber", "projectNumber", "manager", "status", "vendor", "URL", "justification", "additionalInfo"];
+    $scope.fields = ["Request Number", "Project Number", "Assigned Manager Email", "Status", "Vendor", "URL", "Justification", "Additional Info"];
     $scope.grid = [];
     $scope.itemFieldKeys = ["description", "itemURL", "partNo", "quantity", "unitCost", "total"];
     $scope.itemFields = ["Description", "Item URL", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
@@ -53,20 +53,45 @@ app.controller('RequestSummaryCtrl', ['$scope', '$http', '$location', 'dispatche
     };
 
     $scope.editRequest = function(request) {
-        console.log("editRequest", request);
         dispatcher.publish('editRequest', request);
         $location.hash('create');
+    }
+
+    $scope.cloneRequest = function(request) {
+        dispatcher.publish('cloneRequest', request);
+        $location.hash('create');
+    }
+
+    $scope.cancelRequest = function(request) {
+        if (request._id) {
+            $http.post('/procurementCancel', {_id: request._id}).then(function(resp) {
+                console.log(resp);
+                alert("Success!");
+            }, function(err) {
+                console.error(err);
+                alert("Error!")
+            })
+        } else {
+            console.error("Cancel Request cannot proceed without _id. See:", request);
+            alert("Cancel Request cannot proceed without _id.");
+        }
     }
 
     $scope.canEdit = function(status) {
         return status == "saved" || status == "updates for manager" || status == "updates for admin";
     }
 
-    $http.post('/procurementStatuses', {}).then(function(resp) {
-        console.log("procurementStatuses success", resp)
-        $scope.data = resp.data;
-    }, function(err) {
-        console.error("Error", err.data)
-    });
+    $scope.refreshStatuses = function() {
+        $http.post('/procurementStatuses', {}).then(function(resp) {
+            console.log("procurementStatuses success", resp)
+            $scope.data = resp.data;
+        }, function(err) {
+            console.error("Error", err.data)
+        });
+    }
+
+    $timeout(0, $scope.refreshStatuses())
+
+    dispatcher.subscribe("refreshStatuses", $scope.refreshStatuses);
 
 }]);

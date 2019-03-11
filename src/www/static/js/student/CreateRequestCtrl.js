@@ -189,6 +189,11 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher'
         $scope.refreshManagers();
     })
 
+    dispatcher.subscribe('cloneRequest', function(request) {
+        //deep copy the request
+        request = JSON.parse(JSON.stringify(request));
+        delete request.requestNumber;
+        delete request.status;
         $scope.request = request;
         $scope.refreshManagers();
     })
