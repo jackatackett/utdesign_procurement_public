@@ -221,6 +221,7 @@ class ApiGateway(object):
         # managers should not see saved things
         if cherrypy.session['role'] == 'manager':
             filters.append({'status': {'$ne': 'saved'}})
+            filters.append({'status': {'$ne': 'cancelled'}})
 
         # if list isn't empty
         if filters:
