@@ -217,3 +217,8 @@ db.requests.insert({
         "newState": "approved"
     }]
 })
+
+db.sequence.insert({
+    "name" : "requests",
+    "number" : 1
+})
