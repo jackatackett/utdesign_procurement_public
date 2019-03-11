@@ -73,6 +73,48 @@ $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification",
         });
     };
 
+        $scope.rejectRequest = function(e, rowIdx) {
+        $("#rejectModal").show();
+        currentRow = rowIdx;
+    };
+
+    $scope.permanentReject = function(e) {
+        $http.post('/procurementRejectAdmin', {'_id':$scope.data[currentRow]._id}).then(function(resp) {
+            console.log("Success", resp);
+            alert("Success!");
+            $window.location.reload();
+        }, function(err) {
+            console.error("Error", err.data)
+            alert("Error")
+        });
+    };
+
+    $scope.sendForUpdatesAdmin = function(e) {
+        $http.post('/procurementUpdateAdmin', {'_id':$scope.data[currentRow]._id}).then(function(resp) {
+            console.log("Success", resp);
+            alert("Success!");
+            $window.location.reload();
+        }, function(err) {
+            console.error("Error", err.data)
+            alert("Error")
+        });
+    };
+
+    $scope.sendForUpdatesManagerAdmin = function(e) {
+        $http.post('/procurementUpdateManagerAdmin', {'_id':$scope.data[currentRow]._id}).then(function(resp) {
+            console.log("Success", resp);
+            alert("Success!");
+            $window.location.reload();
+        }, function(err) {
+            console.error("Error", err.data)
+            alert("Error")
+        });
+    };
+
+    $scope.closeRejectBox = function(e) {
+        $("#rejectModal").hide();
+    };
+
     $scope.orderRequest = function(e, rowIdx) {
         console.log($scope.data);
         console.log(rowIdx);
