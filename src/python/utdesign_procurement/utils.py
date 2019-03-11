@@ -200,7 +200,7 @@ def requestCreate(data, status, optional=False):
         }
     :param data: a dict containing data to be stored in the request
     :param status: what will be the initial status of the request?
-    :param optional: if True, all fields of data will be optional
+    :param optional: if True, all fields of data except procjectNumber will be optional
     :return: procurement request, stored as a dict
     """
     myRequest = dict()
@@ -208,7 +208,7 @@ def requestCreate(data, status, optional=False):
     myRequest['status'] = status
 
     # mandatory projectNumber
-    myRequest['projectNumber'] = checkValidData('projectNumber', data, int, optional)
+    myRequest['projectNumber'] = checkValidData('projectNumber', data, int)
 
     # mandatory keys (unless optional is True)
     for key in ("vendor", "URL"):
