@@ -183,6 +183,12 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher'
     }
 
     dispatcher.subscribe('editRequest', function(request) {
+        //deep copy the request
+        $scope.request = JSON.parse(JSON.stringify(request));
+        delete $scope.request.status;
+        $scope.refreshManagers();
+    })
+
         $scope.request = request;
         $scope.refreshManagers();
     })
