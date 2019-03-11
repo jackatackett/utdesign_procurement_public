@@ -186,6 +186,7 @@ def requestCreate(data, status, optional=False):
     Expected input::
 
         {
+            "manager": (string), //email of manager who can approve this
             "vendor": (string),
             "projectNumber": (int or list of int),
             "URL": (string),
@@ -195,9 +196,10 @@ def requestCreate(data, status, optional=False):
                 {
                 "description": (string),
                 "partNo": (string),
+                "itemURL": (string),
                 "quantity": (string),
                 "unitCost": (string),
-                "totalCost": (number),
+                "totalCost": (number)
                 }
             ]
         }
@@ -214,8 +216,9 @@ def requestCreate(data, status, optional=False):
     myRequest['projectNumber'] = checkValidData('projectNumber', data, int)
 
     # mandatory keys (unless optional is True)
-    for key in ("vendor", "URL"):
+    for key in ("manager", "vendor", "URL"):
         myRequest[key] = checkValidData(key, data, str, optional)
+    # TODO check valid manager (is submitted to correct manager for project, check that email exists)
 
     # always optional keys
     for key in ("justification", "additionalInfo"):
@@ -232,7 +235,7 @@ def requestCreate(data, status, optional=False):
         # theirDict = checkValidData(item, data, dict) #check dict is actually a dict?
         myDict = dict()
         # iterate through keys of item dict
-        for key in ("description", "partNo", "quantity", "unitCost"):
+        for key in ("description", "partNo", "itemURL", "quantity", "unitCost"):
             myDict[key] = checkValidData(key, theirDict, str, optional)
         myDict['totalCost'] = checkValidNumber("totalCost", theirDict, optional)
         myItems.append(myDict)

@@ -43,14 +43,17 @@ class ApiGateway(object):
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @authorizedRoles("student")
-    def procurementRequest(self):
+    def procurementSave(self):
         """
         This REST endpoint takes data as an input as uses the data to create
-        a procurement request and submit it to a technical manager.
+        a procurement request and save it to the database. If the submit flag
+        is true, the request will be submitted to the TM, and if not, it won't.
 
         Expected input::
 
             {
+                "submit": (Boolean),
+                "manager": (string), //email of manager who can approve this
                 "vendor": (string),
                 "projectNumber": (int or list of int),
                 "URL": (string),
@@ -60,9 +63,10 @@ class ApiGateway(object):
                     {
                     "description": (string),
                     "partNo": (string),
+                    "itemURL": (string),
                     "quantity": (integer),
                     "unitCost": (string),
-                    "totalCost": (number),
+                    "totalCost": (number)
                     }
                 ]
             }
@@ -73,53 +77,21 @@ class ApiGateway(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        myRequest = requestCreate(data, status="pending")
+        mySubmit = checkValidData("submit", data, bool)
+
+        if mySubmit:
+            status = "pending"
+            optional = False
+        else
+            status = "saved"
+            optional = True
+
+        myRequest = requestCreate(data, status, optional)
 
         # insert the data into the database
         self.colRequests.insert(myRequest)
 
         # TODO send email
-
-    # TODO ability to change status of unsubmitted request to pending?
-    # TODO project number shouldn't be optional?
-    @cherrypy.expose
-    @cherrypy.tools.json_in()
-    @authorizedRoles("student")
-    def procurementSave(self):
-        """
-        This REST endpoint takes data as an input as uses the data to create
-        a procurement request and save it without submitting.
-
-        Expected input::
-
-            {
-                "vendor": (string) optional,
-                "projectNumber": (int or list of int) optional,
-                "URL": (string) optional,
-                "justification": (string) optional,
-                "additionalInfo": (string) optional
-                "items": [
-                    {
-                    "description": (string) optional,
-                    "partNo": (string) optional,
-                    "quantity": (string) optional,
-                    "unitCost": (string) optional,
-                    "totalCost": (number) optional,
-                    }
-                ]
-            }
-            """
-        # check that we actually have json
-        if hasattr(cherrypy.request, 'json'):
-            data = cherrypy.request.json
-        else:
-            raise cherrypy.HTTPError(400, 'No data was given')
-
-        myRequest = requestCreate(data, status="saved", optional=True)
-
-        self.colRequests.insert(myRequest)
-
-        # TODO send email?
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -225,8 +197,8 @@ class ApiGateway(object):
                 {'_id': ObjectId(myID)},
                 {
                     '$or': [
-                        {'status': "needs updates"},
-                        {'status': "needs changes"},
+                        {'status': "updates for manager"},
+                        {'status': "updates for admin"},
                         {'status': "saved"}
                     ]
                 }
@@ -244,7 +216,7 @@ class ApiGateway(object):
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @authorizedRoles("manager")
-    def procurementApprove(self):
+    def procurementManagerApprove(self):
         """
         This REST endpoint changes the status of a procurement request
         with the effect that a status submitted to the technical manager
@@ -273,7 +245,7 @@ class ApiGateway(object):
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             '$set':
-                {'status': "approved"}
+                {'status': "manager approved"}
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -282,7 +254,7 @@ class ApiGateway(object):
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
     @authorizedRoles("manager")
-    def procurementReview(self):
+    def procurementUpdateManager(self):
         """
         This REST endpoint changes the status of a procurement request
         with the effect that the students who originally submitted it may
@@ -309,7 +281,7 @@ class ApiGateway(object):
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': "needs updates"}
+                {'status': "updates for manager"}
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -318,7 +290,7 @@ class ApiGateway(object):
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
     @authorizedRoles("student")
-    def procurementResubmit(self):
+    def procurementResubmitToManager(self):
         """
         This REST endpoint changes the status of a procurement request
         with the effect that a request that had previously been sent back
@@ -343,7 +315,7 @@ class ApiGateway(object):
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
-                {'status': "needs updates"}
+                {'status': "updates for manager"}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
@@ -382,12 +354,12 @@ class ApiGateway(object):
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
-                {'status': "needs changes"}
+                {'status': "updates for admin"}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': "approved"}
+                {'status': "manager approved"}
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -397,7 +369,7 @@ class ApiGateway(object):
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @authorizedRoles("admin")
-    def procurementNeedsChanges(self):
+    def procurementUpdateAdmin(self):
         """
         This REST endpoint changes the status of a procurement request
         with the effect that a request is sent back to the students who
@@ -419,12 +391,48 @@ class ApiGateway(object):
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
-                {'status': "approved"}
+                {'status': "manager approved"}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': "needs changes"}
+                {'status': "updates for admin"}
+        }
+
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+
+        # TODO send email
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def procurementAdminApprove(self):
+        """
+        This REST endpoint changes the status of a procurement request
+        to reflect that its items have been ordered by an admin.
+
+        Expected input::
+
+            {
+                "_id": (string)
+            }
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myID = checkValidID(data)
+        findQuery = {
+            '$and': [
+                {'_id': ObjectId(myID)},
+                {'status': "manager approved"}
+            ]}
+        updateQuery = {'_id': ObjectId(myID)}
+        updateRule = {
+            "$set":
+                {'status': "admin approved"}
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -455,7 +463,7 @@ class ApiGateway(object):
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
-                {'status': "approved"}
+                {'status': "admin approved"}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
@@ -541,49 +549,6 @@ class ApiGateway(object):
 
         # TODO send email
 
-
-    @cherrypy.expose
-    @cherrypy.tools.json_in()
-    @authorizedRoles("manager", "admin")
-    def procurementReject(self):
-        """
-        This REST endpoint changes the status of a procurement request
-        with the effect that a request is permanently rejected and unable
-        to be further edited or considered by any user.
-
-        Expected input::
-
-            {
-                "_id": (string)
-            }
-        """
-        # check that we actually have json
-        if hasattr(cherrypy.request, 'json'):
-            data = cherrypy.request.json
-        else:
-            raise cherrypy.HTTPError(400, 'No data was given')
-
-        # TODO check this action is allowed
-
-        myID = checkValidID(data)
-        findQuery = {
-            '$and': [
-                {'_id': ObjectId(myID)},
-                { '$or': [
-                    {'status': "pending"},
-                    {'status': "approved"}
-                ]}
-            ]}
-        updateQuery = {'_id': ObjectId(myID)}
-        updateRule = {
-            "$set":
-                {'status': "rejected"}
-        }
-
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
-
-        # TODO send email
-
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @authorizedRoles("manager")
@@ -648,7 +613,7 @@ class ApiGateway(object):
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
-                {'status': "approved"}
+                {'status': "manager approved"}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
