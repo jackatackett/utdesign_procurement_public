@@ -184,6 +184,7 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher'
             projectNumber: -1,
             items: []
         };
+        $scope.addRow();
     }
 
     dispatcher.on('editRequest', function(request) {
