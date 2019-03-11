@@ -1,10 +1,10 @@
-app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', function($scope, $location, $http) {
+app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout', function($scope, $location, $http, $timeout) {
 
-$scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification", "additionalInfo"];
-    $scope.fields = ["Project Number", "Status", "Vendor", "URL", "Justification", "Additional Info"];
+$scope.fieldKeys = ["requestNumber", "projectNumber", "status", "vendor", "URL", "justification", "additionalInfo"];
+    $scope.fields = ["Request Number", "Project Number", "Status", "Vendor", "URL", "Justification", "Additional Info"];
     $scope.grid = [];
-    $scope.itemFieldKeys = ["description", "partNo", "quantity", "unitCost", "total"];
-    $scope.itemFields = ["Description", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
+    $scope.itemFieldKeys = ["description", 'itemURL', "partNo", "quantity", "unitCost", "total"];
+    $scope.itemFields = ["Description", 'Item URL', "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
     $scope.teams = ["Procurement", "Clock-It", "Smart Glasses"];
     $scope.statuses = ["Pending", "Accepted", "Rejected", "Shipped", "Canceled"];
     $scope.filters = ["Project Number", "Vendor"];
@@ -66,10 +66,11 @@ $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification",
         $http.post('/procurementApproveAdmin', {'_id':$scope.data[rowIdx]._id}).then(function(resp) {
             console.log("Success", resp);
             alert("Success!");
-            $window.location.reload();
+            $scope.refreshStatuses();
         }, function(err) {
-            console.error("Error", err.data)
-            alert("Error")
+            console.error("Error", err.data);
+            alert("Error");
+            $scope.refreshStatuses();
         });
     };
 
@@ -82,10 +83,11 @@ $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification",
         $http.post('/procurementRejectAdmin', {'_id':$scope.data[currentRow]._id}).then(function(resp) {
             console.log("Success", resp);
             alert("Success!");
-            $window.location.reload();
+            $scope.refreshStatuses();
         }, function(err) {
-            console.error("Error", err.data)
-            alert("Error")
+            console.error("Error", err.data);
+            alert("Error");
+            $scope.refreshStatuses();
         });
     };
 
@@ -93,10 +95,11 @@ $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification",
         $http.post('/procurementUpdateAdmin', {'_id':$scope.data[currentRow]._id}).then(function(resp) {
             console.log("Success", resp);
             alert("Success!");
-            $window.location.reload();
+            $scope.refreshStatuses();
         }, function(err) {
-            console.error("Error", err.data)
-            alert("Error")
+            console.error("Error", err.data);
+            alert("Error");
+            $scope.refreshStatuses();
         });
     };
 
@@ -104,10 +107,11 @@ $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification",
         $http.post('/procurementUpdateManagerAdmin', {'_id':$scope.data[currentRow]._id}).then(function(resp) {
             console.log("Success", resp);
             alert("Success!");
-            $window.location.reload();
+            $scope.refreshStatuses();
         }, function(err) {
-            console.error("Error", err.data)
-            alert("Error")
+            console.error("Error", err.data);
+            alert("Error");
+            $scope.refreshStatuses();
         });
     };
 
@@ -121,10 +125,11 @@ $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification",
         $http.post('/procurementOrder', {'_id':$scope.data[rowIdx]._id}).then(function(resp) {
             console.log("Success", resp);
             alert("Success!");
-            $window.location.reload();
+            $scope.refreshStatuses();
         }, function(err) {
-            console.error("Error", err.data)
-            alert("Error")
+            console.error("Error", err.data);
+            alert("Error");
+            $scope.refreshStatuses();
         });
     };
 
@@ -134,10 +139,11 @@ $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification",
         $http.post('/procurementReady', {'_id':$scope.data[rowIdx]._id}).then(function(resp) {
             console.log("Success", resp);
             alert("Success!");
-            $window.location.reload();
+            $scope.refreshStatuses();
         }, function(err) {
             console.error("Error", err.data)
-            alert("Error")
+            alert("Error");
+            $scope.refreshStatuses();
         });
     };
 
@@ -147,10 +153,11 @@ $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification",
         $http.post('/procurementComplete', {'_id':$scope.data[rowIdx]._id}).then(function(resp) {
             console.log("Success", resp);
             alert("Success!");
-            $window.location.reload();
+            $scope.refreshStatuses();
         }, function(err) {
-            console.error("Error", err.data)
-            alert("Error")
+            console.error("Error", err.data);
+            alert("Error");
+            $scope.refreshStatuses();
         });
     };
 
@@ -170,11 +177,15 @@ $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification",
         return status == "ready for pickup";
     };
 
-    $http.post('/procurementStatuses', {}).then(function(resp) {
-        console.log("Success", resp)
-        $scope.data = resp.data;
-    }, function(err) {
-        console.error("Error", err.data)
-    });
+    $scope.refreshStatuses = function() {
+        $http.post('/procurementStatuses', {}).then(function(resp) {
+            console.log("Success", resp)
+            $scope.data = resp.data;
+        }, function(err) {
+            console.error("Error", err.data)
+        });
+    }
+
+    $timeout($scope.refreshStatuses, 0);
 
 }]);

@@ -38,8 +38,8 @@
                 <td ng-repeat="fieldK in fieldKeys">{{dict[fieldK]}}</td>
             </tr>
 
-            <tr ng-repeat-end  style="background-color: #999">
-                <td colspan="6" style="padding: 0px;">
+            <tr ng-repeat-end  style="background-color: #999; display: none;">
+                <td colspan="7" style="padding: 0px;">
                     <table class="table table-bordered" style="margin-bottom: 0px; margin-left: 10px; width: calc(100% - 10px);">
                         <tr style="border-bottom: 1.5px solid black">
                             <td scope="col" style="background-color: #eee;">#</td>
@@ -57,15 +57,12 @@
                         </tr>
 
                         <tr>
-                            <td colspan = "6" style="text-align:center">
+                            <td colspan = "7" style="text-align:center">
                                 <button type="button" class="btn btn-success" ng-click="approveRequest($event, dictIdx)" ng-if="canApprove(dict.status)" style="width:49%">Approve</button>
                                 <button type="button" class="btn btn-danger" ng-click="rejectRequest($event, dictIdx)" ng-if="canApprove(dict.status)" style="width:49%">Reject</button>
                                 <button type="button" class="btn btn-success" ng-click="orderRequest($event, dictIdx)" ng-if="canOrder(dict.status)" style="width:49%">Mark as Ordered</button>
                                 <button type="button" class="btn btn-success" ng-click="readyRequest($event, dictIdx)" ng-if="canPickup(dict.status)" style="width:49%">Mark as Ready for Pickup</button>
                                 <button type="button" class="btn btn-success" ng-click="completeRequest($event, dictIdx)" ng-if="canComplete(dict.status)" style="width:49%">Mark as Complete</button>
-
-
-
                             </td>
                         </tr>
 
