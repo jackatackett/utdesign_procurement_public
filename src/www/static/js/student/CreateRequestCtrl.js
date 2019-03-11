@@ -48,9 +48,13 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher'
         $http.post('/procurementSave', $scope.request).then(function(resp) {
             console.log("Success", resp);
             alert("Success!");
+            dispatcher.emit("refreshStatuses");
+            $scope.newRequest();
         }, function(err) {
             $scope.errorText = "Infrastructure error. Please refresh page. Contact staff if problem persists.";
             console.error(err);
+            dispatcher.emit("refreshStatuses");
+            $scope.newRequest();
         });
     }
 
@@ -182,14 +186,14 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher'
         };
     }
 
-    dispatcher.subscribe('editRequest', function(request) {
+    dispatcher.on('editRequest', function(request) {
         //deep copy the request
         $scope.request = JSON.parse(JSON.stringify(request));
         delete $scope.request.status;
         $scope.refreshManagers();
     })
 
-    dispatcher.subscribe('cloneRequest', function(request) {
+    dispatcher.on('cloneRequest', function(request) {
         //deep copy the request
         request = JSON.parse(JSON.stringify(request));
         delete request.requestNumber;

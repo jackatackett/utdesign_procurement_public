@@ -53,12 +53,12 @@ app.controller('RequestSummaryCtrl', ['$scope', '$http', '$location', '$timeout'
     };
 
     $scope.editRequest = function(request) {
-        dispatcher.publish('editRequest', request);
+        dispatcher.emit('editRequest', request);
         $location.hash('create');
     }
 
     $scope.cloneRequest = function(request) {
-        dispatcher.publish('cloneRequest', request);
+        dispatcher.emit('cloneRequest', request);
         $location.hash('create');
     }
 
@@ -92,6 +92,6 @@ app.controller('RequestSummaryCtrl', ['$scope', '$http', '$location', '$timeout'
 
     $timeout(0, $scope.refreshStatuses())
 
-    dispatcher.subscribe("refreshStatuses", $scope.refreshStatuses);
+    dispatcher.on("refreshStatuses", $scope.refreshStatuses);
 
 }]);

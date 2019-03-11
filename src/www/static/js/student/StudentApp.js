@@ -2,7 +2,7 @@ var app = angular.module('StudentApp', []);
 app.value('dispatcher', {
 
     callbacks: {},
-    publish: function(event, data) {
+    emit: function(event, data) {
         if (this.callbacks[event]) {
             this.callbacks[event].forEach(function (callback) {
                 callback(data);
@@ -10,7 +10,7 @@ app.value('dispatcher', {
         }
     },
 
-    subscribe: function(event, callback) {
+    on: function(event, callback) {
         if (!this.callbacks[event]) {
             this.callbacks[event] = [];
         }
