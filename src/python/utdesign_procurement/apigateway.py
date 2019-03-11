@@ -353,6 +353,42 @@ class ApiGateway(object):
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def procurementUpdateManagerAdmin(self):
+        """
+        This REST endpoint changes the status of a procurement request
+        with the effect that the students who originally submitted it may
+        make changes to it or cancel it.
+
+        Expected input::
+
+            {
+                "_id": (string)
+            }
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myID = checkValidID(data)
+        findQuery = {
+            '$and': [
+                {'_id': ObjectId(myID)},
+                {'status': "manager approved"}
+            ]}
+        updateQuery = {'_id': ObjectId(myID)}
+        updateRule = {
+            "$set":
+                {'status': "updates for manager"}
+        }
+
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
     @authorizedRoles("student")
     def procurementResubmitToManager(self):
         """
