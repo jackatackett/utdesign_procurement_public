@@ -1,4 +1,4 @@
-app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', '$interval', 'dispatcher', function($scope, $http, $timeout, $interval, dispatcher) {
+app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher', function($scope, $http, $timeout, dispatcher) {
 
     $scope.errorText = "";
     $scope.projectNumbers = [];
@@ -163,7 +163,6 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', '$interval',
 
     //add a row when the thing loads
     $timeout($scope.addRow, 0);
-    $interval($scope.refreshManagers, 5000);
 
     //get the project numbers associated with this user
     $http.post('/userProjects').then(function(resp) {

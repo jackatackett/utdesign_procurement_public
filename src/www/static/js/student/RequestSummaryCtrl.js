@@ -1,4 +1,4 @@
-app.controller('RequestSummaryCtrl', ['$scope', '$http', '$location', '$timeout', 'dispatcher', function($scope, $http, $location, $timeout, dispatcher) {
+app.controller('RequestSummaryCtrl', ['$scope', '$http', '$location', '$timeout', '$interval', 'dispatcher', function($scope, $http, $location, $timeout, $interval, dispatcher) {
 
     $scope.fieldKeys = ["requestNumber", "projectNumber", "manager", "status", "vendor", "URL", "justification", "additionalInfo"];
     $scope.fields = ["Request Number", "Project Number", "Assigned Manager Email", "Status", "Vendor", "URL", "Justification", "Additional Info"];
@@ -93,6 +93,7 @@ app.controller('RequestSummaryCtrl', ['$scope', '$http', '$location', '$timeout'
     }
 
     $timeout($scope.refreshStatuses, 0);
+    $interval($scope.refreshStatuses, 5000);
 
     dispatcher.on("refreshStatuses", $scope.refreshStatuses);
 
