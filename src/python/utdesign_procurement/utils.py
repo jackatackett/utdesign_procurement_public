@@ -191,7 +191,7 @@ def requestCreate(data, status, optional=False):
             "projectNumber": (int or list of int),
             "URL": (string),
             "justification": (string) optional,
-            "additionalInfo": (string) optional
+            "additionalInfo": (string) optional,
             "items": [
                 {
                 "description": (string),
@@ -213,7 +213,8 @@ def requestCreate(data, status, optional=False):
     myRequest['status'] = status
 
     # mandatory projectNumber
-    myRequest['projectNumber'] = checkValidData('projectNumber', data, int)
+    for key in ("projectNumber",):
+        myRequest[key] = checkValidData(key, data, int) #not optional ever
 
     # mandatory keys (unless optional is True)
     for key in ("manager", "vendor", "URL"):
