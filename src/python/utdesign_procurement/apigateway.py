@@ -174,6 +174,9 @@ class ApiGateway(object):
             projectNumbers: (int or list of ints, optional),
             URL: (string, optional)
         }
+
+        If the user is a manager, they will not be able to see "saved" requests
+
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -214,6 +217,10 @@ class ApiGateway(object):
         if 'URL' in data:
             myURL = checkValidData('URL', data, str)
             filters.append({'URL': {'$eq': myURL}})
+
+        # managers should not see saved things
+        if cherrypy.session['role'] == 'manager':
+            filters.append({'status': {'$ne': 'saved'}})
 
         # if list isn't empty
         if filters:
