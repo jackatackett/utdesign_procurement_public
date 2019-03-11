@@ -66,7 +66,7 @@ class ApiGateway(object):
                     "itemURL": (string),
                     "quantity": (integer),
                     "unitCost": (string),
-                    "totalCost": (number)
+                    "totalCost": (string)
                     }
                 ]
             }
