@@ -26,17 +26,7 @@ class ApiGateway(object):
         self.colUsers = db['users']
         self.colInvitations = db['invitations']
 
-        # Possible Procurement Request Statuses:
-        # "pending"
-        # "approved"
-        # "rejected"
-        # "cancelled"
-        # "saved"
-        # "needs updates"
-        # "needs changes"
-        # "ordered"
-        # "ready for pickup"
-        # "complete"
+        self.colSequence = db['sequence']
 
     # API Functions go below. DO EXPOSE THESE
 
@@ -58,7 +48,7 @@ class ApiGateway(object):
                 "projectNumber": (int or list of int),
                 "URL": (string),
                 "justification": (string) optional,
-                "additionalInfo": (string) optional
+                "additionalInfo": (string) optional,
                 "items": [
                     {
                     "description": (string),
@@ -88,10 +78,33 @@ class ApiGateway(object):
 
         myRequest = requestCreate(data, status, optional)
 
+        myRequest['requestNumber'] = self.sequence()
+
+        query = {"requestNumber": myRequest["requestNumber"]}
+
         # insert the data into the database
-        self.colRequests.insert(myRequest)
+        self.colRequests.replace_one(query, myRequest, upsert=True)
 
         # TODO send email
+
+    def sequence(self):
+        """
+        Checks the current sequence value of requests, returns it,
+        and increments the value.
+        :return:
+        """
+
+        query = {"name": "requests"}
+        current = self.colSequence.find(query)
+
+        updateRule = {"$set":
+                          {"number": current + 1}
+                    }
+
+        self.colSequence.update_one(query, updateRule)
+
+        return current
+
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
