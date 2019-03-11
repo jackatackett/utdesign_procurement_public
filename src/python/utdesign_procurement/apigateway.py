@@ -407,7 +407,25 @@ class ApiGateway(object):
         Expected input::
 
             {
-                "_id": (string)
+                "_id": (string),
+
+                "requestNumber": (int) optional,
+                "manager": (string), //email of manager who can approve this
+                "vendor": (string),
+                "projectNumber": (int or list of int),
+                "URL": (string),
+                "justification": (string) optional,
+                "additionalInfo": (string) optional,
+                "items": [
+                    {
+                    "description": (string),
+                    "partNo": (string),
+                    "itemURL": (string),
+                    "quantity": (integer),
+                    "unitCost": (string),
+                    "totalCost": (string)
+                    }
+                ]
             }
         """
         # check that we actually have json
@@ -418,6 +436,8 @@ class ApiGateway(object):
 
         # TODO check this action is allowed
 
+        myRequest = requestCreate(data, 'pending', False)
+
         myID = checkValidID(data)
         findQuery = {
             '$and': [
@@ -425,10 +445,7 @@ class ApiGateway(object):
                 {'status': "updates for manager"}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
-        updateRule = {
-            "$set":
-                {'status': "pending"}
-        }
+        updateRule = {"$set": myRequest}
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
@@ -445,8 +462,26 @@ class ApiGateway(object):
 
         Expected input::
 
-            {
-                "_id": (string)
+             {
+                "_id": (string),
+
+                "requestNumber": (int) optional,
+                "manager": (string), //email of manager who can approve this
+                "vendor": (string),
+                "projectNumber": (int or list of int),
+                "URL": (string),
+                "justification": (string) optional,
+                "additionalInfo": (string) optional,
+                "items": [
+                    {
+                    "description": (string),
+                    "partNo": (string),
+                    "itemURL": (string),
+                    "quantity": (integer),
+                    "unitCost": (string),
+                    "totalCost": (string)
+                    }
+                ]
             }
         """
         # check that we actually have json
@@ -457,6 +492,8 @@ class ApiGateway(object):
 
         # TODO check this action is allowed
 
+        myRequest = requestCreate(data, 'manager approved', False)
+
         myID = checkValidID(data)
         findQuery = {
             '$and': [
@@ -464,10 +501,7 @@ class ApiGateway(object):
                 {'status': "updates for admin"}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
-        updateRule = {
-            "$set":
-                {'status': "manager approved"}
-        }
+        updateRule = {"$set": myRequest}
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
