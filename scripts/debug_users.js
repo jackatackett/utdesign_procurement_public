@@ -6,7 +6,7 @@
 
 conn = new Mongo();
 db = conn.getDB("procurement");
-
+db.dropDatabase();
 
 db.users.insert({
     "email" : "admin@utdallas.edu", 
