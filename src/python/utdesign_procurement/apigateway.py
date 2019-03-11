@@ -95,6 +95,7 @@ class ApiGateway(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
     @authorizedRoles("student")
     def managerList(self):
         """
