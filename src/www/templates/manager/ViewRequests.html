@@ -35,7 +35,7 @@
 
                         </tr>
 
-                        <tr>
+                        <tr ng-if="canApprove(dict.status)">
                             <td colspan = "6" style="text-align:center">
                                 <button type="button" class="btn btn-success" ng-click="approveRequest($event, dictIdx)" style="width:49%">Approve</button>
                                 <button type="button" class="btn btn-danger" ng-click="rejectRequest($event, dictIdx)" style="width:49%">Reject</button>

@@ -100,6 +100,10 @@ $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification",
         });
     };
 
+    $scope.canApprove = function(status) {
+        return status == 'pending';
+    };
+
     $scope.closeRejectBox = function(e) {
         $("#rejectModal").hide();
     };
