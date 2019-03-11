@@ -1,4 +1,4 @@
-app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '$timeout', function($scope, $location, $http, $window, $timeout) {
+app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '$timeout', '$interval', function($scope, $location, $http, $window, $timeout, $interval) {
 
 $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification", "additionalInfo"];
     $scope.fields = ["Project Number", "Status", "Vendor", "URL", "Justification", "Additional Info"];
@@ -118,5 +118,6 @@ $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification",
     }
 
     $timeout($scope.refreshStatuses, 0);
+    $interval($scope.refreshStatuses, 5000);
 
 }]);
