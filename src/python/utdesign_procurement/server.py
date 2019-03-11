@@ -71,21 +71,21 @@ class Root(ApiGateway):
         return ret
 
     @cherrypy.expose
-    @authorizedRoles("student")
+    @authorizedRoles("student", redirect=True)
     def student(self):
         template = self.templateLookup.get_template('student/StudentApp.html')
         ret = template.render()
         return ret
 
     @cherrypy.expose
-    @authorizedRoles("manager")
+    @authorizedRoles("manager", redirect=True)
     def manager(self):
         template = self.templateLookup.get_template('manager/ManagerApp.html')
         ret = template.render()
         return ret
 
     @cherrypy.expose
-    @authorizedRoles("admin")
+    @authorizedRoles("admin", redirect=True)
     def admin(self):
         template = self.templateLookup.get_template('admin/AdminApp.html')
         ret = template.render()

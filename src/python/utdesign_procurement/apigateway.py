@@ -12,6 +12,8 @@ from utdesign_procurement.utils import authorizedRoles, generateSalt, hashPasswo
 
 # TODO integrate existing code with these changes?
 
+import datetime
+
 class ApiGateway(object):
 
     def __init__(self, email_queue):
@@ -58,7 +60,7 @@ class ApiGateway(object):
                     {
                     "description": (string),
                     "partNo": (string),
-                    "quantity": (string),
+                    "quantity": (integer),
                     "unitCost": (string),
                     "totalCost": (number),
                     }
@@ -187,7 +189,9 @@ class ApiGateway(object):
         for request in self.colRequests.find(bigFilter):
             request['_id'] = str(request['_id'])
             if 'history' in request:
-                del request['history'] #TODO marshal the timestamp properly
+                for hist in range(len(request['history'])):
+                    if 'timestamp' in request['history'][hist]:
+                        request['history'][hist]['timestamp'] = request['history'][hist]['timestamp'].isoformat()
             listRequests.append(request)
 
         return listRequests

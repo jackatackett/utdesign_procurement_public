@@ -6,12 +6,15 @@ import os
 
 from bson.objectid import ObjectId
 
-def authorizedRoles(*acceptableRoles):
+def authorizedRoles(*acceptableRoles, redirect=False):
     """
     This is a decorator factory which checks the role of a user by their
     session information. If their role is not in the given list of
-    authorized roles, then they are denied access. If they aren't logged
-    in at all, then they are redirected to the login page.
+    authorized roles, then they are denied access.
+
+    If redirect=True, and the user isn't logged in at all, then they are
+    redirected to the login page. If redirect=False (default), then they
+    are denied access with a 403 error.
     """
 
     def decorator(func):
@@ -23,7 +26,7 @@ def authorizedRoles(*acceptableRoles):
                          "roles %s" % (role, acceptableRoles))
 
             # no role means force a login
-            if role is None:
+            if role is None and redirect:
                 raise cherrypy.HTTPRedirect('/login')
 
             # not authorized means raise hell!
