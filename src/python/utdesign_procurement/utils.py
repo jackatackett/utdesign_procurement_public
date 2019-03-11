@@ -197,9 +197,9 @@ def requestCreate(data, status, optional=False):
                 "description": (string),
                 "partNo": (string),
                 "itemURL": (string),
-                "quantity": (string),
+                "quantity": (int),
                 "unitCost": (string),
-                "totalCost": (number)
+                "totalCost": (string)
                 }
             ]
         }
@@ -235,9 +235,11 @@ def requestCreate(data, status, optional=False):
         # theirDict = checkValidData(item, data, dict) #check dict is actually a dict?
         myDict = dict()
         # iterate through keys of item dict
-        for key in ("description", "partNo", "itemURL", "quantity", "unitCost"):
+        for key in ("description", "partNo", "itemURL", "unitCost"):
             myDict[key] = checkValidData(key, theirDict, str, optional)
-        myDict['totalCost'] = checkValidNumber("totalCost", theirDict, optional)
+        for key in ("quantity",):
+            myDict[key] = checkValidData(key, theirDict, int, optional)
+        myDict['totalCost'] = checkValidData("totalCost", theirDict, str, optional)
         myItems.append(myDict)
 
     myRequest["items"] = myItems
