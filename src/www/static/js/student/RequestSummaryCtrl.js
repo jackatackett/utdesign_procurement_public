@@ -92,7 +92,7 @@ app.controller('RequestSummaryCtrl', ['$scope', '$http', '$location', '$timeout'
         });
     }
 
-    $timeout(0, $scope.refreshStatuses())
+    $timeout($scope.refreshStatuses, 0);
 
     dispatcher.on("refreshStatuses", $scope.refreshStatuses);
 

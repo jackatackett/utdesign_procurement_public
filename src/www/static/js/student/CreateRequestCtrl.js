@@ -45,7 +45,17 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher'
         $scope.request.submit = submit;
 
         // send the request to the REST endpoint
-        $http.post('/procurementSave', $scope.request).then(function(resp) {
+
+        console.log("status", $scope.request.status);
+        var endpoint = "/procurementSave";
+
+        if ($scope.request.status == "updates for manager") {
+            endpoint = "/procurementResubmitToManager";
+        } else if ($scope.request.status == "updates for admin") {
+            endpoint = "/procurementResubmitToAdmin";
+        }
+
+        $http.post(endpoint, $scope.request).then(function(resp) {
             console.log("Success", resp);
             alert("Success!");
             dispatcher.emit("refreshStatuses");
@@ -190,7 +200,6 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher'
     dispatcher.on('editRequest', function(request) {
         //deep copy the request
         $scope.request = JSON.parse(JSON.stringify(request));
-        delete $scope.request.status;
         $scope.refreshManagers();
     })
 
