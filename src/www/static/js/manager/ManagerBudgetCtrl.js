@@ -1,4 +1,4 @@
-app.controller('ManagerBudgetCtrl', ['$scope', '$location', '$http', '$window', function($scope, $location, $http, $window) {
+app.controller('ManagerBudgetCtrl', ['$scope', '$location', '$http', '$window', '$timeout', '$interval', function($scope, $location, $http, $window, $timeout, $interval) {
     console.log("budget");
 
     function convertCosts(value) {
@@ -26,46 +26,54 @@ app.controller('ManagerBudgetCtrl', ['$scope', '$location', '$http', '$window', 
     
     var costData = [];
     
-    $scope.projects = []
+    $scope.projects = [];
 
     var projectData = [];
-    $http.post('/findProject', {}).then(function(resp) {
-        console.log("Project Success", resp);
-        projectData = resp.data;
 
-        numProjects = projectData.length;
-        console.log("number projects: " + numProjects);
+    $scope.getData = function() {
+        $http.post('/findProject', {}).then(function(resp) {
+            console.log("Project Success", resp);
+            projectData = resp.data;
 
-        for (var pr in projectData) {
-            var tempData = {}
-            tempData["number"] = projectData[pr]["projectNumber"];
-            tempData["name"] = projectData[pr]["projectName"];
-            $scope.projects.push(tempData);
-            //~ $scope.projects.push({"number": pr["projectNumber"], "name": pr["projectName"]});
-        }
-        console.log("project mapping:");
-        console.log($scope.projects);
-    }, function(err) {
-        console.error("Project Error", err.data)
-    }).then(function(resp) {
-        $http.post('/procurementStatuses', {}).then(function(resp) {
-            console.log("Status Success", resp);
-            procurementData = resp.data;
-            filterRequests();
-            console.log("current requests:");
-            console.log($scope.curRequestData);
+            numProjects = projectData.length;
+            console.log("number projects: " + numProjects);
+
+            $scope.projects = [];
+
+            for (var pr in projectData) {
+                var tempData = {}
+                tempData["number"] = projectData[pr]["projectNumber"];
+                tempData["name"] = projectData[pr]["projectName"];
+                $scope.projects.push(tempData);
+                //~ $scope.projects.push({"number": pr["projectNumber"], "name": pr["projectName"]});
+            }
+            console.log("project mapping:");
+            console.log($scope.projects);
         }, function(err) {
-            console.error("Status Error", err.data);
+            console.error("Project Error", err.data)
+        }).then(function(resp) {
+            $http.post('/procurementStatuses', {}).then(function(resp) {
+                console.log("Status Success", resp);
+                procurementData = resp.data;
+                filterRequests();
+                console.log("current requests:");
+                console.log($scope.curRequestData);
+            }, function(err) {
+                console.error("Status Error", err.data);
+            });
+        }).then(function(resp) {
+            $http.post('/getCosts', {}).then(function(resp) {
+                console.log("Costs Success", resp);
+                costData = resp.data;
+                filterCosts();
+            }, function(err) {
+                console.error("Costs Error", err.data);
+            });
         });
-    }).then(function(resp) {
-        $http.post('/getCosts', {}).then(function(resp) {
-            console.log("Costs Success", resp);
-            costData = resp.data;
-            filterCosts();
-        }, function(err) {
-            console.error("Costs Error", err.data);
-        });
-    });
+    }
+
+    $timeout($scope.getData, 0);
+    $interval($scope.getData, 5000);
 
     function filterRequests() {
         $scope.curRequestData = [];

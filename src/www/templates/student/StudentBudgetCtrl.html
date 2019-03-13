@@ -1,10 +1,4 @@
 <div id="viewBudgetDiv" ng-controller="StudentBudgetCtrl as $ctrl" style="margin: 2%; box-sizing: border-box;">
-<!--
-    <h3>Budget Limit: {{getMaxBudgetStr()}}</h3>
-    <h3>Budget Available: {{getTotalStr()}}</h3>
-    <h3>Budget Pending: {{getPendingStr()}}</h3>
--->
-
     <button type="button" class="btn btn-primary" style="inline-block" ng-repeat="(idx, data) in projects" ng-click="regenerateTable($event)" id="btnTab{{idx}}">
         {{data["name"]}}
     </button>
@@ -13,8 +7,8 @@
         <thead>
             <tr>
                 <th>Budget Limit</th>
-                <th>Available Budget</th>
-                <th>Pending Budget</th>
+                <th>Available Budget Remaining</th>
+                <th>Pending Budget Remaining</th>
             </tr>
         </thead>
 
