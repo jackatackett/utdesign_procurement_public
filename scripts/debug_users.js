@@ -179,18 +179,19 @@ db.requests.insert({
         "description" : "Bunny",
         "partNo" : "1",
         "quantity" : 2,
-        "unitCost" : "642",
-        "totalCost": "1284",
+        "unitCost" : 642,
+        "totalCost": 1284,
         "itemURL": "bunnyurl"
     }, {
         "description" : "Squirrel",
         "partNo" : "2",
         "quantity" : 1,
-        "unitCost" : "432",
-        "totalCost": "432",
+        "unitCost" : 432,
+        "totalCost": 432,
         "itemURL": "squirrelurl"
     } ],
-    "requestTotal": "1716",
+    "requestSubtotal": 1716,
+    "requestTotal": 1716,
     "history": []
 })
 
@@ -207,11 +208,13 @@ db.requests.insert({
         "description": "item1",
         "partNo": "part2",
         "quantity": 3,
-        "unitCost": "600",
-        "totalCost": "900",
+        "unitCost": 600,
+        "totalCost": 900,
         "itemURL": "item1url"
     }],
-    "requestTotal": "900",
+    "requestSubtotal": 900,
+    "shippingCost": 1000,
+    "requestTotal": 1900,
     "history": [
     {
         "actor": "manager@utdallas.edu",
@@ -227,13 +230,13 @@ db.sequence.insert({
     "number" : 3
 })
 
-db.costs.insert({
-    "type": "shipping",
-    "amount": 1000,
-    "comment": "shipping cost for item1 from vendor2",
-    "actor": "admin@utdallas.edu",
-    "projectNumber": 844
-})
+//~ db.costs.insert({
+    //~ "type": "shipping",
+    //~ "amount": 1000,
+    //~ "comment": "shipping cost for item1 from vendor2",
+    //~ "actor": "admin@utdallas.edu",
+    //~ "projectNumber": 844
+//~ })
 
 db.costs.insert({
     "type": "refund",
