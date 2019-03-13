@@ -1,15 +1,66 @@
 <div id="viewBudgetDiv" ng-controller="StudentBudgetCtrl as $ctrl" style="margin: 2%; box-sizing: border-box;">
+<!--
     <h3>Budget Limit: {{getMaxBudgetStr()}}</h3>
     <h3>Budget Available: {{getTotalStr()}}</h3>
     <h3>Budget Pending: {{getPendingStr()}}</h3>
+-->
+
+    <button type="button" class="btn btn-primary" style="inline-block" ng-repeat="(idx, data) in projects" ng-click="regenerateTable($event)" id="btnTab{{idx}}">
+        {{data["name"]}}
+    </button>
+
+    <table id="overallBudgetTbl" class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Budget Limit</th>
+                <th>Available Budget</th>
+                <th>Pending Budget</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr>
+                <td>{{getMaxBudgetStr()}}</td>
+                <td>{{getTotalStr()}}</td>
+                <td>{{getPendingStr()}}</td>
+            </tr>
+        </tbody>
+    </table>
 
     <table class="table table-bordered">
         <thead>
             <tr>
-                <th ng-repeat="field in fields">{{field}}</th>
+                <th colspan="3">Procurement Requests</th>
+            </tr>
+            <tr>
+                <th ng-repeat="field in requestFields">{{field}}</th>
             </tr>
         </thead>
 
+        <tbody>
+            <tr ng-repeat="requestDict in curRequestData">
+                <td ng-repeat="requestK in requestKeys">{{requestDict[requestK]}}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th colspan="3">Additional Expenses</th>
+            </tr>
+            <tr>
+                <th ng-repeat="field in costFields">{{field}}</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <tr ng-repeat="costDict in curCostData">
+                <td ng-repeat="costK in costKeys">{{costDict[costK]}}</td>
+            </tr>
+        </tbody>
+
+<!--
         <tbody>
 
             <tr ng-repeat-start="dict in data" ng-click="toggleCollapse($event)">
@@ -38,6 +89,7 @@
             </tr>
 
         </tbody>
+-->
 
     </table>
 </div>

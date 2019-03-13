@@ -1,10 +1,10 @@
-app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', function($scope, $location, $http) {
+app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout', '$interval', function($scope, $location, $http, $timeout, $interval) {
 
-$scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification", "additionalInfo"];
-    $scope.fields = ["Project Number", "Status", "Vendor", "URL", "Justification", "Additional Info"];
+$scope.fieldKeys = ["requestNumber", "projectNumber", "status", "vendor", "URL", "justification", "additionalInfo"];
+    $scope.fields = ["Request Number", "Project Number", "Status", "Vendor", "URL", "Justification", "Additional Info"];
     $scope.grid = [];
-    $scope.itemFieldKeys = ["description", "partNo", "quantity", "unitCost", "total"];
-    $scope.itemFields = ["Description", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
+    $scope.itemFieldKeys = ["description", 'itemURL', "partNo", "quantity", "unitCost", "total"];
+    $scope.itemFields = ["Description", 'Item URL', "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
     $scope.teams = ["Procurement", "Clock-It", "Smart Glasses"];
     $scope.statuses = ["Pending", "Accepted", "Rejected", "Shipped", "Canceled"];
     $scope.filters = ["Project Number", "Vendor"];
@@ -34,7 +34,7 @@ $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification",
                     },
                     {
                         projectNumber: 124,
-                        status: "approved",
+                        status: "manager approved",
                         vendor: "The Plastic Store",
                         URL: "gmail.com",
                         justification: "O Captain, My Captain",
@@ -60,11 +60,139 @@ $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification",
         console.log("refresh admin table");
     };
 
-    $http.post('/procurementStatuses', {}).then(function(resp) {
-        console.log("Success", resp)
-        $scope.data = resp.data;
-    }, function(err) {
-        console.error("Error", err.data)
-    });
+    $scope.approveRequest = function(e, rowIdx) {
+        console.log($scope.data);
+        console.log(rowIdx);
+        $http.post('/procurementApproveAdmin', {'_id':$scope.data[rowIdx]._id}).then(function(resp) {
+            console.log("Success", resp);
+            alert("Success!");
+            $scope.refreshStatuses();
+        }, function(err) {
+            console.error("Error", err.data);
+            alert("Error");
+            $scope.refreshStatuses();
+        });
+    };
+
+        $scope.rejectRequest = function(e, rowIdx) {
+        $("#rejectModal").show();
+        currentRow = rowIdx;
+    };
+
+    $scope.permanentReject = function(e) {
+        $http.post('/procurementRejectAdmin', {'_id':$scope.data[currentRow]._id}).then(function(resp) {
+            console.log("Success", resp);
+            alert("Success!");
+            $scope.refreshStatuses();
+            $scope.closeRejectBox();
+        }, function(err) {
+            console.error("Error", err.data);
+            alert("Error");
+            $scope.refreshStatuses();
+            $scope.closeRejectBox();
+        });
+    };
+
+    $scope.sendForUpdatesAdmin = function(e) {
+        $http.post('/procurementUpdateAdmin', {'_id':$scope.data[currentRow]._id}).then(function(resp) {
+            console.log("Success", resp);
+            alert("Success!");
+            $scope.refreshStatuses();
+            $scope.closeRejectBox();
+        }, function(err) {
+            console.error("Error", err.data);
+            alert("Error");
+            $scope.refreshStatuses();
+            $scope.closeRejectBox();
+        });
+    };
+
+    $scope.sendForUpdatesManagerAdmin = function(e) {
+        $http.post('/procurementUpdateManagerAdmin', {'_id':$scope.data[currentRow]._id}).then(function(resp) {
+            console.log("Success", resp);
+            alert("Success!");
+            $scope.refreshStatuses();
+            $scope.closeRejectBox();
+        }, function(err) {
+            console.error("Error", err.data);
+            alert("Error");
+            $scope.refreshStatuses();
+            $scope.closeRejectBox();
+        });
+    };
+
+    $scope.closeRejectBox = function(e) {
+        $("#rejectModal").hide();
+    };
+
+    $scope.orderRequest = function(e, rowIdx) {
+        console.log($scope.data);
+        console.log(rowIdx);
+        $http.post('/procurementOrder', {'_id':$scope.data[rowIdx]._id}).then(function(resp) {
+            console.log("Success", resp);
+            alert("Success!");
+            $scope.refreshStatuses();
+        }, function(err) {
+            console.error("Error", err.data);
+            alert("Error");
+            $scope.refreshStatuses();
+        });
+    };
+
+    $scope.readyRequest = function(e, rowIdx) {
+        console.log($scope.data);
+        console.log(rowIdx);
+        $http.post('/procurementReady', {'_id':$scope.data[rowIdx]._id}).then(function(resp) {
+            console.log("Success", resp);
+            alert("Success!");
+            $scope.refreshStatuses();
+        }, function(err) {
+            console.error("Error", err.data)
+            alert("Error");
+            $scope.refreshStatuses();
+        });
+    };
+
+    $scope.completeRequest = function(e, rowIdx) {
+        console.log($scope.data);
+        console.log(rowIdx);
+        $http.post('/procurementComplete', {'_id':$scope.data[rowIdx]._id}).then(function(resp) {
+            console.log("Success", resp);
+            alert("Success!");
+            $scope.refreshStatuses();
+        }, function(err) {
+            console.error("Error", err.data);
+            alert("Error");
+            $scope.refreshStatuses();
+        });
+    };
+
+    $scope.canApprove = function(status) {
+        return status == "manager approved";
+    };
+
+    $scope.canOrder = function(status) {
+        return status == "admin approved";
+    };
+
+    $scope.canPickup = function(status) {
+        return status == "ordered";
+    };
+
+    $scope.canComplete = function(status) {
+        return status == "ready for pickup";
+    };
+
+    $scope.refreshStatuses = function() {
+        $http.post('/procurementStatuses', {}).then(function(resp) {
+            console.log("Success", resp)
+            $scope.data = resp.data;
+        }, function(err) {
+            console.error("Error", err.data)
+        });
+    }
+
+    $timeout($scope.refreshStatuses, 0);
+    $interval($scope.refreshStatuses, 5000);
 
 }]);

@@ -42,7 +42,7 @@ app.controller('AdminNavCtrl', ['$scope', '$location', '$window', '$http', funct
         $http.post('/userLogout').then(function(resp) {
             $window.location.href = '/login';
         }, function(err) {
-            console.err("Fatal error logging out:", err);
+            $window.location.href = '/login';
         });
     };
 

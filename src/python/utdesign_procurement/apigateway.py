@@ -8,7 +8,9 @@ from uuid import uuid4
 
 from utdesign_procurement.utils import authorizedRoles, generateSalt, hashPassword, \
     checkProjectNumbers, checkValidData, checkValidID, checkValidNumber, \
-    verifyPassword
+    verifyPassword, requestCreate
+
+# TODO integrate existing code with these changes?
 
 import datetime
 
@@ -23,32 +25,41 @@ class ApiGateway(object):
         self.colRequests = db['requests']
         self.colUsers = db['users']
         self.colInvitations = db['invitations']
+        self.costs = db['costs']
+        self.projects = db['projects']
+
+        self.colSequence = db['sequence']
 
     # API Functions go below. DO EXPOSE THESE
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @authorizedRoles("student")
-    def procurementRequest(self):
+    def procurementSave(self):
         """
         This REST endpoint takes data as an input as uses the data to create
-        a procurement request.
+        a procurement request and save it to the database. If the submit flag
+        is true, the request will be submitted to the TM, and if not, it won't.
 
         Expected input::
 
             {
+                "submit": (Boolean),
+                "requestNumber": (int) optional,
+                "manager": (string), //email of manager who can approve this
                 "vendor": (string),
                 "projectNumber": (int or list of int),
                 "URL": (string),
                 "justification": (string) optional,
-                "additionalInfo": (string) optional
+                "additionalInfo": (string) optional,
                 "items": [
                     {
                     "description": (string),
                     "partNo": (string),
-                    "quantity": (string),
+                    "itemURL": (string),
+                    "quantity": (integer),
                     "unitCost": (string),
-                    "totalCost": (number),
+                    "totalCost": (string)
                     }
                 ]
             }
@@ -59,44 +70,94 @@ class ApiGateway(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        myRequest = dict()
+        mySubmit = checkValidData("submit", data, bool)
 
-        # set default value of status to pending
-        myRequest['status'] = 'pending'
+        if mySubmit:
+            status = "pending"
+            optional = False
+        else:
+            status = "saved"
+            optional = True
 
-        # mandatory projectNumber
-        myRequest['projectNumber'] = checkValidData('projectNumber', data, int)
+        if "requestNumber" in data:
+            myRequestNumber = data["requestNumber"]
+        else:
+            myRequestNumber = self.sequence()
 
-        # mandatory keys
-        for key in ("vendor", "URL"):
-            myRequest[key] = checkValidData(key, data, str)
+        myRequest = requestCreate(data, status, optional)
+        myRequest['requestNumber'] = myRequestNumber
 
-        # optional keys
-        for key in ("justification", "additionalInfo"):
-            myRequest[key] = checkValidData(key, data, str, True)
-
-        # theirItems is a list of dicts (each dict is one item)
-        theirItems = checkValidData("items", data, list)
-
-        # myItems is the list we are creating and adding to the database
-        myItems = []
-
-        # iterate through list of items
-        for theirDict in theirItems:
-            # theirDict = checkValidData(item, data, dict)
-            myDict = dict()
-            # iterate through keys of item dict
-            for key in ("description", "partNo", "quantity", "unitCost"):
-                myDict[key] = checkValidData(key, theirDict, str)
-            myDict['totalCost'] = checkValidNumber("totalCost", theirDict)
-            myItems.append(myDict)
-
-        myRequest["items"] = myItems
+        query = {"requestNumber": myRequestNumber}
 
         # insert the data into the database
-        self.colRequests.insert(myRequest)
+        self.colRequests.replace_one(query, myRequest, upsert=True)
 
         # TODO send email
+
+    def sequence(self):
+        """
+        Checks the current sequence value of requests, returns it,
+        and increments the value.
+        :return:
+        """
+
+        query = {"name": "requests"}
+        current = self.colSequence.find_one(query)
+
+        if not current or 'number' not in current:
+            raise cherrypy.HTTPError(500, "Fatal error! No sequence found for requests.")
+
+        current = current['number']
+
+        updateRule = {"$set":
+                          {"number": current + 1}
+                    }
+
+        self.colSequence.update_one(query, updateRule)
+
+        return current
+
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    @authorizedRoles("student")
+    def managerList(self):
+        """
+        Takes a projectNumber and returns a list of technical managers who
+        are assigned to that project
+
+        Expected input::
+
+            {
+                "projectNumber": (int)
+            }
+        :return:
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myProjectNumber = checkValidNumber("projectNumber", data)
+
+        if myProjectNumber not in cherrypy.session['projectNumbers']:
+            raise cherrypy.HTTPError(403, "invalid projectNumber")
+
+        query = {
+            "$and": [
+                {"role": "manager"},
+                {"projectNumbers": myProjectNumber}
+            ]
+        }
+
+        managers = []
+
+        for man in self.colUsers.find(query):
+            managers.append(man['email'])
+
+        return managers
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -116,8 +177,8 @@ class ApiGateway(object):
             URL: (string, optional)
         }
 
+        If the user is a manager, they will not be able to see "saved" requests
         """
-
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
@@ -158,13 +219,23 @@ class ApiGateway(object):
             myURL = checkValidData('URL', data, str)
             filters.append({'URL': {'$eq': myURL}})
 
+        # managers should not see saved things
+        if cherrypy.session['role'] == 'manager':
+            filters.append({'status': {'$ne': 'saved'}})
+            filters.append({'status': {'$ne': 'cancelled'}})
+
+        # if list isn't empty
         if filters:
             bigFilter = {'$and': filters}
         else:
             bigFilter = {}
 
+        print("whoami:", cherrypy.session['role'])
+        print("filtering on:", bigFilter)
+
         listRequests = []
         for request in self.colRequests.find(bigFilter):
+            print(request)
             request['_id'] = str(request['_id'])
             if 'history' in request:
                 for hist in range(len(request['history'])):
@@ -195,19 +266,24 @@ class ApiGateway(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
+        # TODO check this action is allowed
+
         myID = checkValidID(data)
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
-                {'$or': [
-                    {'status': 'pending'},
-                    {'status': 'review'}
-                ]}
+                {
+                    '$or': [
+                        {'status': "updates for manager"},
+                        {'status': "updates for admin"},
+                        {'status': "saved"}
+                    ]
+                }
             ]
         }
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {'$set':
-                          {'status': 'cancelled'}
+                          {'status': "cancelled"}
                       }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -216,8 +292,8 @@ class ApiGateway(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
-    @authorizedRoles("manager", "admin")
-    def procurementApprove(self):
+    @authorizedRoles("manager")
+    def procurementApproveManager(self):
         """
         This REST endpoint changes the status of a procurement request
         with the effect that a status submitted to the technical manager
@@ -235,16 +311,18 @@ class ApiGateway(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
+        # TODO check this action is allowed
+
         myID = checkValidID(data)
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
-                {'status': 'pending'}
+                {'status': "pending"}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             '$set':
-                {'status': 'approved'}
+                {'status': "manager approved"}
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -253,7 +331,7 @@ class ApiGateway(object):
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
     @authorizedRoles("manager")
-    def procurementReview(self):
+    def procurementUpdateManager(self):
         """
         This REST endpoint changes the status of a procurement request
         with the effect that the students who originally submitted it may
@@ -275,16 +353,12 @@ class ApiGateway(object):
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
-                {
-                    '$or': [
-                        {'status': 'approved'},
-                        {'status': 'pending'}
-                    ]}
+                {'status': "pending"}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': 'review'}
+                {'status': "updates for manager"}
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -292,13 +366,12 @@ class ApiGateway(object):
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
-    @authorizedRoles("student")
-    def procurementResubmit(self):
+    @authorizedRoles("admin")
+    def procurementUpdateManagerAdmin(self):
         """
         This REST endpoint changes the status of a procurement request
-        with the effect that a request that had previously been sent back
-        to the students for updates is now submitted back to the technical
-        manager.
+        with the effect that the students who originally submitted it may
+        make changes to it or cancel it.
 
         Expected input::
 
@@ -316,12 +389,161 @@ class ApiGateway(object):
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
-                {'status': 'review'}
+                {'status': "manager approved"}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': 'pending'}
+                {'status': "updates for manager"}
+        }
+
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    @authorizedRoles("student")
+    def procurementResubmitToManager(self):
+        """
+        This REST endpoint changes the status of a procurement request
+        with the effect that a request that had previously been sent back
+        to the students for updates is now submitted back to the technical
+        manager.
+
+        Expected input::
+
+            {
+                "_id": (string),
+
+                "requestNumber": (int) optional,
+                "manager": (string), //email of manager who can approve this
+                "vendor": (string),
+                "projectNumber": (int or list of int),
+                "URL": (string),
+                "justification": (string) optional,
+                "additionalInfo": (string) optional,
+                "items": [
+                    {
+                    "description": (string),
+                    "partNo": (string),
+                    "itemURL": (string),
+                    "quantity": (integer),
+                    "unitCost": (string),
+                    "totalCost": (string)
+                    }
+                ]
+            }
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        # TODO check this action is allowed
+
+        myRequest = requestCreate(data, 'pending', False)
+
+        myID = checkValidID(data)
+        findQuery = {
+            '$and': [
+                {'_id': ObjectId(myID)},
+                {'status': "updates for manager"}
+            ]}
+        updateQuery = {'_id': ObjectId(myID)}
+        updateRule = {"$set": myRequest}
+
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+
+        # TODO send email
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @authorizedRoles("student")
+    def procurementResubmitToAdmin(self):
+        """
+        This REST endpoint changes the status of a procurement request
+        with the effect that a request that had previously been sent back
+        to the students for changes is now submitted back to the admin.
+
+        Expected input::
+
+             {
+                "_id": (string),
+
+                "requestNumber": (int) optional,
+                "manager": (string), //email of manager who can approve this
+                "vendor": (string),
+                "projectNumber": (int or list of int),
+                "URL": (string),
+                "justification": (string) optional,
+                "additionalInfo": (string) optional,
+                "items": [
+                    {
+                    "description": (string),
+                    "partNo": (string),
+                    "itemURL": (string),
+                    "quantity": (integer),
+                    "unitCost": (string),
+                    "totalCost": (string)
+                    }
+                ]
+            }
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        # TODO check this action is allowed
+
+        myRequest = requestCreate(data, 'manager approved', False)
+
+        myID = checkValidID(data)
+        findQuery = {
+            '$and': [
+                {'_id': ObjectId(myID)},
+                {'status': "updates for admin"}
+            ]}
+        updateQuery = {'_id': ObjectId(myID)}
+        updateRule = {"$set": myRequest}
+
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+
+        # TODO send email
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def procurementUpdateAdmin(self):
+        """
+        This REST endpoint changes the status of a procurement request
+        with the effect that a request is sent back to the students who
+        originally submitted it in order to make small changes.
+
+        Expected input::
+
+            {
+                "_id": (string)
+            }
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myID = checkValidID(data)
+        findQuery = {
+            '$and': [
+                {'_id': ObjectId(myID)},
+                {'status': "manager approved"}
+            ]}
+        updateQuery = {'_id': ObjectId(myID)}
+        updateRule = {
+            "$set":
+                {'status': "updates for admin"}
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -330,8 +552,193 @@ class ApiGateway(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
-    @authorizedRoles("manager", "admin")
-    def procurementReject(self):
+    @authorizedRoles("admin")
+    def procurementApproveAdmin(self):
+        """
+        This REST endpoint changes the status of a procurement request
+        to reflect that its items have been ordered by an admin.
+
+        Expected input::
+
+            {
+                "_id": (string)
+            }
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myID = checkValidID(data)
+        findQuery = {
+            '$and': [
+                {'_id': ObjectId(myID)},
+                {'status': "manager approved"}
+            ]}
+        updateQuery = {'_id': ObjectId(myID)}
+        updateRule = {
+            "$set":
+                {'status': "admin approved"}
+        }
+
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+
+        # TODO send email
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def procurementOrder(self):
+        """
+        This REST endpoint changes the status of a procurement request
+        to reflect that its items have been ordered by an admin.
+
+        Expected input::
+
+            {
+                "_id": (string)
+            }
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myID = checkValidID(data)
+        findQuery = {
+            '$and': [
+                {'_id': ObjectId(myID)},
+                {'status': "admin approved"}
+            ]}
+        updateQuery = {'_id': ObjectId(myID)}
+        updateRule = {
+            "$set":
+                {'status': "ordered"}
+        }
+
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+
+        # TODO send email
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def procurementReady(self):
+        """
+        This REST endpoint changes the status of a procurement request
+        to reflect that its items are ready to be picked up by the students
+        who requested them.
+
+        Expected input::
+
+            {
+                "_id": (string)
+            }
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myID = checkValidID(data)
+        findQuery = {
+            '$and': [
+                {'_id': ObjectId(myID)},
+                {'status': "ordered"}
+            ]}
+        updateQuery = {'_id': ObjectId(myID)}
+        updateRule = {
+            "$set":
+                {'status': "ready for pickup"}
+        }
+
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+
+        # TODO send email
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def procurementComplete(self):
+        """
+        This REST endpoint changes the status of a procurement request
+        to reflect that its items have been picked up and no further
+        actions need to be taken.
+
+        Expected input::
+
+            {
+                "_id": (string)
+            }
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myID = checkValidID(data)
+        findQuery = {
+            '$and': [
+                {'_id': ObjectId(myID)},
+                {'status': "ready for pickup"}
+            ]}
+        updateQuery = {'_id': ObjectId(myID)}
+        updateRule = {
+            "$set":
+                {'status': "complete"}
+        }
+
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+
+        # TODO send email
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @authorizedRoles("manager")
+    def procurementRejectManager(self):
+        """
+        This REST endpoint changes the status of a procurement request
+        with the effect that a request is permanently rejected and unable
+        to be further edited or considered by any user.
+
+        Expected input::
+
+            {
+                "_id": (string)
+            }
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        # TODO check this action is allowed
+
+        myID = checkValidID(data)
+        findQuery = {
+            '$and': [
+                {'_id': ObjectId(myID)},
+                {'status': "pending"}
+            ]}
+        updateQuery = {'_id': ObjectId(myID)}
+        updateRule = {
+            "$set":
+                {'status': "rejected"}
+        }
+
+        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+
+        # TODO send email
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def procurementRejectAdmin(self):
         """
         This REST endpoint changes the status of a procurement request
         with the effect that a request is permanently rejected and unable
@@ -353,20 +760,183 @@ class ApiGateway(object):
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
-                { '$or': [
-                    {'status': 'pending'},
-                    {'status': 'approved'}
-                ]}
+                {'status': "manager approved"}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': 'rejected'}
+                {'status': "rejected"}
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
         # TODO send email
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def addCost(self):
+        """
+        This adds a cost (refund, reimbursement, or shipping) to a project, and can only be done by the admin
+        {
+            projectNumber: (int)
+        }
+        """
+
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        raise cherrypy.HTTPError(101, "not yet implemented")
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    @authorizedRoles("student", "manager", "admin")
+    def getCosts(self):
+        """
+        This returns all the costs associated with project numbers.
+        {
+            projectNumbers: (list of ints, optional)
+        }
+        """
+
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            data = dict()
+
+        validNum = []
+        result = []
+        if 'projectNumbers' in data:
+            # if not admin, find only authorized projects
+            if cherrypy.session['role'] == 'admin':
+                validNum = data['projectNumbers']
+            else:
+                for pNum in data['projectNumbers']:
+                    if pNum in cherrypy.session['projectNumbers']:
+                        validNum.append(pNum)
+
+            for project in validNum:
+                for res in self.costs.find({'projectNumber': project}):
+                    res['_id'] = str(res['_id'])
+                    result.append(res)
+            return result
+        else:
+            if cherrypy.session['role'] != 'admin':
+                validNum = cherrypy.session['projectNumbers']
+                for project in validNum:
+                    for res in self.costs.find({'projectNumber': project}):
+                        res['_id'] = str(res['_id'])
+                        result.append(res)
+                return result
+            else:   # is admin
+                for res in self.costs.find({}):
+                    res['_id'] = str(res['_id'])
+                    result.append(res)
+                return result
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def addProject(self):
+        """
+        This adds a project, and can only be done by the admin.
+        {
+            “projectNumber”: (int),
+            “sponsorName”: (string),
+            “projectName”: (string),
+            “membersEmails: [(string), …],
+            “defaultBudget”: (int),
+            “availableBudget”: (int),
+            “pendingBudget”: (int)
+        }
+        """
+
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        raise cherrypy.HTTPError(101, "not yet implemented")
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    @authorizedRoles("student", "manager", "admin")
+    def findProject(self):
+        """
+        This finds all projects with the given project numbers. If none given, then all authorized projects are returned.
+        {
+            projectNumbers: (list of ints, optional)
+        }
+        """
+
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            data = dict()
+
+        validNum = []
+        result = []
+        if 'projectNumbers' in data:
+            # if not admin, find only authorized projects
+            if cherrypy.session['role'] == 'admin':
+                validNum = data['projectNumbers']
+            else:
+                for pNum in data['projectNumbers']:
+                    if pNum in cherrypy.session['projectNumbers']:
+                        validNum.append(pNum)
+
+            for project in validNum:
+                for res in self.projects.find({'projectNumber': project}):
+                    res['_id'] = str(res['_id'])
+                    result.append(res)
+            return result
+        else:
+            if cherrypy.session['role'] != 'admin':
+                validNum = cherrypy.session['projectNumbers']
+                for project in validNum:
+                    for res in self.projects.find({'projectNumber': project}):
+                        res['_id'] = str(res['_id'])
+                        result.append(res)
+                return result
+            else:   # is admin
+                for res in self.projects.find({}):
+                    res['_id'] = str(res['_id'])
+                    result.append(res)
+                return result
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def modifyProject(self):
+        """
+        This changes a project's values. It can only be done by an admin.
+        Changing the budget will 
+        {
+            projectNumber: (int),
+            sponsorName: (string, optional),
+            projectName: (string, optional),
+            membersEmails: [(string), …, optional]
+        }
+        """
+
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            data = dict()
+
+        raise cherrypy.HTTPError(101, "not yet implemented")
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -610,6 +1180,7 @@ class ApiGateway(object):
         else:
             raise cherrypy.HTTPError(403, 'Invalid email or password.')
 
+    # TODO should this be a rest endpoint?
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @authorizedRoles("student", "manager")
@@ -652,7 +1223,7 @@ class ApiGateway(object):
             returns an int
         """
 
-        pageSize = 10 # TODO make this configurable
+        pageSize = 10 # TODO stretch goal make this configurable
         d, m = divmod(self.colUsers.find().count(), pageSize)
         return d+1 if m else d
 

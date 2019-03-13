@@ -1,4 +1,4 @@
-app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', function($scope, $location, $http, $window) {
+app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '$timeout', '$interval', function($scope, $location, $http, $window, $timeout, $interval) {
 
 $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification", "additionalInfo"];
     $scope.fields = ["Project Number", "Status", "Vendor", "URL", "Justification", "Additional Info"];
@@ -48,7 +48,7 @@ $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification",
                     }
                   ]
 
-    $scope.currentRow = 0;
+    $scope.lightboxRow = 0;
 
     $scope.toggleCollapse = function(e) {
         var target = e.currentTarget;
@@ -63,7 +63,7 @@ $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification",
     $scope.approveRequest = function(e, rowIdx) {
         console.log($scope.data);
         console.log(rowIdx);
-        $http.post('/procurementApprove', {'_id':$scope.data[rowIdx]._id}).then(function(resp) {
+        $http.post('/procurementApproveManager', {'_id':$scope.data[rowIdx]._id}).then(function(resp) {
             console.log("Success", resp);
             alert("Success!");
             $window.location.reload();
@@ -75,11 +75,11 @@ $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification",
 
     $scope.rejectRequest = function(e, rowIdx) {
         $("#rejectModal").show();
-        currentRow = rowIdx;
+        lightboxRow = rowIdx;
     };
 
-    $scope.permanentReject = function(e, rowIdx) {
-        $http.post('/procurementReject', {'_id':$scope.data[currentRow]._id}).then(function(resp) {
+    $scope.permanentReject = function(e) {
+        $http.post('/procurementRejectManager', {'_id':$scope.data[lightboxRow]._id}).then(function(resp) {
             console.log("Success", resp);
             alert("Success!");
             $window.location.reload();
@@ -90,7 +90,7 @@ $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification",
     };
 
     $scope.sendForReview = function(e) {
-        $http.post('/procurementReview', {'_id':$scope.data[currentRow]._id}).then(function(resp) {
+        $http.post('/procurementUpdateManager', {'_id':$scope.data[lightboxRow]._id}).then(function(resp) {
             console.log("Success", resp);
             alert("Success!");
             $window.location.reload();
@@ -100,15 +100,24 @@ $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification",
         });
     };
 
+    $scope.canApprove = function(status) {
+        return status == 'pending';
+    };
+
     $scope.closeRejectBox = function(e) {
         $("#rejectModal").hide();
     };
 
-    $http.post('/procurementStatuses', {}).then(function(resp) {
-        console.log("Success", resp)
-        $scope.data = resp.data;
-    }, function(err) {
-        console.error("Error", err.data)
-    });
+    $scope.refreshStatuses = function() {
+        $http.post('/procurementStatuses', {}).then(function(resp) {
+            console.log("Success", resp)
+            $scope.data = resp.data;
+        }, function(err) {
+            console.error("Error", err.data)
+        });
+    }
+
+    $timeout($scope.refreshStatuses, 0);
+    $interval($scope.refreshStatuses, 5000);
 
 }]);

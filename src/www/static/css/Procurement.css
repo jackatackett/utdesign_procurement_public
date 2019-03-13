@@ -8,6 +8,21 @@
     background-color: #C75B12 !important;
 }
 
+.errbar {
+    background-color: #be2d28;
+    height: 3.2em;
+    overflow: auto;
+}
+
+.errtext {
+    color: white;
+    text-align: center;
+    margin-bottom: 0px !important;
+    margin-top: auto;
+    padding: .8em;
+    font-weight: bold;
+}
+
 .btn-primary {
     background-color: #E98300 !important;
     border: none;
@@ -41,4 +56,9 @@
   padding: 0;
   width: 40%;
   max-width: 1200px;
+}
+
+.interfaceDiv {
+    margin: 2%;
+    box-sizing: border-box;
 }

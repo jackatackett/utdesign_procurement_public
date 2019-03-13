@@ -34,12 +34,12 @@
 
         <tbody>
 
-            <tr ng-repeat-start="dict in data | filter : summaryFilter" ng-click="toggleCollapse($event)">
+            <tr ng-repeat-start="dict in data | filter : summaryFilter track by $index" ng-init="dictIdx=$index" ng-click="toggleCollapse($event)">
                 <td ng-repeat="fieldK in fieldKeys">{{dict[fieldK]}}</td>
             </tr>
 
-            <tr ng-repeat-end  style="background-color: #999">
-                <td colspan="6" style="padding: 0px;">
+            <tr ng-repeat-end  style="background-color: #999; display: none;">
+                <td colspan="7" style="padding: 0px;">
                     <table class="table table-bordered" style="margin-bottom: 0px; margin-left: 10px; width: calc(100% - 10px);">
                         <tr style="border-bottom: 1.5px solid black">
                             <td scope="col" style="background-color: #eee;">#</td>
@@ -55,6 +55,17 @@
                             </td>
 
                         </tr>
+
+                        <tr>
+                            <td colspan = "7" style="text-align:center">
+                                <button type="button" class="btn btn-success" ng-click="approveRequest($event, dictIdx)" ng-if="canApprove(dict.status)" style="width:49%">Approve</button>
+                                <button type="button" class="btn btn-danger" ng-click="rejectRequest($event, dictIdx)" ng-if="canApprove(dict.status)" style="width:49%">Reject</button>
+                                <button type="button" class="btn btn-success" ng-click="orderRequest($event, dictIdx)" ng-if="canOrder(dict.status)" style="width:49%">Mark as Ordered</button>
+                                <button type="button" class="btn btn-success" ng-click="readyRequest($event, dictIdx)" ng-if="canPickup(dict.status)" style="width:49%">Mark as Ready for Pickup</button>
+                                <button type="button" class="btn btn-success" ng-click="completeRequest($event, dictIdx)" ng-if="canComplete(dict.status)" style="width:49%">Mark as Complete</button>
+                            </td>
+                        </tr>
+
                     </table>
                 </td>
             </tr>
@@ -62,5 +73,29 @@
         </tbody>
 
     </table>
+
+    <div id="rejectModal" class="modal">
+        <div class="modal-content" style="width:50%;">
+            <div class="row">
+                <div class="col-md-12">
+                    <input type="text" id="rejectCommentBox" placeholder="comment" style="width:100%;">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-primary" ng-click="closeRejectBox($event)" style="float:left; width:100%;">Close</button>
+                </div>
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-primary" ng-click="permanentReject($event)" style="float:left; width:100%;">Permanent Reject</button>
+                </div>
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-primary" ng-click="sendForUpdatesAdmin($event)" style="float:left; width:100%;">Send for Updates, Return to Admin</button>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-primary" ng-click="sendForUpdatesManagerAdmin($event)" style="float:left; width:100%;">Send for Updates, Return to Manager</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </div>

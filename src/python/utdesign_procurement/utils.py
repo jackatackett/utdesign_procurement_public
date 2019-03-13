@@ -6,12 +6,15 @@ import os
 
 from bson.objectid import ObjectId
 
-def authorizedRoles(*acceptableRoles):
+def authorizedRoles(*acceptableRoles, redirect=False):
     """
     This is a decorator factory which checks the role of a user by their
     session information. If their role is not in the given list of
-    authorized roles, then they are denied access. If they aren't logged
-    in at all, then they are redirected to the login page.
+    authorized roles, then they are denied access.
+
+    If redirect=True, and the user isn't logged in at all, then they are
+    redirected to the login page. If redirect=False (default), then they
+    are denied access with a 403 error.
     """
 
     def decorator(func):
@@ -23,7 +26,7 @@ def authorizedRoles(*acceptableRoles):
                          "roles %s" % (role, acceptableRoles))
 
             # no role means force a login
-            if role is None:
+            if role is None and redirect:
                 raise cherrypy.HTTPRedirect('/login')
 
             # not authorized means raise hell!
@@ -174,3 +177,72 @@ def checkValidID(data):
             raise cherrypy.HTTPError(400, 'Object id not valid')
     else:
         raise cherrypy.HTTPError(400, 'data needs object id')
+
+def requestCreate(data, status, optional=False):
+    """
+    Takes data as an input as uses the data to create
+    a procurement request (dict).
+
+    Expected input::
+
+        {
+            "manager": (string), //email of manager who can approve this
+            "vendor": (string),
+            "projectNumber": (int or list of int),
+            "URL": (string),
+            "justification": (string) optional,
+            "additionalInfo": (string) optional,
+            "items": [
+                {
+                "description": (string),
+                "partNo": (string),
+                "itemURL": (string),
+                "quantity": (int),
+                "unitCost": (string),
+                "totalCost": (string)
+                }
+            ]
+        }
+    :param data: a dict containing data to be stored in the request
+    :param status: what will be the initial status of the request?
+    :param optional: if True, all fields of data except procjectNumber will be optional
+    :return: procurement request, stored as a dict
+    """
+    myRequest = dict()
+
+    myRequest['status'] = status
+
+    # mandatory projectNumber
+    for key in ("projectNumber",):
+        myRequest[key] = checkValidData(key, data, int) #not optional ever
+
+    # mandatory keys (unless optional is True)
+    for key in ("manager", "vendor", "URL"):
+        myRequest[key] = checkValidData(key, data, str, optional)
+    # TODO check valid manager (is submitted to correct manager for project, check that email exists)
+
+    # always optional keys
+    for key in ("justification", "additionalInfo"):
+        myRequest[key] = checkValidData(key, data, str, True)
+
+    # theirItems is a list of dicts (each dict is one item)
+    theirItems = checkValidData("items", data, list, optional)
+
+    # myItems is the list we are creating and adding to the database
+    myItems = []
+
+    # iterate through list of items
+    for theirDict in theirItems:
+        # theirDict = checkValidData(item, data, dict) #check dict is actually a dict?
+        myDict = dict()
+        # iterate through keys of item dict
+        for key in ("description", "partNo", "itemURL", "unitCost"):
+            myDict[key] = checkValidData(key, theirDict, str, optional)
+        for key in ("quantity",):
+            myDict[key] = checkValidData(key, theirDict, int, optional)
+        myDict['totalCost'] = checkValidData("totalCost", theirDict, str, optional)
+        myItems.append(myDict)
+
+    myRequest["items"] = myItems
+
+    return myRequest

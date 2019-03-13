@@ -6,7 +6,7 @@
 
 conn = new Mongo();
 db = conn.getDB("procurement");
-
+db.dropDatabase();
 
 db.users.insert({
     "email" : "admin@utdallas.edu", 
@@ -161,14 +161,16 @@ db.projects.insert({
     "sponsorName": "sponsor2",
     "projectName": "project3",
     "membersEmails": ["manager2@utdallas.edu", "student3@utdallas.edu"],
-    "defaultBudget": 150050,
-    "availableBudget": 150050,
-    "pendingBudget": 150050
+    "defaultBudget": 100000,
+    "availableBudget": 100000,
+    "pendingBudget": 100000
 })
 
 db.requests.insert({
+    "requestNumber": 1,
     "vendor" : "Bunning's warehouse",
     "URL" : "https://www.bunnings.com.au/",
+    "manager": "manager@utdallas.edu",
     "justification" : "They're fluffy!",
     "status" : "pending",
     "projectNumber" : 844,
@@ -188,15 +190,18 @@ db.requests.insert({
         "totalCost": 432,
         "itemURL": "squirrelurl"
     } ],
+    "requestSubtotal": 1716,
     "requestTotal": 1716,
     "history": []
 })
 
 db.requests.insert({
+    "requestNumber": 2,
     "vendor": "vendor2",
     "URL": "requestor2URL",
+    "manager": "manager@utdallas.edu",
     "justification": "",
-    "status": "approved",
+    "status": "manager approved",
     "projectNumber": 844,
     "additionalInfo": "",
     "items": [{
@@ -207,13 +212,36 @@ db.requests.insert({
         "totalCost": 900,
         "itemURL": "item1url"
     }],
-    "requestTotal": 900,
+    "requestSubtotal": 900,
+    "shippingCost": 1000,
+    "requestTotal": 1900,
     "history": [
     {
         "actor": "manager@utdallas.edu",
         "timestamp": new Date("2019-03-01T09:00:00"),
-        "comment": "approved",
+        "comment": "manager approved",
         "oldState": "pending",
-        "newState": "approved"
+        "newState": "manager approved"
     }]
+})
+
+db.sequence.insert({
+    "name" : "requests",
+    "number" : 3
+})
+
+//~ db.costs.insert({
+    //~ "type": "shipping",
+    //~ "amount": 1000,
+    //~ "comment": "shipping cost for item1 from vendor2",
+    //~ "actor": "admin@utdallas.edu",
+    //~ "projectNumber": 844
+//~ })
+
+db.costs.insert({
+    "type": "refund",
+    "amount": 1000,
+    "comment": "test",
+    "actor": "admin@utdallas.edu",
+    "projectNumber": 844
 })

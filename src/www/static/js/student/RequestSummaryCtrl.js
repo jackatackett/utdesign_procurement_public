@@ -1,10 +1,10 @@
-app.controller('RequestSummaryCtrl', ['$scope', '$http', function($scope, $http) {
+app.controller('RequestSummaryCtrl', ['$scope', '$http', '$location', '$timeout', '$interval', 'dispatcher', function($scope, $http, $location, $timeout, $interval, dispatcher) {
 
-    $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification", "additionalInfo"];
-    $scope.fields = ["Project Number", "Status", "Vendor", "URL", "Justification", "Additional Info"];
+    $scope.fieldKeys = ["requestNumber", "projectNumber", "manager", "status", "vendor", "URL", "justification", "additionalInfo"];
+    $scope.fields = ["Request Number", "Project Number", "Assigned Manager Email", "Status", "Vendor", "URL", "Justification", "Additional Info"];
     $scope.grid = [];
-    $scope.itemFieldKeys = ["description", "partNo", "quantity", "unitCost", "total"];
-    $scope.itemFields = ["Description", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
+    $scope.itemFieldKeys = ["description", "itemURL", "partNo", "quantity", "unitCost", "total"];
+    $scope.itemFields = ["Description", "Item URL", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
 
     $scope.data = [ {
                         projectNumber: 123,
@@ -52,11 +52,49 @@ app.controller('RequestSummaryCtrl', ['$scope', '$http', function($scope, $http)
         $(target.nextElementSibling).toggle();
     };
 
-    $http.post('/procurementStatuses', {}).then(function(resp) {
-        console.log("procurementStatuses success", resp)
-        $scope.data = resp.data;
-    }, function(err) {
-        console.error("Error", err.data)
-    });
+    $scope.editRequest = function(request) {
+        dispatcher.emit('editRequest', request);
+        $location.hash('create');
+    }
+
+    $scope.cloneRequest = function(request) {
+        dispatcher.emit('cloneRequest', request);
+        $location.hash('create');
+    }
+
+    $scope.cancelRequest = function(request) {
+        if (request._id) {
+            $http.post('/procurementCancel', {_id: request._id}).then(function(resp) {
+                console.log(resp);
+                alert("Success!");
+                $scope.refreshStatuses();
+            }, function(err) {
+                console.error(err);
+                alert("Error!");
+                $scope.refreshStatuses();
+            })
+        } else {
+            console.error("Cancel Request cannot proceed without _id. See:", request);
+            alert("Cancel Request cannot proceed without _id.");
+        }
+    }
+
+    $scope.canEdit = function(status) {
+        return status == "saved" || status == "updates for manager" || status == "updates for admin";
+    }
+
+    $scope.refreshStatuses = function() {
+        $http.post('/procurementStatuses', {}).then(function(resp) {
+            console.log("procurementStatuses success", resp)
+            $scope.data = resp.data;
+        }, function(err) {
+            console.error("Error", err.data)
+        });
+    }
+
+    $timeout($scope.refreshStatuses, 0);
+    $interval($scope.refreshStatuses, 5000);
+
+    dispatcher.on("refreshStatuses", $scope.refreshStatuses);
 
 }]);

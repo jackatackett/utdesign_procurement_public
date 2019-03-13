@@ -17,7 +17,7 @@
                 <td ng-repeat="fieldK in fieldKeys">{{dict[fieldK]}}</td>
             </tr>
 
-            <tr ng-repeat-end  style="background-color: #999">
+            <tr ng-repeat-end  style="background-color: #999; display: none;">
                 <td colspan="6" style="padding: 0px;">
                     <table class="table table-bordered" style="margin-bottom: 0px; margin-left: 10px; width: calc(100% - 10px);">
                         <tr style="border-bottom: 1.5px solid black">
@@ -35,7 +35,7 @@
 
                         </tr>
 
-                        <tr>
+                        <tr ng-if="canApprove(dict.status)">
                             <td colspan = "6" style="text-align:center">
                                 <button type="button" class="btn btn-success" ng-click="approveRequest($event, dictIdx)" style="width:49%">Approve</button>
                                 <button type="button" class="btn btn-danger" ng-click="rejectRequest($event, dictIdx)" style="width:49%">Reject</button>
@@ -64,7 +64,7 @@
                     <button type="button" class="btn btn-primary" ng-click="permanentReject($event)" style="float:left; width:100%;">Permanent Reject</button>
                 </div>
                 <div class="col-md-4">
-                    <button type="button" class="btn btn-primary" ng-click="sendForReview($event)" style="float:left; width:100%;">Send for Review</button>
+                    <button type="button" class="btn btn-primary" ng-click="sendForReview($event)" style="float:left; width:100%;">Send for Updates</button>
                 </div>
             </div>
         </div>
