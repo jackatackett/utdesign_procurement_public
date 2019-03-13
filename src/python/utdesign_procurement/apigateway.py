@@ -477,7 +477,7 @@ class ApiGateway(object):
 
         # the optional projectNumbers of the user
         if 'projectNumbers' in data:
-            myData = checkProjectNumbers(data)
+            myData['projectNumbers'] = checkProjectNumbers(data)
 
         # optional keys, string
         for key in ("firstName", "lastName", "netID", "course"):
@@ -487,7 +487,7 @@ class ApiGateway(object):
         # update the document
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {'$set': myData}
-        self._updateDocument(myID, updateQuery, updateQuery, updateRule)
+        self._updateDocument(myID, updateQuery, updateQuery, updateRule, collection=self.colUsers)
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -523,7 +523,7 @@ class ApiGateway(object):
                 {'status': 'removed'}
         }
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(myID, findQuery, updateQuery, updateRule, collection=self.colUsers)
 
         # TODO send email?
 
@@ -719,7 +719,7 @@ class ApiGateway(object):
 
         pageSize = 10 # TODO stretch goal make this configurable
 
-        userCursor = self.colUsers.find().sort(sortBy, direction)
+        userCursor = self.colUsers.find({'status':'current'}).sort(sortBy, direction)
 
         retUsers = []
         for user in userCursor[pageSize*pageNumber: pageSize*(pageNumber+1)]:
@@ -746,7 +746,7 @@ class ApiGateway(object):
         cherrypy.lib.sessions.expire()
 
     # finds document in database and updates it using provided queries
-    def _updateDocument(self, myID, findQuery, updateQuery, updateRule):
+    def _updateDocument(self, myID, findQuery, updateQuery, updateRule, collection=None):
         """
         This function updates a document. It finds the document in the
         database and updates it using the provided queries/rules.
@@ -756,8 +756,11 @@ class ApiGateway(object):
         :param updateQuery: query to find document to update
         :param updateRule: rule to update document to update
         """
-        if self.colRequests.find(findQuery).count() > 0:
-            self.colRequests.update_one(updateQuery, updateRule, upsert=False)
+
+        if collection is None:
+            collection = self.colRequests
+        if collection.find(findQuery).count() > 0:
+            collection.update_one(updateQuery, updateRule, upsert=False)
         else:
             raise cherrypy.HTTPError(
                 400, 'Request matching id and status not found in database')
