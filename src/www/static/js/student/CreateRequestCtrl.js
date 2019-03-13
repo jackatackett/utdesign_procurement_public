@@ -147,7 +147,10 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher'
     */
     $scope.updateCost = function(rowIdx) {
         var item = $scope.request.items[rowIdx];
-        item.totalCost = (item.quantity * item.unitCost).toFixed(2);
+        if (item.unitCost == undefined || item.quantity == undefined)
+            item.totalCost = "";
+        else
+            item.totalCost = (item.quantity * item.unitCost).toFixed(2);
     }
 
     /**
