@@ -12,8 +12,6 @@ from utdesign_procurement.utils import authorizedRoles, generateSalt, hashPasswo
 
 # TODO integrate existing code with these changes?
 
-import datetime
-
 class ApiGateway(object):
 
     def __init__(self, email_queue):
@@ -230,12 +228,8 @@ class ApiGateway(object):
         else:
             bigFilter = {}
 
-        print("whoami:", cherrypy.session['role'])
-        print("filtering on:", bigFilter)
-
         listRequests = []
         for request in self.colRequests.find(bigFilter):
-            print(request)
             request['_id'] = str(request['_id'])
             if 'history' in request:
                 for hist in range(len(request['history'])):
