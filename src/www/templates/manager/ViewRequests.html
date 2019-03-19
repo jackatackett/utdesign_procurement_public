@@ -1,7 +1,7 @@
 <div id="viewRequestsCtrlDiv" ng-controller="ViewRequestsCtrl as $ctrl" style="margin: 2%; box-sizing: border-box;">
 
-    <button type="button" class="btn btn-primary" style="display:inline-block;" ng-repeat="team in teams" ng-click="regenerateTable($event)">
-        {{team}}
+    <button type="button" class="btn btn-primary" style="display:inline-block;" ng-repeat="(idx, data) in projects" ng-click="regenerateTable($event)" id="btnTab{{idx}}">
+        {{data["name"]}}
     </button>
 
     <table class="table table-bordered">
