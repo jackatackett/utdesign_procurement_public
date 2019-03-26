@@ -201,7 +201,7 @@ db.requests.insert({
     "URL": "requestor2URL",
     "manager": "manager@utdallas.edu",
     "justification": "",
-    "status": "admin approved",
+    "status": "ordered",
     "projectNumber": 844,
     "additionalInfo": "",
     "items": [{

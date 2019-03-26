@@ -74,7 +74,7 @@ $scope.fieldKeys = ["requestNumber", "projectNumber", "status", "vendor", "URL",
         });
     };
 
-        $scope.rejectRequest = function(e, rowIdx) {
+    $scope.rejectRequest = function(e, rowIdx) {
         $("#rejectModal").show();
         currentRow = rowIdx;
     };
@@ -125,18 +125,30 @@ $scope.fieldKeys = ["requestNumber", "projectNumber", "status", "vendor", "URL",
         $("#rejectModal").hide();
     };
 
-    $scope.orderRequest = function(e, rowIdx) {
-        console.log($scope.data);
-        console.log(rowIdx);
-        $http.post('/procurementOrder', {'_id':$scope.data[rowIdx]._id}).then(function(resp) {
+    $scope.setShipping = function(e) {
+        $http.post('/procurementOrder', {'_id':$scope.data[shippingRow]._id, "amount":$("#shippingAmt").val()}).then(function(resp) {
             console.log("Success", resp);
             alert("Success!");
             $scope.refreshStatuses();
+            $scope.cancelShippingBox();
         }, function(err) {
             console.error("Error", err.data);
             alert("Error");
             $scope.refreshStatuses();
+            $scope.cancelShippingBox();
         });
+    }
+
+    $scope.cancelShippingBox = function(e) {
+        $("#shippingModal").hide();
+    };
+
+    $scope.orderRequest = function(e, rowIdx) {
+        console.log($scope.data);
+        console.log(rowIdx);
+        shippingRow = rowIdx;
+        $("#shippingModal").show();
+        
     };
 
     $scope.readyRequest = function(e, rowIdx) {

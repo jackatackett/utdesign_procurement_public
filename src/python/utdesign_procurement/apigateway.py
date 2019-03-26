@@ -8,7 +8,7 @@ from uuid import uuid4
 
 from utdesign_procurement.utils import authorizedRoles, generateSalt, hashPassword, \
     checkProjectNumbers, checkValidData, checkValidID, checkValidNumber, \
-    verifyPassword, requestCreate
+    verifyPassword, requestCreate, convertToCents
 
 # TODO integrate existing code with these changes?
 
@@ -48,7 +48,7 @@ class ApiGateway(object):
                 "requestNumber": (int) optional,
                 "manager": (string), //email of manager who can approve this
                 "vendor": (string),
-                "projectNumber": (int or list of int),
+                "projectNumber": (int),
                 "URL": (string),
                 "justification": (string) optional,
                 "additionalInfo": (string) optional,
@@ -230,12 +230,12 @@ class ApiGateway(object):
         else:
             bigFilter = {}
 
-        print("whoami:", cherrypy.session['role'])
-        print("filtering on:", bigFilter)
+        #~ print("whoami:", cherrypy.session['role'])
+        #~ print("filtering on:", bigFilter)
 
         listRequests = []
         for request in self.colRequests.find(bigFilter):
-            print(request)
+            #~ print(request)
             request['_id'] = str(request['_id'])
             if 'history' in request:
                 for hist in range(len(request['history'])):
@@ -418,7 +418,7 @@ class ApiGateway(object):
                 "requestNumber": (int) optional,
                 "manager": (string), //email of manager who can approve this
                 "vendor": (string),
-                "projectNumber": (int or list of int),
+                "projectNumber": (int),
                 "URL": (string),
                 "justification": (string) optional,
                 "additionalInfo": (string) optional,
@@ -474,7 +474,7 @@ class ApiGateway(object):
                 "requestNumber": (int) optional,
                 "manager": (string), //email of manager who can approve this
                 "vendor": (string),
-                "projectNumber": (int or list of int),
+                "projectNumber": (int),
                 "URL": (string),
                 "justification": (string) optional,
                 "additionalInfo": (string) optional,
@@ -593,11 +593,13 @@ class ApiGateway(object):
         """
         This REST endpoint changes the status of a procurement request
         to reflect that its items have been ordered by an admin.
+        The shipping cost is also set.
 
         Expected input::
 
             {
-                "_id": (string)
+                "_id": (string),
+                "amount": (string)
             }
         """
         # check that we actually have json
@@ -607,20 +609,32 @@ class ApiGateway(object):
             raise cherrypy.HTTPError(400, 'No data was given')
 
         myID = checkValidID(data)
+        shippingAmt = convertToCents(checkValidData("amount", data, str))
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
                 {'status': "admin approved"}
             ]}
-        updateQuery = {'_id': ObjectId(myID)}
-        updateRule = {
-            "$set":
-                {'status': "ordered"}
-        }
+        try:
+            totalAmt = int(list(self.colRequests.find(findQuery))[0]["requestTotal"]) + shippingAmt
+            #~ print()
+            #~ print(totalAmt)
+            #~ print()
+            #~ totalAmt = totalAmt[0]["requestTotal"]
+            updateQuery = {'_id': ObjectId(myID)}
+            updateRule = {
+                "$set":
+                    {'status': "ordered",
+                     'shippingCost': shippingAmt,
+                     'requestTotal': totalAmt}
+            }
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+            self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
-        # TODO send email
+            # TODO send email
+        except:
+            raise cherrypy.HTTPError(400, "Error updating shipping")
+        
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -847,6 +861,7 @@ class ApiGateway(object):
     def addProject(self):
         """
         This adds a project, and can only be done by the admin.
+        If the projectNumber is already in use, an error is thrown
         {
             “projectNumber”: (int),
             “sponsorName”: (string),
@@ -872,7 +887,7 @@ class ApiGateway(object):
     @authorizedRoles("student", "manager", "admin")
     def findProject(self):
         """
-        This finds all projects with the given project numbers. If none given, then all authorized projects are returned.
+        This finds all projects with the given project numbers and recalculates their budget. If none given, then all authorized projects are returned.
         {
             projectNumbers: (list of ints, optional)
         }
@@ -899,7 +914,7 @@ class ApiGateway(object):
                 for res in self.projects.find({'projectNumber': project}):
                     res['_id'] = str(res['_id'])
                     result.append(res)
-            return result
+            #~ return result
         else:
             if cherrypy.session['role'] != 'admin':
                 validNum = cherrypy.session['projectNumbers']
@@ -907,12 +922,41 @@ class ApiGateway(object):
                     for res in self.projects.find({'projectNumber': project}):
                         res['_id'] = str(res['_id'])
                         result.append(res)
-                return result
+                #~ return result
             else:   # is admin
                 for res in self.projects.find({}):
                     res['_id'] = str(res['_id'])
                     result.append(res)
-                return result
+                #~ return result
+
+        #~ print()
+        #~ print("calculating budget")
+        #calculate the budget
+        for res in result:
+            #~ print(res)
+            pendingCosts = 0
+            actualCosts = 0
+            #~ requests = self.procurementStatuses({"projectNumbers": res["projectNumber"]})
+            requests = self.colRequests.find({"projectNumber": res["projectNumber"]})
+            for req in requests:
+                #~ print(req)
+                if req["status"] in ["admin approved", "ordered", "ready for pickup", "complete"]:
+                    actualCosts += req["requestTotal"]
+                pendingCosts += req["requestTotal"]
+            #~ print(pendingCosts, actualCosts)
+
+            miscCosts = 0
+            addCosts = self.costs.find({"projectNumber": res["projectNumber"]})
+            for co in addCosts:
+                if co["type"] == "refund":
+                    miscCosts -= co["amount"]
+                else:
+                    miscCosts += co["amount"]
+            res["availableBudget"] = res["defaultBudget"] - actualCosts - miscCosts
+            res["pendingBudget"] = res["defaultBudget"] - pendingCosts - miscCosts
+            #~ print(res)
+        #~ print()
+        return result
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -921,6 +965,7 @@ class ApiGateway(object):
     def modifyProject(self):
         """
         This changes a project's values. It can only be done by an admin.
+        The projectNumber is required, and cannot be changed.
         Changing the budget will 
         {
             projectNumber: (int),

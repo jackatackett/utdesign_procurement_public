@@ -47,6 +47,7 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher'
         // send the request to the REST endpoint
 
         console.log("status", $scope.request.status);
+        console.log($scope.request);
         var endpoint = "/procurementSave";
 
         if ($scope.request.status == "updates for manager") {

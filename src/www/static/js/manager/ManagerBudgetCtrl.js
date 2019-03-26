@@ -72,8 +72,10 @@ app.controller('ManagerBudgetCtrl', ['$scope', '$location', '$http', '$window', 
         });
     };
 
-    $scope.getTeams();
-    $timeout($scope.getData, 0);
+    //~ $scope.getTeams();
+    $timeout($scope.getTeams, 0);
+    $interval($scope.getTeams, 5000);
+    $timeout($scope.getData, 500);
     $interval($scope.getData, 5000);
 
     function filterRequests() {
