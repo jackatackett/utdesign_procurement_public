@@ -10,6 +10,7 @@ from multiprocessing import Process, Queue
 def email_listen(emailer, queue):
     function_lut = {
         'invite': emailer.emailInvite,
+        'forgot': emailer.emailForgot,
         'send': emailer._emailSend
     }
 
@@ -47,12 +48,33 @@ class Emailer(object):
         self.templateLookup = TemplateLookup(directories=template_dir)
         self.domain = domain
 
-    def emailInvite(self, email=None, uuid=None, expiration=None):
-        # TODO make this message pretty
-        # TODO include expiration time in this email
+    def emailInvite(self, email=None, uuid=None):
+        """
+        Sends an invitation for a new user to set up their password for the
+        first time.
+
+        :param email: The email of the user
+        :param uuid: The uuid used for the invitation
+        :return:
+        """
+
         template = self.templateLookup.get_template('invite.html')
         body = template.render(uuid=uuid, domain=self.domain)
         self._emailSend(email, 'UTDesign GettIt Invite', html=body)
+
+    def emailForgot(self, email=None, uuid=None, expiration=None):
+        """
+        Sends a recovery link for an existing user to reset their password.
+
+        :param email:
+        :param uuid:
+        :param expiration:
+        :return:
+        """
+
+        template = self.templateLookup.get_template('forgot.html')
+        body = template.render(uuid=uuid, domain=self.domain)
+        self._emailSend(email, 'UTDesign GettIt Password Reset', html=body)
 
     def _emailDo(self, func):
         server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
