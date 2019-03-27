@@ -323,6 +323,10 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
+        # TODO send confirmation email to manager
+        # TODO send notification emails to students
+        # TODO send notification emails to admins
+
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
@@ -359,6 +363,9 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
+        # TODO send confirmation email to manager
+        # TODO send notification emails to students
+
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
@@ -394,6 +401,10 @@ class ApiGateway(object):
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
+
+        # TODO send confirmation email to admin
+        # TODO send notification emails to students
+        # TODO
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -453,6 +464,7 @@ class ApiGateway(object):
 
         # TODO send confirmation emails to students
         # TODO send notification email to manager
+        # TODO send email to admin?
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
