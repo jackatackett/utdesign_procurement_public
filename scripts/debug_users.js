@@ -243,5 +243,6 @@ db.costs.insert({
     "amount": 1000,
     "comment": "test",
     "actor": "admin@utdallas.edu",
-    "projectNumber": 844
+    "projectNumber": 844,
+    "timestamp": new Date("2019-03-01T09:00:00")
 })

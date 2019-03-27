@@ -11,7 +11,7 @@
 
         <tbody>
 
-            <tr ng-repeat="user in users | filter : editFilter" id="user[email]" ng-init="rowIdx = $index">
+            <tr ng-repeat="user in users | filter : editFilter" ng-init="rowIdx = $index">
                 <td ng-repeat="fieldK in fieldKeys" ng-bind="user[fieldK]"></td>
                 <td style="border: 0px;">
                     <button type="button" class="btn btn-primary" ng-click="editUser($event, rowIdx)">Edit</button>

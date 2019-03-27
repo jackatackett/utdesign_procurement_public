@@ -788,15 +788,36 @@ class ApiGateway(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
+    @authorizedRoles("admin")
+    def getAdminList(self):
+        """
+        This returns the emails of all admins in the system
+        """
+        if cherrypy.session['role'] == 'admin':
+            results = []
+            for res in self.colUsers.find({"role": "admin"}):
+                results.append(res["email"])
+            return results
+        raise cherryp.HTTPError(400, "Unauthorized access")
+
+    @cherrypy.expose
+    #~ @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
     @authorizedRoles("admin")
     def addCost(self):
         """
-        This adds a cost (refund, reimbursement, or shipping) to a project, and can only be done by the admin
+        This adds a cost (refund, reimbursement, funding, or cut) to a project, and can only be done by the admin
         {
-            projectNumber: (int)
+            projectNumber: (int),
+            type: (string: refund, reimbursement, funding, cut),
+            amount: (string, dollar amount),
+            comment: (string),
+            actor: (string, email of admin)
         }
         """
+        print()
+        print("inserting cost")
+        print()
 
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -804,7 +825,16 @@ class ApiGateway(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        raise cherrypy.HTTPError(101, "not yet implemented")
+        cost = {}
+
+        cost["projectNumber"] = checkValidData("projectNumber", data, int)
+        for key in ("type", "amount", "comment", "actor"):
+            cost[key] = checkValidData(key, data, str)
+            if key == "amount":
+                cost[key] = convertToCents(cost[key])
+        #~ cost["timestamp"] = datetime.datetime.now().isoformat()
+        cost["timestamp"] = datetime.datetime.now()
+        self.costs.insert(cost)
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -838,6 +868,7 @@ class ApiGateway(object):
             for project in validNum:
                 for res in self.costs.find({'projectNumber': project}):
                     res['_id'] = str(res['_id'])
+                    res["timestamp"] = res["timestamp"].isoformat()
                     result.append(res)
             return result
         else:
@@ -846,11 +877,13 @@ class ApiGateway(object):
                 for project in validNum:
                     for res in self.costs.find({'projectNumber': project}):
                         res['_id'] = str(res['_id'])
+                        res["timestamp"] = res["timestamp"].isoformat()
                         result.append(res)
                 return result
             else:   # is admin
                 for res in self.costs.find({}):
                     res['_id'] = str(res['_id'])
+                    res["timestamp"] = res["timestamp"].isoformat()
                     result.append(res)
                 return result
 
@@ -1245,6 +1278,7 @@ class ApiGateway(object):
 
     # this function is for debugging for now. If that never changes then
     # TODO remove this function before production if it isn't needed
+    # NOTE we can use this as a welcome screen; ie "Welcome User". This can also be used to set some default values (ie project number, email)
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def userInfo(self):

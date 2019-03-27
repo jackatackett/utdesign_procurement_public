@@ -47,11 +47,14 @@ app.controller('EditUsersCtrl', ['$scope', '$location', function($scope, $locati
     };
 
     $scope.closeEditBox = function(e) {
-        document.getElementById("editModal").style.display = "none";
+        //~ document.getElementById("editModal").style.display = "none";
+        $("#editModal").hide();
     };
 
     $scope.saveUserEdit = function() {
+        //need to validate input
         console.log($scope.selectedUser);
+        $("#editModal").hide();
     }
 
 }]);

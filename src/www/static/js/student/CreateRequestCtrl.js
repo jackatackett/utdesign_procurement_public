@@ -99,7 +99,7 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher'
             }
 
             //no empty description
-            if (!item.itemURL || item.itemURL .trim().length == 0) {
+            if (!item.itemURL || item.itemURL.trim().length == 0) {
                 $scope.errorText = "Item URL should not be empty in item " + (x+1);
                 return false;
             }
