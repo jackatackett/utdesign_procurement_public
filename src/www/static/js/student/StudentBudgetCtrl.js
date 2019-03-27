@@ -2,9 +2,17 @@ app.controller('StudentBudgetCtrl', ['$scope', '$location', '$http', '$window', 
     console.log("budget");
 
     function convertCosts(value) {
+        console.log(value);
+        if (typeof value === "undefined") {
+            return "0.00";
+        }
         value = String(value);
-        if (value != "undefined")
+        if (value !== "undefined") {
+            while (value.length < 3) {
+                value = "0" + value;
+            }
             return value.slice(0, -2) + "." + value.slice(value.length-2);
+        }
         return "0.00"
     };
 
