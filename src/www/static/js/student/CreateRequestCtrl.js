@@ -47,6 +47,7 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher'
         // send the request to the REST endpoint
 
         console.log("status", $scope.request.status);
+        console.log($scope.request);
         var endpoint = "/procurementSave";
 
         if ($scope.request.status == "updates for manager") {
@@ -98,7 +99,7 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher'
             }
 
             //no empty description
-            if (!item.itemURL || item.itemURL .trim().length == 0) {
+            if (!item.itemURL || item.itemURL.trim().length == 0) {
                 $scope.errorText = "Item URL should not be empty in item " + (x+1);
                 return false;
             }
@@ -147,7 +148,10 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher'
     */
     $scope.updateCost = function(rowIdx) {
         var item = $scope.request.items[rowIdx];
-        item.totalCost = (item.quantity * item.unitCost).toFixed(2);
+        if (item.unitCost == undefined || item.quantity == undefined)
+            item.totalCost = "";
+        else
+            item.totalCost = (item.quantity * item.unitCost).toFixed(2);
     }
 
     /**

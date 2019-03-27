@@ -3,6 +3,7 @@
 import cherrypy
 import hashlib
 import os
+import re
 
 from bson.objectid import ObjectId
 
@@ -178,6 +179,22 @@ def checkValidID(data):
     else:
         raise cherrypy.HTTPError(400, 'data needs object id')
 
+def convertToCents(dollarAmt):
+    """
+    Converts a string dollar amount to an int cents amount
+    :param dollarAmt: the string dollar amount, does not have $ sign
+    :return: cents in int
+    """
+    try:
+        #~ "{:.2f}".format(float(dollarAmt))
+        #~ if re.match("^[0-9]*(?:\.[0-9]{2})?$", dollarAmt):
+        if re.match("^[0-9]*\.[0-9]{2}?$", dollarAmt):
+            return int(dollarAmt.replace(".", ""))
+        else:
+            raise cherrypy.HTTPError(400, "Bad currency value")
+    except:
+        raise cherrypy.HTTPError(400, "Bad currency value")
+
 def requestCreate(data, status, optional=False):
     """
     Takes data as an input as uses the data to create
@@ -231,6 +248,8 @@ def requestCreate(data, status, optional=False):
     # myItems is the list we are creating and adding to the database
     myItems = []
 
+    requestSubtotal = 0
+
     # iterate through list of items
     for theirDict in theirItems:
         # theirDict = checkValidData(item, data, dict) #check dict is actually a dict?
@@ -241,8 +260,18 @@ def requestCreate(data, status, optional=False):
         for key in ("quantity",):
             myDict[key] = checkValidData(key, theirDict, int, optional)
         myDict['totalCost'] = checkValidData("totalCost", theirDict, str, optional)
+
+        #convert unitCost and totalCost to cents, and calculate the subTotal
+        for key in ("unitCost", "totalCost"):
+            myDict[key] = convertToCents(myDict[key])
+        requestSubtotal += myDict["totalCost"]
+        
         myItems.append(myDict)
 
     myRequest["items"] = myItems
+    myRequest["requestSubtotal"] = requestSubtotal
+
+    #since this is creating a request, the shipping cost will be 0 (not set yet) and the requestTotal will be the same as requestSubtotal
+    myRequest["requestTotal"] = requestSubtotal
 
     return myRequest

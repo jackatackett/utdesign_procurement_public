@@ -7,6 +7,11 @@ $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification",
     $scope.itemFields = ["Description", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
     $scope.teams = ["Procurement", "Clock-It", "Smart Glasses"];
 
+    $scope.projects = [];
+
+    var projectData = [];
+    var curProject = 0;
+
     $scope.data = [ {
                         projectNumber: 123,
                         status: "pending",
@@ -56,8 +61,14 @@ $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification",
     };
 
     $scope.regenerateTable = function(e) {
-        var target = e.currentTarget;
-        console.log("change table");
+        //~ var target = e.currentTarget;
+        //~ console.log("change table");
+        var targ = e.target.id.substring(6, e.target.id.length);
+        curProject = targ;
+        console.log("current proj: ", curProject);
+        console.log("project data:", projectData[curProject]);
+        console.log("project info:", $scope.projects);
+        $scope.refreshStatuses();
     };
 
     $scope.approveRequest = function(e, rowIdx) {
@@ -108,15 +119,41 @@ $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification",
         $("#rejectModal").hide();
     };
 
+    $scope.getTeams = function() {
+        $http.post('/findProject', {}).then(function(resp) {
+            console.log("Project Success", resp);
+            projectData = resp.data;
+
+            numProjects = projectData.length;
+            console.log("number projects: " + numProjects);
+
+            $scope.projects = [];
+
+            for (var pr in projectData) {
+                var tempData = {}
+                tempData["number"] = projectData[pr]["projectNumber"];
+                tempData["name"] = projectData[pr]["projectName"];
+                $scope.projects.push(tempData);
+                //~ $scope.projects.push({"number": pr["projectNumber"], "name": pr["projectName"]});
+            }
+        }, function(err) {
+            console.error("Error", err.data);
+        });
+    };
+
     $scope.refreshStatuses = function() {
-        $http.post('/procurementStatuses', {}).then(function(resp) {
+        console.log("status number", curProject);
+        var filterData = {"projectNumbers": $scope.projects[curProject]["number"]};
+        console.log("Filtering:", filterData);
+        $http.post('/procurementStatuses', filterData).then(function(resp) {
             console.log("Success", resp)
             $scope.data = resp.data;
         }, function(err) {
             console.error("Error", err.data)
         });
-    }
+    };
 
+    $scope.getTeams();
     $timeout($scope.refreshStatuses, 0);
     $interval($scope.refreshStatuses, 5000);
 

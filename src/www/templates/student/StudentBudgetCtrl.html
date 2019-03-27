@@ -1,10 +1,4 @@
 <div id="viewBudgetDiv" ng-controller="StudentBudgetCtrl as $ctrl" style="margin: 2%; box-sizing: border-box;">
-<!--
-    <h3>Budget Limit: {{getMaxBudgetStr()}}</h3>
-    <h3>Budget Available: {{getTotalStr()}}</h3>
-    <h3>Budget Pending: {{getPendingStr()}}</h3>
--->
-
     <button type="button" class="btn btn-primary" style="inline-block" ng-repeat="(idx, data) in projects" ng-click="regenerateTable($event)" id="btnTab{{idx}}">
         {{data["name"]}}
     </button>
@@ -13,8 +7,8 @@
         <thead>
             <tr>
                 <th>Budget Limit</th>
-                <th>Available Budget</th>
-                <th>Pending Budget</th>
+                <th>Available Budget Remaining</th>
+                <th>Pending Budget Remaining</th>
             </tr>
         </thead>
 
@@ -30,7 +24,7 @@
     <table class="table table-bordered">
         <thead>
             <tr>
-                <th colspan="3">Procurement Requests</th>
+                <th colspan="5">Procurement Requests</th>
             </tr>
             <tr>
                 <th ng-repeat="field in requestFields">{{field}}</th>
@@ -59,37 +53,5 @@
                 <td ng-repeat="costK in costKeys">{{costDict[costK]}}</td>
             </tr>
         </tbody>
-
-<!--
-        <tbody>
-
-            <tr ng-repeat-start="dict in data" ng-click="toggleCollapse($event)">
-                <td ng-repeat="fieldK in fieldKeys">{{dict[fieldK]}}</td>
-            </tr>
-
-            <tr ng-repeat-end  style="background-color: #999">
-                <td colspan="6" style="padding: 0px;">
-                    <table class="table table-bordered" style="margin-bottom: 0px; margin-left: 10px; width: calc(100% - 10px);">
-                        <tr style="border-bottom: 1.5px solid black">
-                            <td scope="col" style="background-color: #eee;">#</td>
-                            <td scope="col" ng-repeat="field in itemFields" ng-bind="field" style="background-color: #eee;"></td>
-                        </tr>
-
-                        <tr ng-repeat="row in dict.items" ng-init="rowIdx = $index">
-
-                            <td scope="row" ng-bind="rowIdx + 1" style="background-color: #eee;"></td>
-
-                            <td class="cleanInputCell" ng-repeat="field in itemFieldKeys track by $index" ng-init="fieldIdx = $index" style="background-color: #eee;">
-                                {{dict.items[rowIdx][field]}}
-                            </td>
-
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-
-        </tbody>
--->
-
     </table>
 </div>
