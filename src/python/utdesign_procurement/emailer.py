@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import smtplib
+import traceback
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -11,7 +12,8 @@ def email_listen(emailer, queue):
     function_lut = {
         'invite': emailer.emailInvite,
         'forgot': emailer.emailForgot,
-        'send': emailer._emailSend
+        'send': emailer._emailSend,
+        'requestMade': emailer.emailRequestMade
     }
 
     while True:
@@ -24,7 +26,11 @@ def email_listen(emailer, queue):
 
         func = function_lut.get(header, None)
         if func:
-            func(**kwargs)
+            try:
+                func(**kwargs)
+            except Exception as e:
+                print("Emailer encountered an exception.")
+                traceback.print_exc()
         elif header == 'die':
             break
 
@@ -58,7 +64,7 @@ class Emailer(object):
         :return:
         """
 
-        template = self.templateLookup.get_template('invite.html')
+        template = self.templateLookup.get_template('userAdd.html')
         body = template.render(uuid=uuid, domain=self.domain)
         self._emailSend(email, 'UTDesign GettIt Invite', html=body)
 
@@ -72,9 +78,36 @@ class Emailer(object):
         :return:
         """
 
-        template = self.templateLookup.get_template('forgot.html')
+        template = self.templateLookup.get_template('userForgotPassword.html')
         body = template.render(uuid=uuid, domain=self.domain)
         self._emailSend(email, 'UTDesign GettIt Password Reset', html=body)
+
+    def emailRequestMade(self, teamEmails=None, request=None):
+        """
+
+        :param request:
+        :return:
+        """
+
+        renderArgs = {
+            'domain': self.domain,
+            'requestNumber': request['requestNumber'],
+            'projectNumber': request['projectNumber'],
+            'managerEmail': request['manager'],
+            'vendor': request['vendor'],
+            'vendorURL': request['URL'],
+            'justification': request['justification'],
+            'additionalInfo': request['additionalInfo'],
+            'itemCount': len(request['items'])
+        }
+
+        template = self.templateLookup.get_template('procurementSaveStudent.html')
+        body = template.render(**renderArgs)
+        self._emailSend(teamEmails, 'New Request For Project %s' % request['projectNumber'], html=body)
+
+        template = self.templateLookup.get_template('procurementSaveManager.html')
+        body = template.render(**renderArgs)
+        self._emailSend(request['manager'], 'New Request For Project %s' % request['projectNumber'], html=body)
 
     def _emailDo(self, func):
         server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
@@ -93,7 +126,10 @@ class Emailer(object):
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
         msg['From'] = self.email_user
-        msg['To'] = to
+        if isinstance(to, str):
+            msg['To'] = to
+        else:
+            msg['To'] = ','.join(to)
 
         msg.attach(MIMEText("This email is meant to be HTML.", 'plain'))
         msg.attach(MIMEText(html, 'html'))

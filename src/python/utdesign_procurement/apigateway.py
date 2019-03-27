@@ -92,7 +92,17 @@ class ApiGateway(object):
         # insert the data into the database
         self.colRequests.replace_one(query, myRequest, upsert=True)
 
-        # TODO send email
+        # send email
+        teamEmails = []
+        for user in self.colUsers.find({'projectNumbers': myRequest['projectNumber']}):
+            if user['role'] == 'student':
+                teamEmails.append(user['email'])
+
+        if status == 'pending':
+            self.email_queue.put(('requestMade', {
+                'teamEmails': teamEmails,
+                'request': myRequest,
+            }))
 
     def sequence(self):
         """
