@@ -90,7 +90,8 @@ class ApiGateway(object):
         # insert the data into the database
         self.colRequests.replace_one(query, myRequest, upsert=True)
 
-        # TODO send email
+        # TODO send confirmation emails to students
+        # TODO send notification email to manager
 
     def sequence(self):
         """
@@ -282,7 +283,8 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
-        # TODO send email
+        # TODO send confirmation emails to students
+        # TODO send notification email to manager/admin?
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -449,7 +451,8 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
-        # TODO send email
+        # TODO send confirmation emails to students
+        # TODO send notification email to manager
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -505,7 +508,8 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
-        # TODO send email
+        # TODO send confirmation emails to students
+        # TODO send notification emails to admins
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -542,7 +546,8 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
-        # TODO send email
+        # TODO send confirmation email to admin
+        # TODO send notification emails to students
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -578,7 +583,8 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
-        # TODO send email
+        # TODO send confirmation email to admin
+        # TODO send notification emails to students
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -614,7 +620,9 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
-        # TODO send email
+        # TODO send confirmation email to admin
+        # TODO send notification emails to students
+
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -651,7 +659,8 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
-        # TODO send email
+        # TODO send confirmation email to admin
+        # TODO send notification emails to students
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -688,7 +697,8 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
-        # TODO send email
+        # TODO send confirmation email to admin
+        # TODO send notification emails to students
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -727,7 +737,8 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
-        # TODO send email
+        # TODO send confirmation email to manager
+        # TODO send notification emails to students
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -764,7 +775,8 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
-        # TODO send email
+        # TODO send confirmation email to admin
+        # TODO send notification emails to students
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -1089,7 +1101,7 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
-        # TODO send email?
+        # TODO send confirmation email to admin
 
     # don't need to check role for this
     @cherrypy.expose
