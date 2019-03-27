@@ -94,7 +94,7 @@ app.controller('StudentBudgetCtrl', ['$scope', '$location', '$http', '$window', 
     function filterCosts() {
         $scope.curCostData = [];
         for (var co in costData) {
-            if (costData[co]["type"] == "refund") {
+            if (costData[co]["type"] == "refund" || costData[co]["type"] == "funding") {
                 costData[co]["amount"] = "+$" + convertCosts(costData[co]["amount"]);
             }
             else {

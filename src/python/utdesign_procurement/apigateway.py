@@ -815,9 +815,6 @@ class ApiGateway(object):
             actor: (string, email of admin)
         }
         """
-        print()
-        print("inserting cost")
-        print()
 
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -829,12 +826,23 @@ class ApiGateway(object):
 
         cost["projectNumber"] = checkValidData("projectNumber", data, int)
         for key in ("type", "amount", "comment", "actor"):
+            if key == "type" and data[key] not in ["refund", "reimbursement", "funding", "cut"]:
+                print(data[key])
+                raise cherrypy.HTTPError(400, "Bad cost type")
             cost[key] = checkValidData(key, data, str)
             if key == "amount":
                 cost[key] = convertToCents(cost[key])
         #~ cost["timestamp"] = datetime.datetime.now().isoformat()
         cost["timestamp"] = datetime.datetime.now()
         self.costs.insert(cost)
+
+        #update the project budget if type == funding or cut
+        if cost["type"] == "funding":
+            newBudget = list(self.projects.find({"projectNumber": cost["projectNumber"]}))[0]["defaultBudget"] + cost["amount"]
+            self.projects.update_one({"projectNumber": cost["projectNumber"]}, {"$set": {"defaultBudget": newBudget}})
+        elif cost["type"] == "cut":
+            newBudget = list(self.projects.find({"projectNumber": cost["projectNumber"]}))[0]["defaultBudget"] - cost["amount"]
+            self.projects.update_one({"projectNumber": cost["projectNumber"]}, {"$set": {"defaultBudget": newBudget}})
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -983,7 +991,7 @@ class ApiGateway(object):
             for co in addCosts:
                 if co["type"] == "refund":
                     miscCosts -= co["amount"]
-                else:
+                elif co["type"] == "reimbursement":
                     miscCosts += co["amount"]
             res["availableBudget"] = res["defaultBudget"] - actualCosts - miscCosts
             res["pendingBudget"] = res["defaultBudget"] - pendingCosts - miscCosts
