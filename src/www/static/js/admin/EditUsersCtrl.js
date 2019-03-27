@@ -28,10 +28,12 @@ app.controller('EditUsersCtrl', ['$scope', '$location', '$http', function($scope
     };
 
     $scope.closeEditBox = function() {
-        document.getElementById("editModal").style.display = "none";
+        //~ document.getElementById("editModal").style.display = "none";
+        $("#editModal").hide();
     };
 
     $scope.saveUserEdit = function() {
+        //need to validate input
         $http.post('/userEdit', {'_id': $scope.selectedUser._id, 'projectNumbers': $scope.selectedUser.projectNumbers, 'firstName':$scope.selectedUser.firstName, 'lastName':$scope.selectedUser.lastName, 'netID':$scope.selectedUser.netID, 'course':$scope.selectedUser.course}).then(function(resp) {
             console.log("userData success", resp);
         }, function(err) {
@@ -87,5 +89,4 @@ app.controller('EditUsersCtrl', ['$scope', '$location', '$http', function($scope
     }, function(err) {
         console.error("Error", err.data);
     });
-
 }]);

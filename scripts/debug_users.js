@@ -172,7 +172,7 @@ db.requests.insert({
     "URL" : "https://www.bunnings.com.au/",
     "manager": "manager@utdallas.edu",
     "justification" : "They're fluffy!",
-    "status" : "pending",
+    "status" : "manager approved",
     "projectNumber" : 844,
     "additionalInfo" : "I want them",
     "items" : [ {
@@ -201,7 +201,7 @@ db.requests.insert({
     "URL": "requestor2URL",
     "manager": "manager@utdallas.edu",
     "justification": "",
-    "status": "manager approved",
+    "status": "ordered",
     "projectNumber": 844,
     "additionalInfo": "",
     "items": [{
@@ -305,5 +305,6 @@ db.costs.insert({
     "amount": 1000,
     "comment": "test",
     "actor": "admin@utdallas.edu",
-    "projectNumber": 844
+    "projectNumber": 844,
+    "timestamp": new Date("2019-03-01T09:00:00")
 })

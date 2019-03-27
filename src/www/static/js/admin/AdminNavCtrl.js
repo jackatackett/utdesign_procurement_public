@@ -12,27 +12,48 @@ app.controller('AdminNavCtrl', ['$scope', '$location', '$window', '$http', funct
             $("#editUsersCtrlDiv").hide();
             $("#requestSummaryCtrlDiv").show();
             $("#adminHelpDiv").hide();
-
+            $("#adminAddCostsDiv").hide();
+            $("#adminEditCostsDiv").hide();
         } else if (hash == 'addUsers') {
             //show add users
             $("#addUsersCtrlDiv").show();
             $("#editUsersCtrlDiv").hide();
             $("#requestSummaryCtrlDiv").hide();
             $("#adminHelpDiv").hide();
-
+            $("#adminAddCostsDiv").hide();
+            $("#adminEditCostsDiv").hide();
         } else if (hash == 'editUsers') {
-            //show add users
+            //show edit users
             $("#addUsersCtrlDiv").hide();
             $("#editUsersCtrlDiv").show();
             $("#requestSummaryCtrlDiv").hide();
             $("#adminHelpDiv").hide();
-
+            $("#adminAddCostsDiv").hide();
+            $("#adminEditCostsDiv").hide();
+        } else if (hash == 'addCosts') {
+            //show add costs
+            $("#addUsersCtrlDiv").hide();
+            $("#editUsersCtrlDiv").hide();
+            $("#requestSummaryCtrlDiv").hide();
+            $("#adminHelpDiv").hide();
+            $("#adminAddCostsDiv").show();
+            $("#adminEditCostsDiv").hide();
+        } else if (hash == 'viewCosts') {
+            //show edit costs
+            $("#addUsersCtrlDiv").hide();
+            $("#editUsersCtrlDiv").hide();
+            $("#requestSummaryCtrlDiv").hide();
+            $("#adminHelpDiv").hide();
+            $("#adminAddCostsDiv").hide();
+            $("#adminEditCostsDiv").show();
         } else {
             //show help
             $("#addUsersCtrlDiv").hide();
             $("#editUsersCtrlDiv").hide();
             $("#requestSummaryCtrlDiv").hide();
             $("#adminHelpDiv").show();
+            $("#adminAddCostsDiv").hide();
+            $("#adminEditCostsDiv").hide();
         }
 
         console.log("admin stuff", $location.hash());
