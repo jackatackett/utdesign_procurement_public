@@ -1,4 +1,4 @@
-<div id="requestSummaryCtrlDiv" ng-controller="RequestSummaryCtrl as $ctrl" style="margin: 2%; box-sizing: border-box;">
+<div id="requestSummaryCtrlDiv" ng-controller="RequestSummaryCtrl as $ctrl" style="margin: 2%; box-sizing: border-box; display:flex;">
 
     <table class="table" style="float: left; width: 10%;">
         <tr>
@@ -6,21 +6,32 @@
                 <input type="text" ng-model="summaryFilter" placeholder="search">
             </td>
         </tr>
-        <tr ng-repeat="filter in filters">
+        <tr ng-repeat="filter in filters track by $index">
             <td>
                 {{filter}}
-                <input type="text">
+                <input type="text" ng-model="filterValues[filterKeys[$index]]">
             </td>
         </tr>
-        <tr ng-repeat="status in statuses">
-            <td>
-                <input type="checkbox">
-                {{status}}
+        <tr>
+            <td>Status
+                <form>
+                  <div class="multiselect">
+                    <div class="selectBox" ng-click="showCheckboxes()">
+                      <select></select>
+                      <div class="overSelect"></div>
+                    </div>
+                    <div id="checkboxes">
+                        <label ng-repeat="status in statuses track by $index">
+                            <input type="checkbox" checklist-value="status" ng-click="addToSelectedStatuses(statusesKeys[$index])"> {{status}}
+                        </label>
+                    </div>
+                  </div>
+                </form>
             </td>
         </tr>
         <tr>
             <td>
-                <button type="button" class="btn btn-primary" ng-click="regenerateTable($event)" >Refresh</button>
+                <button type="button" class="btn btn-primary" ng-click="regenerateTable($event)" style="width:100%;">Refresh</button>
             </td>
         </tr>
     </table>

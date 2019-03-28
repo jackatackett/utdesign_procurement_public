@@ -174,7 +174,8 @@ class ApiGateway(object):
         {
             vendor: (string, optional),
             projectNumbers: (int or list of ints, optional),
-            URL: (string, optional)
+            URL: (string, optional),
+            statuses: (string or list of strings, optional)
         }
 
         If the user is a manager, they will not be able to see "saved" requests
@@ -191,6 +192,13 @@ class ApiGateway(object):
         if 'vendor' in data:
             myVendor = checkValidData('vendor', data, str)
             filters.append({'vendor': {'$eq': myVendor}})
+
+        if 'statuses' in data:
+            myStatuses = checkValidData('statuses', data, list)
+            for s in myStatuses:
+                if not isinstance(s, str):
+                    raise cherrypy.HTTPError(400, "Invalid status type: %s" % s)
+            filters.append({'status': {'$in': myStatuses}})
 
         if 'projectNumbers' in data:
             myProjects = checkProjectNumbers(data)

@@ -225,6 +225,68 @@ db.requests.insert({
     }]
 })
 
+db.requests.insert({
+    "requestNumber": 3,
+    "vendor": "vendor2",
+    "URL": "request3URL",
+    "manager": "manager@utdallas.edu",
+    "justification": "",
+    "status": "manager approved",
+    "projectNumber": 846,
+    "additionalInfo": "",
+    "items": [{
+        "description": "item1",
+        "partNo": "1001",
+        "quantity": 5,
+        "unitCost": 800,
+        "totalCost": 4000,
+        "itemURL": "item1url"
+    }],
+    "requestSubtotal": 4000,
+    "shippingCost": 1000,
+    "requestTotal": 5000,
+    "history": [
+    {
+        "actor": "manager@utdallas.edu",
+        "timestamp": new Date("2019-03-01T09:00:00"),
+        "comment": "managerApproved",
+        "oldState": "pending",
+        "newState": "managerApproved"
+    }]
+})
+
+db.requests.insert({
+    "requestNumber": 4,
+    "vendor": "vendor2",
+    "URL": "request3URL",
+    "manager": "manager@utdallas.edu",
+    "justification": "",
+    "status": "complete",
+    "projectNumber": 846,
+    "additionalInfo": "",
+    "items": [{
+        "description": "item1",
+        "partNo": "1001",
+        "quantity": 5,
+        "unitCost": 800,
+        "totalCost": 4000,
+        "itemURL": "item1url"
+    }],
+    "requestSubtotal": 4000,
+    "shippingCost": 1000,
+    "requestTotal": 5000,
+    "history": [
+    {
+        "actor": "manager@utdallas.edu",
+        "timestamp": new Date("2019-03-01T09:00:00"),
+        "comment": "managerApproved",
+        "oldState": "pending",
+        "newState": "managerApproved"
+    }]
+})
+
+
+
 db.sequence.insert({
     "name" : "requests",
     "number" : 3
