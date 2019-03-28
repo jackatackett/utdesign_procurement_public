@@ -35,10 +35,11 @@
 
                         </tr>
 
-                        <tr ng-if="canApprove(dict.status)">
+                        <tr>
                             <td colspan = "6" style="text-align:center">
-                                <button type="button" class="btn btn-success" ng-click="approveRequest($event, dictIdx)" style="width:49%">Approve</button>
-                                <button type="button" class="btn btn-danger" ng-click="rejectRequest($event, dictIdx)" style="width:49%">Reject</button>
+                                <button type="button" class="btn btn-primary" ng-click="viewHistory($event, dictIdx)" style="width:10%">View History</button>
+                                <button type="button" class="btn btn-success" ng-if="canApprove(dict.status)" ng-click="approveRequest($event, dictIdx)" style="width:49%">Approve</button>
+                                <button type="button" class="btn btn-danger" ng-if="canApprove(dict.status)" ng-click="rejectRequest($event, dictIdx)" style="width:49%">Reject</button>
                             </td>
                         </tr>
                     </table>
@@ -67,6 +68,22 @@
                     <button type="button" class="btn btn-primary" ng-click="sendForReview($event)" style="float:left; width:100%;">Send for Updates</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div id="historyModal" class="modal">
+        <div class="modal-content" style="width:75%">
+            <table>
+                <thead>
+                    <tr>
+                        <th ng-repeat="field in historyFields">{{field}}</th>
+                    </tr>
+                </thead>
+
+                <tbody id="historyBody">
+                </tbody>
+            </table>
+            <button type="button" class="btn btn-primary" ng-click="closeHistoryBox($event)" style="float:left; width:100%;">Close</button>
         </div>
     </div>
 

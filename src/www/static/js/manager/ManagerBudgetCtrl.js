@@ -24,8 +24,8 @@ app.controller('ManagerBudgetCtrl', ['$scope', '$location', '$http', '$window', 
     $scope.requestKeys = ["status", "vendor", "requestSubtotal", "shippingCost", "requestTotal"];
     $scope.requestFields = ["Status", "Vendor", "Subtotal", "Shipping", "Total"];
 
-    $scope.costKeys = ["type", "comment", "amount"];
-    $scope.costFields = ["Type", "Comment", "Amount"];
+    $scope.costKeys = ["timestamp", "type", "comment", "amount"];
+    $scope.costFields = ["Timestamp", "Type", "Comment", "Amount"];
 
     $scope.curRequestData = [];
     $scope.curCostData = [];

@@ -22,10 +22,10 @@ app.controller('AdminEditCosts', ['$scope', '$location', '$http', '$timeout', '$
             result[d]["amount"] = convertCosts(data[d]["amount"]);
         }
         return result;
-    }
+    };
 
-    $scope.fieldKeys = ["projectNumber", "type", "amount", "comment", "actor"];
-    $scope.fields = ["Project Number", "Type", "Amount", "Comment", "Assigned by"];
+    $scope.fieldKeys = ["timestamp", "projectNumber", "type", "amount", "comment", "actor"];
+    $scope.fields = ["Timestamp", "Project Number", "Type", "Amount", "Comment", "Assigned by"];
 
     $scope.costs = [];
     $scope.getCosts = function(e) {

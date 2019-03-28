@@ -58,11 +58,12 @@
 
                         <tr>
                             <td colspan = "7" style="text-align:center">
-                                <button type="button" class="btn btn-success" ng-click="approveRequest($event, dictIdx)" ng-if="canApprove(dict.status)" style="width:49%">Approve</button>
-                                <button type="button" class="btn btn-danger" ng-click="rejectRequest($event, dictIdx)" ng-if="canApprove(dict.status)" style="width:49%">Reject</button>
-                                <button type="button" class="btn btn-success" ng-click="orderRequest($event, dictIdx)" ng-if="canOrder(dict.status)" style="width:49%">Mark as Ordered</button>
-                                <button type="button" class="btn btn-success" ng-click="readyRequest($event, dictIdx)" ng-if="canPickup(dict.status)" style="width:49%">Mark as Ready for Pickup</button>
-                                <button type="button" class="btn btn-success" ng-click="completeRequest($event, dictIdx)" ng-if="canComplete(dict.status)" style="width:49%">Mark as Complete</button>
+                                <button type="button" class="btn btn-primary" ng-click="viewHistory($event, dictIdx)" style="width:10%">View History</button>
+                                <button type="button" class="btn btn-success" ng-click="approveRequest($event, dictIdx)" ng-if="canApprove(dict.status)" style="width:44%">Approve</button>
+                                <button type="button" class="btn btn-danger" ng-click="rejectRequest($event, dictIdx)" ng-if="canApprove(dict.status)" style="width:44%">Reject</button>
+                                <button type="button" class="btn btn-success" ng-click="orderRequest($event, dictIdx)" ng-if="canOrder(dict.status)" style="width:44%">Mark as Ordered</button>
+                                <button type="button" class="btn btn-success" ng-click="readyRequest($event, dictIdx)" ng-if="canPickup(dict.status)" style="width:44%">Mark as Ready for Pickup</button>
+                                <button type="button" class="btn btn-success" ng-click="completeRequest($event, dictIdx)" ng-if="canComplete(dict.status)" style="width:44%">Mark as Complete</button>
                             </td>
                         </tr>
 
@@ -73,6 +74,22 @@
         </tbody>
 
     </table>
+
+    <div id="historyModal" class="modal">
+        <div class="modal-content" style="width:75%">
+            <table>
+                <thead>
+                    <tr>
+                        <th ng-repeat="field in historyFields">{{field}}</th>
+                    </tr>
+                </thead>
+
+                <tbody id="historyBody">
+                </tbody>
+            </table>
+            <button type="button" class="btn btn-primary" ng-click="closeHistoryBox($event)" style="float:left; width:100%;">Close</button>
+        </div>
+    </div>
 
     <div id="rejectModal" class="modal">
         <div class="modal-content" style="width:50%;">

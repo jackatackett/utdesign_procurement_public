@@ -7,8 +7,7 @@
         </thead>
 
         <tbody>
-
-            <tr ng-repeat-start="dict in data" ng-click="toggleCollapse($event)">
+            <tr ng-repeat-start="dict in data track by $index" ng-init="dictIdx=$index" ng-click="toggleCollapse($event)">
                 <td ng-repeat="fieldK in fieldKeys">{{dict[fieldK]}}</td>
             </tr>
 
@@ -30,8 +29,61 @@
 
                         </tr>
 
+<!--
                         <tr>
                             <td colspan = "8" style="text-align:center">
+                                <button type="button" class="btn btn-primary" ng-click="viewHistory($event, dict)" style="width:10%">View History</button>
+                                <button type="button" class="btn btn-success col-md-3" ng-click="editRequest(dict)" ng-if="canEdit(dict.status)"> Edit </button>
+                                <button type="button" class="btn btn-secondary col-md-3" ng-click="cloneRequest(dict)"> Clone </button>
+                                <button type="button" class="btn btn-danger col-md-3" ng-click="cancelRequest(dict)"  ng-if="canEdit(dict.status)"> Cancel </button>
+                            </td>
+                        </tr>
+-->
+
+                        <tr>
+                            <td colspan = "8" style="text-align:center">
+                                <button type="button" class="btn btn-primary" ng-click="viewHistory($event, dictIdx)" style="width:10%">View History</button>
+<!--
+                                <button type="button" class="btn btn-success" ng-if="canApprove(dict.status)" ng-click="approveRequest($event, dictIdx)" style="width:49%">Approve</button>
+                                <button type="button" class="btn btn-danger" ng-if="canApprove(dict.status)" ng-click="rejectRequest($event, dictIdx)" style="width:49%">Reject</button>
+-->
+                                <button type="button" class="btn btn-success col-md-3" ng-click="editRequest(dict)" ng-if="canEdit(dict.status)"> Edit </button>
+                                <button type="button" class="btn btn-secondary col-md-3" ng-click="cloneRequest(dict)"> Clone </button>
+                                <button type="button" class="btn btn-danger col-md-3" ng-click="cancelRequest(dict)"  ng-if="canEdit(dict.status)"> Cancel </button>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+
+<!--
+            <tr ng-repeat-start="dict in data" ng-click="toggleCollapse($event)">
+                <td ng-repeat="fieldK in fieldKeys">{{dict[fieldK]}}</td>
+            </tr>
+-->
+
+<!--
+            <tr ng-repeat-end  style="background-color: #999; display: none;">
+                <td colspan="8" style="padding: 0px;">
+                    <table class="table table-bordered" style="margin-bottom: 0px; margin-left: 10px; width: calc(100% - 10px);">
+                        <tr style="border-bottom: 1.5px solid black">
+                            <td scope="col" style="background-color: #eee;">#</td>
+                            <td scope="col" ng-repeat="field in itemFields" ng-bind="field" style="background-color: #eee;"></td>
+                        </tr>
+
+                        <tr ng-repeat="row in dict.items" ng-init="rowIdx = $index">
+
+                            <td scope="row" ng-bind="rowIdx + 1" style="background-color: #eee;"></td>
+
+                            <td class="cleanInputCell" ng-repeat="field in itemFieldKeys track by $index" ng-init="fieldIdx = $index" style="background-color: #eee;">
+                                {{dict.items[rowIdx][field]}}
+                            </td>
+
+                        </tr>
+
+                        <tr>
+                            <td colspan = "8" style="text-align:center">
+                                <button type="button" class="btn btn-primary" ng-click="viewHistory($event, dict)" style="width:10%">View History</button>
                                 <button type="button" class="btn btn-success col-md-3" ng-click="editRequest(dict)" ng-if="canEdit(dict.status)"> Edit </button>
                                 <button type="button" class="btn btn-secondary col-md-3" ng-click="cloneRequest(dict)"> Clone </button>
                                 <button type="button" class="btn btn-danger col-md-3" ng-click="cancelRequest(dict)"  ng-if="canEdit(dict.status)"> Cancel </button>
@@ -41,9 +93,48 @@
                     </table>
                 </td>
             </tr>
+-->
 
         </tbody>
 
     </table>
+
+    <div id="rejectModal" class="modal">
+        <div class="modal-content" style="width:50%;">
+            <div class="row">
+                <div class="col-md-12">
+                    <input type="text" id="rejectCommentBox" placeholder="comment" style="width:100%;">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-primary" ng-click="closeRejectBox($event)" style="float:left; width:100%;">Close</button>
+                </div>
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-primary" ng-click="permanentReject($event)" style="float:left; width:100%;">Permanent Reject</button>
+                </div>
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-primary" ng-click="sendForReview($event)" style="float:left; width:100%;">Send for Updates</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="historyModal" class="modal">
+        <div class="modal-content" style="width:75%">
+            <table>
+                <thead>
+                    <tr>
+                        <th ng-repeat="field in historyFields">{{field}}</th>
+                    </tr>
+                </thead>
+
+                <tbody id="historyBody">
+                </tbody>
+            </table>
+            <button type="button" class="btn btn-primary" ng-click="closeHistoryBox($event)" style="float:left; width:100%;">Close</button>
+        </div>
+    </div>
+
 
 </div>

@@ -208,7 +208,7 @@ db.requests.insert({
         "description": "item1",
         "partNo": "part2",
         "quantity": 3,
-        "unitCost": 600,
+        "unitCost": 300,
         "totalCost": 900,
         "itemURL": "item1url"
     }],
