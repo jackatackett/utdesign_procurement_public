@@ -104,7 +104,7 @@ class ApiGateway(object):
             self.email_handler.notifyRequestManager(**{
                 'email': myRequest['manager'],
                 'requestNumber': myRequest['requestNumber'],
-                'projectNumber': myRequest['projectNumber'],
+                'projectNumber': myRequest['projectNumber']
             })
 
     def sequence(self):
@@ -369,6 +369,13 @@ class ApiGateway(object):
         })
 
         # TODO send notification emails to admins
+        # send notification emails to admins
+        adminEmails = self.getAdminEmails()
+        self.email_handler.notifyRequestAdmin(**{
+            'adminEmails': adminEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber']
+        })
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -558,7 +565,7 @@ class ApiGateway(object):
         self.email_handler.notifyRequestManager(**{
             'email': myRequest['manager'],
             'requestNumber': myRequest['requestNumber'],
-            'projectNumber': myRequest['projectNumber'],
+            'projectNumber': myRequest['projectNumber']
         })
 
         # TODO send notification email to manager
@@ -636,6 +643,12 @@ class ApiGateway(object):
         })
 
         # TODO send notification emails to admins
+        adminEmails = self.getAdminEmails()
+        self.email_handler.notifyRequestAdmin(**{
+            'adminEmails': adminEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber']
+        })
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -1647,3 +1660,10 @@ class ApiGateway(object):
             if user['role'] == 'student':
                 teamEmails.append(user['email'])
         return teamEmails
+
+    #helper function, do not expose
+    def getAdminEmails(self):
+        adminEmails = []
+        for user in self.colUsers.find({'role': 'admin'})
+            adminEmails.append(user['email'])
+        return adminEmails
