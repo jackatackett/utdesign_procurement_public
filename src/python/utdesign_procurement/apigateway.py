@@ -16,9 +16,9 @@ from datetime import datetime, timedelta
 
 class ApiGateway(object):
 
-    def __init__(self, email_queue):
+    def __init__(self, email_handler):
 
-        self.email_queue = email_queue
+        self.email_handler = email_handler
 
         client = pm.MongoClient()
         db = client['procurement']
@@ -99,10 +99,10 @@ class ApiGateway(object):
                 teamEmails.append(user['email'])
 
         if status == 'pending':
-            self.email_queue.put(('requestMade', {
+            self.email_handler.procurementSave(**{
                 'teamEmails': teamEmails,
                 'request': myRequest,
-            }))
+            })
 
     def sequence(self):
         """
@@ -1032,10 +1032,10 @@ class ApiGateway(object):
         self.colInvitations.insert(myInvitation)
         cherrypy.log('Created new user. Setup UUID: %s' % myInvitation['uuid'])
 
-        self.email_queue.put(('invite', {
+        self.email_handler.userAdd(**{
             'email': myInvitation['email'],
             'uuid':  myInvitation['uuid'],
-        }))
+        })
 
         return {'uuid': myInvitation['uuid']}
 
@@ -1080,11 +1080,11 @@ class ApiGateway(object):
         self.colInvitations.insert(myInvitation)
         cherrypy.log('Created new invitation. Setup UUID: %s' % myInvitation['uuid'])
 
-        self.email_queue.put(('forgot', {
+        self.email_handler.userForgotPassword(**{
             'email': myInvitation['email'],
             'uuid':  myInvitation['uuid'],
             'expiration': myInvitation['expiration']
-        }))
+        })
 
         return {'uuid': myInvitation['uuid']}
 

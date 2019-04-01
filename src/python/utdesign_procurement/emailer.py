@@ -10,10 +10,7 @@ from multiprocessing import Process, Queue
 
 def email_listen(emailer, queue):
     function_lut = {
-        'invite': emailer.emailInvite,
-        'forgot': emailer.emailForgot,
-        'send': emailer._emailSend,
-        'requestMade': emailer.emailRequestMade
+        'send': emailer.emailSend,
     }
 
     while True:
@@ -34,27 +31,30 @@ def email_listen(emailer, queue):
         elif header == 'die':
             break
 
+class EmailHandler(object):
+    """
+    Fills templates and sends emails using an Emailer in a separate thread
+    """
 
-def fork_emailer(email_user, email_password, email_inwardly,
+    def __init__(self, email_user, email_password, email_inwardly,
                  template_dir, domain='utdprocure.utdallas.edu'):
-    queue = Queue()
-    emailer = Emailer(queue, email_user, email_password, email_inwardly,
-                      template_dir, domain)
-    process = Process(target=email_listen, args=(emailer, queue))
-    return process, queue
+        self.queue = Queue()
+        self.emailer = Emailer(self.queue, email_user, email_password, email_inwardly)
+        self.process = Process(target=email_listen, args=(self.emailer, self.queue))
+        self.process.start()
 
-class Emailer(object):
+    def die(self):
+        self.queue.put(('die', {}))
+        self.process.join()
 
-    def __init__(self, email_queue, email_user, email_password, email_inwardly,
-                 template_dir, domain):
-        self.email_queue = email_queue
-        self.email_user = email_user
-        self.email_password = email_password
-        self.email_inwardly = email_inwardly
-        self.templateLookup = TemplateLookup(directories=template_dir)
-        self.domain = domain
+    def send(self, to, subject, body):
+        self.queue.put(('send', {
+            'to': to,
+            'subject': subject,
+            'html': body
+        }))
 
-    def emailInvite(self, email=None, uuid=None):
+    def userAdd(self, email=None, uuid=None):
         """
         Sends an invitation for a new user to set up their password for the
         first time.
@@ -66,9 +66,9 @@ class Emailer(object):
 
         template = self.templateLookup.get_template('userAdd.html')
         body = template.render(uuid=uuid, domain=self.domain)
-        self._emailSend(email, 'UTDesign GettIt Invite', html=body)
+        self.send(email, 'UTDesign GettIt Invite', body)
 
-    def emailForgot(self, email=None, uuid=None, expiration=None):
+    def userForgotPassword(self, email=None, uuid=None, expiration=None):
         """
         Sends a recovery link for an existing user to reset their password.
 
@@ -79,10 +79,10 @@ class Emailer(object):
         """
 
         template = self.templateLookup.get_template('userForgotPassword.html')
-        body = template.render(uuid=uuid, domain=self.domain)
-        self._emailSend(email, 'UTDesign GettIt Password Reset', html=body)
+        body = template.render(uuid=uuid, domain=self.domain, expiration=expiration)
+        self.send(email, 'UTDesign GettIt Password Reset', body)
 
-    def emailRequestMade(self, teamEmails=None, request=None):
+    def procurementSave(self, teamEmails=None, request=None):
         """
 
         :param request:
@@ -101,13 +101,22 @@ class Emailer(object):
             'itemCount': len(request['items'])
         }
 
+        subject = 'New Request For Project %s' % request['projectNumber']
         template = self.templateLookup.get_template('procurementSaveStudent.html')
         body = template.render(**renderArgs)
-        self._emailSend(teamEmails, 'New Request For Project %s' % request['projectNumber'], html=body)
+        self.send(teamEmails, subject, body)
+        self.send(request['manager'], subject, body)
 
-        template = self.templateLookup.get_template('procurementSaveManager.html')
-        body = template.render(**renderArgs)
-        self._emailSend(request['manager'], 'New Request For Project %s' % request['projectNumber'], html=body)
+class Emailer(object):
+    """
+    Manages email connections and sends HTML emails in MIMEMultipart messages
+    """
+
+    def __init__(self, email_queue, email_user, email_password, email_inwardly):
+        self.email_queue = email_queue
+        self.email_user = email_user
+        self.email_password = email_password
+        self.email_inwardly = email_inwardly
 
     def _emailDo(self, func):
         server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
@@ -116,7 +125,7 @@ class Emailer(object):
         func(server)
         server.quit()
 
-    def _emailSend(self, to=None, subject=None, html=None):
+    def emailSend(self, to=None, subject=None, html=None):
         assert to and subject
 
         if self.email_inwardly:

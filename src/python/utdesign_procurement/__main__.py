@@ -3,7 +3,7 @@
 import cherrypy, os
 
 from utdesign_procurement.server import Root
-from utdesign_procurement.emailer import fork_emailer
+from utdesign_procurement.emailer import EmailHandler
 
 def main():
 
@@ -16,12 +16,10 @@ def main():
     cherrypy.log('Email template dir: %s' % email_template_dir)
 
     # TODO prompt for these credentials!
-    email_process, email_queue = fork_emailer(email_user='noreplygettit@gmail.com',
+    email_handler = EmailHandler(email_user='noreplygettit@gmail.com',
                          email_password='0ddrun knows all',
                          email_inwardly=True,
                          template_dir=email_template_dir)
-
-    email_process.start()
 
     #configure the cherrypy server
     cherrypy.Application.wwwDir = os.path.join(os.path.dirname(os.path.realpath(__file__)),
@@ -32,15 +30,14 @@ def main():
         '..', '..', 'etc', 'server.conf'))
 
     cherrypy.tree.mount(
-        Root(email_queue, show_debugger=True),
+        Root(email_handler, show_debugger=True),
         '/',
         config=server_config)
 
     cherrypy.engine.start()
     input()
     cherrypy.engine.stop()
-    email_queue.put(('die', dict()))
-    email_process.join()
+    email_handler.die()
 
 if __name__ == '__main__':
     main()
