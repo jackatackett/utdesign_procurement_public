@@ -93,10 +93,7 @@ class ApiGateway(object):
         self.colRequests.replace_one(query, myRequest, upsert=True)
 
         # send email
-        teamEmails = []
-        for user in self.colUsers.find({'projectNumbers': myRequest['projectNumber']}):
-            if user['role'] == 'student':
-                teamEmails.append(user['email'])
+        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
 
         if status == 'pending':
             self.email_handler.procurementSave(**{
@@ -1409,3 +1406,11 @@ class ApiGateway(object):
         else:
             raise cherrypy.HTTPError(
                 400, 'Request matching id and status not found in database')
+
+    # helper function, do not expose!
+    def getTeamEmails(self, projectNumber):
+        teamEmails = []
+        for user in self.colUsers.find({'projectNumbers': projectNumber}):
+            if user['role'] == 'student':
+                teamEmails.append(user['email'])
+        return teamEmails
