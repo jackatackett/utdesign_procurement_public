@@ -2,8 +2,10 @@
 
 import cherrypy
 import pymongo as pm
+import pandas as pd
 
 from bson.objectid import ObjectId
+from io import BytesIO
 from uuid import uuid4
 
 from utdesign_procurement.utils import authorizedRoles, generateSalt, hashPassword, \
@@ -1237,6 +1239,60 @@ class ApiGateway(object):
         }))
 
         return {'uuid': myInvitation['uuid']}
+
+    @cherrypy.expose
+    # @cherrypy.tools.json_out()
+    # @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def userAddBulk(self, sheet):
+
+        # get the whole file
+        xlsx = bytearray()
+        while True:
+            data = sheet.file.read(8192)
+            if not data:
+                break
+            # size += len(data)
+            xlsx.extend(data)
+
+        # parse into pandas dataframe
+        df = pd.read_excel(BytesIO(bytes(xlsx)))
+
+        # add each user
+        for index, row in df.iterrows():
+
+            # get from excel
+            myUser = {
+                "projectNumbers": [int(e) for e in str(row[0]).split(',')],
+                "firstName": row[1],
+                "lastName": row[2],
+                "netID": row[3],
+                "email": row[4],
+                "course": row[5],
+                "role": 'student'
+            }
+
+            # add to database
+            invite = self.colUsers.find({'email': myUser['email']}).count() == 0
+
+            self.colUsers.update({'email': myUser['email']}, {'$set': myUser}, upsert=True)
+
+            # send invitation
+            if invite:
+                myInvitation = {
+                    'uuid': str(uuid4()),
+                    'expiration': None,
+                    'email': myUser['email']
+                }
+
+                self.colInvitations.insert(myInvitation)
+                cherrypy.log('Created new user. Setup UUID: %s' % myInvitation['uuid'])
+
+                self.email_queue.put(('invite', {
+                    'email': myInvitation['email'],
+                    'uuid': myInvitation['uuid'],
+                    'expiration': myInvitation['expiration']
+                }))
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
