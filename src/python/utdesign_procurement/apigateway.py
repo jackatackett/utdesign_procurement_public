@@ -93,9 +93,8 @@ class ApiGateway(object):
         self.colRequests.replace_one(query, myRequest, upsert=True)
 
         # send email
-        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
-
         if status == 'pending':
+            teamEmails = self.getTeamEmails(myRequest['projectNumber'])
             self.email_handler.procurementSave(**{
                 'teamEmails': teamEmails,
                 'request': myRequest,
@@ -122,7 +121,7 @@ class ApiGateway(object):
 
         self.colSequence.update_one(query, updateRule)
 
-        return current
+        return int(current)
 
 
     @cherrypy.expose
@@ -291,7 +290,20 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
+        myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
+        if myRequest is None:
+            cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
+            return
+
         # TODO send confirmation emails to students
+        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
+        self.email_handler.confirmStudent(**{
+            'teamEmails': teamEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'cancelled'
+        })
+
         # TODO send notification email to manager/admin?
 
     @cherrypy.expose

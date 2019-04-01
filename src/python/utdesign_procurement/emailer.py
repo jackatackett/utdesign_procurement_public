@@ -38,6 +38,10 @@ class EmailHandler(object):
 
     def __init__(self, email_user, email_password, email_inwardly,
                  template_dir, domain='utdprocure.utdallas.edu'):
+
+        self.domain = domain
+        self.templateLookup = TemplateLookup(template_dir)
+
         self.queue = Queue()
         self.emailer = Emailer(self.queue, email_user, email_password, email_inwardly)
         self.process = Process(target=email_listen, args=(self.emailer, self.queue))
