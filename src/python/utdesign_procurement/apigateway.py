@@ -290,8 +290,19 @@ class ApiGateway(object):
             ]
         }
         updateQuery = {'_id': ObjectId(myID)}
+        currentState = list(self.colRequests.find(findQuery))[0]["status"]
         updateRule = {'$set':
-                          {'status': "cancelled"}
+                          {'status': "cancelled"},
+                      "$push":
+                          {"history":
+                            {
+                            "actor": cherrypy.session["email"],
+                            "timestamp": datetime.datetime.now(),
+                            "comment": "cancelled by user",
+                            "oldState": currentState,
+                            "newState": "cancelled"
+                            }
+                          }
                       }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -330,7 +341,17 @@ class ApiGateway(object):
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             '$set':
-                {'status': "manager approved"}
+                {'status': "manager approved"},
+            "$push":
+                {"history":
+                    {
+                    "actor": cherrypy.session["email"],
+                    "timestamp": datetime.datetime.now(),
+                    "comment": "approved by manager",
+                    "oldState": "pending",
+                    "newState": "manager approved"
+                    }
+                }
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -348,7 +369,8 @@ class ApiGateway(object):
         Expected input::
 
             {
-                "_id": (string)
+                "_id": (string),
+                "comment": (string)
             }
         """
         # check that we actually have json
@@ -358,6 +380,9 @@ class ApiGateway(object):
             raise cherrypy.HTTPError(400, 'No data was given')
 
         myID = checkValidID(data)
+        myComment = checkValidData("comment", data, str)
+        if myComment == "":
+            myComment = "No comment"
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
@@ -366,7 +391,17 @@ class ApiGateway(object):
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': "updates for manager"}
+                {'status': "updates for manager"},
+            "$push":
+                {"history":
+                    {
+                    "actor": cherrypy.session["email"],
+                    "timestamp": datetime.datetime.now(),
+                    "comment": myComment,
+                    "oldState": "pending",
+                    "newState": "updates for manager"
+                    }
+                }
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -384,7 +419,8 @@ class ApiGateway(object):
         Expected input::
 
             {
-                "_id": (string)
+                "_id": (string),
+                "comment": (string)
             }
         """
         # check that we actually have json
@@ -394,6 +430,9 @@ class ApiGateway(object):
             raise cherrypy.HTTPError(400, 'No data was given')
 
         myID = checkValidID(data)
+        myComment = checkValidData("comment", data, str)
+        if myComment == "":
+            myComment = "No comment"
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
@@ -402,7 +441,17 @@ class ApiGateway(object):
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': "updates for manager"}
+                {'status': "updates for manager"},
+            "$push":
+                {"history":
+                    {
+                    "actor": cherrypy.session["email"],
+                    "timestamp": datetime.datetime.now(),
+                    "comment": myComment,
+                    "oldState": "manager approved",
+                    "newState": "updates for manager"
+                    }
+                }
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -533,7 +582,8 @@ class ApiGateway(object):
         Expected input::
 
             {
-                "_id": (string)
+                "_id": (string),
+                "comment": (string)
             }
         """
         # check that we actually have json
@@ -543,6 +593,10 @@ class ApiGateway(object):
             raise cherrypy.HTTPError(400, 'No data was given')
 
         myID = checkValidID(data)
+        myComment = checkValidData("comment", data, str)
+        if myComment == "":
+            myComment = "No comment"
+
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
@@ -551,7 +605,17 @@ class ApiGateway(object):
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': "updates for admin"}
+                {'status': "updates for admin"},
+            "$push":
+                {"history":
+                    {
+                    "actor": cherrypy.session["email"],
+                    "timestamp": datetime.datetime.now(),
+                    "comment": myComment,
+                    "oldState": "manager approved",
+                    "newState": "updates for admin"
+                    }
+                }
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -587,7 +651,17 @@ class ApiGateway(object):
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': "admin approved"}
+                {'status': "admin approved"},
+            "$push":
+                {"history":
+                    {
+                    "actor": cherrypy.session["email"],
+                    "timestamp": datetime.datetime.now(),
+                    "comment": "approved by admin",
+                    "oldState": "manager approved",
+                    "newState": "admin approved"
+                    }
+    }
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -634,7 +708,17 @@ class ApiGateway(object):
                 "$set":
                     {'status': "ordered",
                      'shippingCost': shippingAmt,
-                     'requestTotal': totalAmt}
+                     'requestTotal': totalAmt},
+                "$push":
+                    {"history":
+                        {
+                        "actor": cherrypy.session["email"],
+                        "timestamp": datetime.datetime.now(),
+                        "comment": "marked as ordered by admin",
+                        "oldState": "admin approved",
+                        "newState": "ordered"
+                        }
+                    }
             }
 
             self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -674,7 +758,17 @@ class ApiGateway(object):
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': "ready for pickup"}
+                {'status': "ready for pickup"},
+            "$push":
+                {"history":
+                    {
+                    "actor": cherrypy.session["email"],
+                    "timestamp": datetime.datetime.now(),
+                    "comment": "marked as ready by admin",
+                    "oldState": "ordered",
+                    "newState": "ready for pickup"
+                    }
+                }
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -711,7 +805,17 @@ class ApiGateway(object):
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': "complete"}
+                {'status': "complete"},
+            "$push":
+                {"history":
+                    {
+                    "actor": cherrypy.session["email"],
+                    "timestamp": datetime.datetime.now(),
+                    "comment": "marked as complete by admin",
+                    "oldState": "ready for pickup",
+                    "newState": "complete"
+                    }
+                }
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -730,7 +834,8 @@ class ApiGateway(object):
         Expected input::
 
             {
-                "_id": (string)
+                "_id": (string),
+                "comment": (string)
             }
         """
         # check that we actually have json
@@ -742,6 +847,9 @@ class ApiGateway(object):
         # TODO check this action is allowed
 
         myID = checkValidID(data)
+        myComment = checkValidData("comment", data, str)
+        if myComment == "":
+            myComment = "No comment"
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
@@ -750,7 +858,17 @@ class ApiGateway(object):
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': "rejected"}
+                {'status': "rejected"},
+            "$push":
+                {"history":
+                    {
+                    "actor": cherrypy.session["email"],
+                    "timestamp": datetime.datetime.now(),
+                    "comment": myComment,
+                    "oldState": "pending",
+                    "newState": "rejected"
+                    }
+                }
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -769,7 +887,8 @@ class ApiGateway(object):
         Expected input::
 
             {
-                "_id": (string)
+                "_id": (string),
+                "comment": (string)
             }
         """
         # check that we actually have json
@@ -779,6 +898,10 @@ class ApiGateway(object):
             raise cherrypy.HTTPError(400, 'No data was given')
 
         myID = checkValidID(data)
+        myComment = checkValidData("comment", data, str)
+        if myComment == "":
+            myComment = "No comment"
+
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
@@ -787,7 +910,17 @@ class ApiGateway(object):
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': "rejected"}
+                {'status': "rejected"},
+            "$push":
+                {"history":
+                    {
+                    "actor": cherrypy.session["email"],
+                    "timestamp": datetime.datetime.now(),
+                    "comment": myComment,
+                    "oldState": "manager approved",
+                    "newState": "rejected"
+                    }
+                }
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)

@@ -204,6 +204,11 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher'
     dispatcher.on('editRequest', function(request) {
         //deep copy the request
         $scope.request = JSON.parse(JSON.stringify(request));
+        //remove the dollar signs on unit and total cost
+        for (var x in $scope.request["items"]) {
+            $scope.request["items"][x]["unitCost"] = $scope.request["items"][x]["unitCost"].replace("$", "");
+            $scope.request["items"][x]["totalCost"] = $scope.request["items"][x]["totalCost"].replace("$", "");
+        }
         $scope.refreshManagers();
     })
 
@@ -213,6 +218,11 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher'
         delete request.requestNumber;
         delete request.status;
         $scope.request = request;
+        //remove the dollar signs on unit and total cost
+        for (var x in $scope.request["items"]) {
+            $scope.request["items"][x]["unitCost"] = $scope.request["items"][x]["unitCost"].replace("$", "");
+            $scope.request["items"][x]["totalCost"] = $scope.request["items"][x]["totalCost"].replace("$", "");
+        }
         $scope.refreshManagers();
     })
 

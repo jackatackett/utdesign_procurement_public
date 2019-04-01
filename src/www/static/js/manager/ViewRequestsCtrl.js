@@ -33,6 +33,8 @@ app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '
     $scope.itemFields = ["Description", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
     $scope.teams = ["Procurement", "Clock-It", "Smart Glasses"];
 
+    $scope.mgrComment = "";
+
     $scope.projects = [];
 
     var projectData = [];
@@ -111,29 +113,32 @@ app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '
     };
 
     $scope.rejectRequest = function(e, rowIdx) {
+        $scope.mgrComment = "";
         $("#rejectModal").show();
         lightboxRow = rowIdx;
     };
 
     $scope.permanentReject = function(e) {
-        $http.post('/procurementRejectManager', {'_id':$scope.data[lightboxRow]._id}).then(function(resp) {
+        $http.post('/procurementRejectManager', {'_id':$scope.data[lightboxRow]._id, "comment": $scope.mgrComment}).then(function(resp) {
             console.log("Success", resp);
             alert("Success!");
             $window.location.reload();
         }, function(err) {
             console.error("Error", err.data)
             alert("Error")
+            $scope.mgrComment = "";
         });
     };
 
     $scope.sendForReview = function(e) {
-        $http.post('/procurementUpdateManager', {'_id':$scope.data[lightboxRow]._id}).then(function(resp) {
+        $http.post('/procurementUpdateManager', {'_id':$scope.data[lightboxRow]._id, "comment": $scope.mgrComment}).then(function(resp) {
             console.log("Success", resp);
             alert("Success!");
             $window.location.reload();
         }, function(err) {
             console.error("Error", err.data)
             alert("Error")
+            $scope.mgrComment = "";
         });
     };
 
@@ -142,6 +147,7 @@ app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '
     };
 
     $scope.closeRejectBox = function(e) {
+        $scope.mgrComment = "";
         $("#rejectModal").hide();
     };
 

@@ -32,15 +32,15 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
     $scope.itemFieldKeys = ["description", 'itemURL', "partNo", "quantity", "unitCost", "totalCost"];
     $scope.itemFields = ["Description", 'Item URL', "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
     $scope.teams = ["Procurement", "Clock-It", "Smart Glasses"];
-<<<<<<< HEAD
-    $scope.statuses = ["Pending", "Accepted", "Rejected", "Shipped", "Canceled"];
+//~ <<<<<<< HEAD
+    //~ $scope.statuses = ["Pending", "Accepted", "Rejected", "Shipped", "Canceled"];
     $scope.filters = ["Project Number", "Vendor"];
     $scope.historyFields = ["Timestamp", "Source", "Comment", "Old State", "New State"];
     $scope.historyFieldKeys = ["timestamp", "actor", "comment", "oldState", "newState"];
-=======
+//~ =======
     $scope.statuses = ["Pending", "Saved", "Manager Approved", "Admin Approved", "Rejected", "Updates for Manager", "Updates for Admin", "Cancelled", "Ordered", "Ready for Pickup", "Complete"];
     $scope.statusesKeys = ["pending", "saved", "manager approved", "admin approved", "rejected", "updates for manager", "updates for admin", "cancelled", "ordered", "ready for pickup", "complete"];
->>>>>>> dd34bbafb14100851e50535618cc3e625721348e
+//~ >>>>>>> dd34bbafb14100851e50535618cc3e625721348e
 
     $scope.filters = ["Project Number", "Vendor"];
     $scope.filterKeys = ["projectNumbers", "vendor"];
@@ -48,6 +48,8 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
     $scope.tableFilters = {};
 
     $scope.data = [];
+
+    $scope.adminComment = "";
 
     $scope.selectedStatuses = [];
     $scope.addToSelectedStatuses = function(status) {
@@ -116,53 +118,61 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
     };
 
     $scope.rejectRequest = function(e, rowIdx) {
+        $scope.adminComment = "";
         $("#rejectModal").show();
         currentRow = rowIdx;
     };
 
     $scope.permanentReject = function(e) {
-        $http.post('/procurementRejectAdmin', {'_id':$scope.data[currentRow]._id}).then(function(resp) {
+        $http.post('/procurementRejectAdmin', {'_id':$scope.data[currentRow]._id, "comment": $scope.adminComment}).then(function(resp) {
             console.log("Success", resp);
             alert("Success!");
+            $scope.adminComment = "";
             $scope.refreshStatuses();
             $scope.closeRejectBox();
         }, function(err) {
             console.error("Error", err.data);
             alert("Error");
+            $scope.adminComment = "";
             $scope.refreshStatuses();
             $scope.closeRejectBox();
         });
     };
 
     $scope.sendForUpdatesAdmin = function(e) {
-        $http.post('/procurementUpdateAdmin', {'_id':$scope.data[currentRow]._id}).then(function(resp) {
+        $http.post('/procurementUpdateAdmin', {'_id':$scope.data[currentRow]._id, "comment": $scope.adminComment}).then(function(resp) {
             console.log("Success", resp);
             alert("Success!");
+            $scope.adminComment = "";
             $scope.refreshStatuses();
             $scope.closeRejectBox();
         }, function(err) {
             console.error("Error", err.data);
             alert("Error");
+            $scope.adminComment = "";
             $scope.refreshStatuses();
             $scope.closeRejectBox();
         });
     };
 
     $scope.sendForUpdatesManagerAdmin = function(e) {
-        $http.post('/procurementUpdateManagerAdmin', {'_id':$scope.data[currentRow]._id}).then(function(resp) {
+        $http.post('/procurementUpdateManagerAdmin', {'_id':$scope.data[currentRow]._id, "comment": $scope.adminComment}).then(function(resp) {
             console.log("Success", resp);
             alert("Success!");
+            $scope.adminComment = "";
             $scope.refreshStatuses();
             $scope.closeRejectBox();
         }, function(err) {
             console.error("Error", err.data);
             alert("Error");
+            $scope.adminComment = "";
             $scope.refreshStatuses();
             $scope.closeRejectBox();
         });
     };
 
     $scope.closeRejectBox = function(e) {
+        $scope.adminComment = "";
         $("#rejectModal").hide();
     };
 
