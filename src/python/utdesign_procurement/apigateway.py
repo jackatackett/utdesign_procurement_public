@@ -92,12 +92,19 @@ class ApiGateway(object):
         # insert the data into the database
         self.colRequests.replace_one(query, myRequest, upsert=True)
 
-        # send email
+        # send emails
         if status == 'pending':
+            #send confirmation emails to students
             teamEmails = self.getTeamEmails(myRequest['projectNumber'])
             self.email_handler.procurementSave(**{
                 'teamEmails': teamEmails,
                 'request': myRequest,
+            })
+            #send notification email to manager
+            self.email_handler.notifyRequestManagerAdmin(**{
+                'email': myRequest['manager'],
+                'requestNumber': myRequest['requestNumber'],
+                'projectNumber': myRequest['projectNumber'],
             })
 
     def sequence(self):
@@ -402,6 +409,23 @@ class ApiGateway(object):
         # TODO send confirmation email to manager
         # TODO send notification emails to students
 
+        # send notification emails to students
+        myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
+        if myRequest is None:
+            cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
+            return
+
+        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
+        self.email_handler.notifyStudent(**{
+            'teamEmails': teamEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'sent back to you for updates',
+            'user': cherrypy.session['email'],
+            'role': 'manager'
+        })
+
+
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
@@ -441,6 +465,23 @@ class ApiGateway(object):
         # TODO send confirmation email to admin
         # TODO send notification emails to students
         # TODO
+
+        # send notification emails to students
+        myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
+        if myRequest is None:
+            cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
+            return
+
+        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
+        self.email_handler.notifyStudent(**{
+            'teamEmails': teamEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'sent back to you for updates',
+            'user': cherrypy.session['email'],
+            'role': 'admin'
+        })
+
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -627,6 +668,23 @@ class ApiGateway(object):
         # TODO send confirmation email to admin
         # TODO send notification emails to students
 
+        # send notification emails to students
+        myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
+        if myRequest is None:
+            cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
+            return
+
+        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
+        self.email_handler.notifyStudent(**{
+            'teamEmails': teamEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'sent back to you for updates',
+            'user': cherrypy.session['email'],
+            'role': 'manager'
+        })
+
+
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @authorizedRoles("admin")
@@ -664,6 +722,23 @@ class ApiGateway(object):
         # TODO send confirmation email to admin
         # TODO send notification emails to students
 
+        # send notification emails to students
+        myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
+        if myRequest is None:
+            cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
+            return
+
+        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
+        self.email_handler.notifyStudent(**{
+            'teamEmails': teamEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'approved by an admin',
+            'user': cherrypy.session['email'],
+            'role': 'admin'
+        })
+
+
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @authorizedRoles("admin")
@@ -700,6 +775,23 @@ class ApiGateway(object):
 
         # TODO send confirmation email to admin
         # TODO send notification emails to students
+
+        # send notification emails to students
+        myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
+        if myRequest is None:
+            cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
+            return
+
+        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
+        self.email_handler.notifyStudent(**{
+            'teamEmails': teamEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'ordered',
+            'user': cherrypy.session['email'],
+            'role': 'admin'
+        })
+
 
 
     @cherrypy.expose
@@ -740,6 +832,23 @@ class ApiGateway(object):
         # TODO send confirmation email to admin
         # TODO send notification emails to students
 
+        # send notification emails to students
+        myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
+        if myRequest is None:
+            cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
+            return
+
+        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
+        self.email_handler.notifyStudent(**{
+            'teamEmails': teamEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'delivered and is ready for pickup',
+            'user': cherrypy.session['email'],
+            'role': 'admin'
+        })
+
+
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @authorizedRoles("admin")
@@ -777,6 +886,23 @@ class ApiGateway(object):
 
         # TODO send confirmation email to admin
         # TODO send notification emails to students
+
+        # send notification emails to students
+        myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
+        if myRequest is None:
+            cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
+            return
+
+        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
+        self.email_handler.notifyStudent(**{
+            'teamEmails': teamEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'picked up',
+            'user': cherrypy.session['email'],
+            'role': 'admin'
+        })
+
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -818,6 +944,23 @@ class ApiGateway(object):
         # TODO send confirmation email to manager
         # TODO send notification emails to students
 
+        # send notification emails to students
+        myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
+        if myRequest is None:
+            cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
+            return
+
+        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
+        self.email_handler.notifyStudent(**{
+            'teamEmails': teamEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'rejected by your technical manager',
+            'user': cherrypy.session['email'],
+            'role': 'manager'
+        })
+
+
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @authorizedRoles("admin")
@@ -856,6 +999,23 @@ class ApiGateway(object):
         # TODO send confirmation email to admin
         # TODO send notification emails to students
 
+        # send notification emails to students
+        myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
+        if myRequest is None:
+            cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
+            return
+
+        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
+        self.email_handler.notifyStudent(**{
+            'teamEmails': teamEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'rejected by an admin',
+            'user': cherrypy.session['email'],
+            'role': 'admin'
+        })
+
+
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
@@ -875,6 +1035,9 @@ class ApiGateway(object):
             raise cherrypy.HTTPError(400, 'No data was given')
 
         raise cherrypy.HTTPError(101, "not yet implemented")
+
+        # TODO send confirmation email to admin
+        # TODO send notification emails to students
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -949,6 +1112,8 @@ class ApiGateway(object):
             raise cherrypy.HTTPError(400, 'No data was given')
 
         raise cherrypy.HTTPError(101, "not yet implemented")
+
+        # TODO send confirmation email to admin? maybe not
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -1191,6 +1356,8 @@ class ApiGateway(object):
         updateRule = {'$set': myData}
         self._updateDocument(myID, updateQuery, updateQuery, updateRule)
 
+        # TODO send notification email to student
+
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @authorizedRoles("admin")
@@ -1228,6 +1395,7 @@ class ApiGateway(object):
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
         # TODO send confirmation email to admin
+        # don't send notification to student?
 
     # don't need to check role for this
     @cherrypy.expose
