@@ -124,11 +124,16 @@ class ApiGateway(object):
                         "newState": "pending"
                         }]
                 else:
+                    maxHist = None
+                    for hist in oldHistory:
+                        if maxHist is None or hist['timestamp'] > maxHist['timestamp']:
+                            maxHist = hist
+
                     oldHistory.append({
                         "actor": cherrypy.session["email"],
                         "timestamp": datetime.datetime.now(),
                         "comment": "submitted by " + cherrypy.session["email"],
-                        "oldState": max(hist["timestamp"] for hist in oldHistory)["newState"],
+                        "oldState": maxHist['newState'],
                         "newState": "pending"
                     })
                 myRequest["history"] = oldHistory
