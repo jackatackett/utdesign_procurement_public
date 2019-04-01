@@ -140,6 +140,17 @@ class EmailHandler(object):
         body = template.render(**renderArgs)
         self.send(teamEmails, subject, body)
 
+    def notifyRequestManagerAdmin(self, email, projectNumber, requestNumber):
+        renderArgs = {
+            'domain': self.domain,
+            'requestNumber': requestNumber,
+            'projectNumber': projectNumber
+        }
+        subject = "Request %s has been submitted to you" % (requestNumber)
+        template = self.templateLookup.get_template('notifyRequestManagerAdmin.html')
+        body = template.render(**renderArgs)
+        self.send(email, subject, body)
+
 class Emailer(object):
     """
     Manages email connections and sends HTML emails in MIMEMultipart messages
