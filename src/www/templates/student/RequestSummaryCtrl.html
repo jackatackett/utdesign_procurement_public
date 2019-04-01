@@ -42,14 +42,14 @@
 
                         <tr>
                             <td colspan = "8" style="text-align:center">
-                                <button type="button" class="btn btn-primary" ng-click="viewHistory($event, dictIdx)" style="width:10%">View History</button>
+                                <button type="button" class="btn btn-primary col-md-2" ng-click="viewHistory($event, dictIdx)">View History</button>
 <!--
                                 <button type="button" class="btn btn-success" ng-if="canApprove(dict.status)" ng-click="approveRequest($event, dictIdx)" style="width:49%">Approve</button>
                                 <button type="button" class="btn btn-danger" ng-if="canApprove(dict.status)" ng-click="rejectRequest($event, dictIdx)" style="width:49%">Reject</button>
 -->
-                                <button type="button" class="btn btn-success col-md-3" ng-click="editRequest(dict)" ng-if="canEdit(dict.status)"> Edit </button>
-                                <button type="button" class="btn btn-secondary col-md-3" ng-click="cloneRequest(dict)"> Clone </button>
-                                <button type="button" class="btn btn-danger col-md-3" ng-click="cancelRequest(dict)"  ng-if="canEdit(dict.status)"> Cancel </button>
+                                <button type="button" class="btn btn-success col-md-2" ng-click="editRequest(dict)" ng-if="canEdit(dict.status)"> Edit </button>
+                                <button type="button" class="btn btn-secondary col-md-2" ng-click="cloneRequest(dict)"> Clone </button>
+                                <button type="button" class="btn btn-danger col-md-2" ng-click="cancelRequest(dict)"  ng-if="canEdit(dict.status)"> Cancel </button>
                             </td>
                         </tr>
                     </table>

@@ -37,9 +37,9 @@
 
                         <tr>
                             <td colspan = "6" style="text-align:center">
-                                <button type="button" class="btn btn-primary" ng-click="viewHistory($event, dictIdx)" style="width:10%">View History</button>
-                                <button type="button" class="btn btn-success" ng-if="canApprove(dict.status)" ng-click="approveRequest($event, dictIdx)" style="width:44%">Approve</button>
-                                <button type="button" class="btn btn-danger" ng-if="canApprove(dict.status)" ng-click="rejectRequest($event, dictIdx)" style="width:44%">Reject</button>
+                                <button type="button" class="btn btn-primary col-md-2" ng-click="viewHistory($event, dictIdx)">View History</button>
+                                <button type="button" class="btn btn-success col-md-2" ng-if="canApprove(dict.status)" ng-click="approveRequest($event, dictIdx)" style="width:44%">Approve</button>
+                                <button type="button" class="btn btn-danger col-md-2s" ng-if="canApprove(dict.status)" ng-click="rejectRequest($event, dictIdx)" style="width:44%">Reject</button>
                             </td>
                         </tr>
                     </table>
