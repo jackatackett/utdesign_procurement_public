@@ -89,6 +89,50 @@ class ApiGateway(object):
 
         query = {"requestNumber": myRequestNumber}
 
+        # find old history and append to myRequest
+        oldHistory = list(self.colRequests.find(query))
+        print()
+        print("status", status)
+        print("old history")
+        print(oldHistory)
+        print(len(oldHistory))
+        print()
+
+        if len(oldHistory) == 0: #this is a new request
+            if status == "pending":
+                oldHistory = [{
+                "actor": cherrypy.session["email"],
+                "timestamp": datetime.datetime.now(),
+                "comment": "submitted by " + cherrypy.session["email"],
+                "oldState": "start",
+                "newState": "pending"
+                }]
+                myRequest["history"] = oldHistory
+            # don't need to add an entry to history if only saving
+        else:   #this request exists in a saved state
+            oldHistory = oldHistory[0]["history"]
+            if status == "saved":
+                # don't need to add an entry to the history if only saving
+                myRequest["history"] = oldHistory
+            else:
+                if len(oldHistory) == 0:
+                    oldHistory = [{
+                        "actor": cherrypy.session["email"],
+                        "timestamp": datetime.datetime.now(),
+                        "comment": "submitted by " + cherrypy.session["email"],
+                        "oldState": "start",
+                        "newState": "pending"
+                        }]
+                else:
+                    oldHistory.append({
+                        "actor": cherrypy.session["email"],
+                        "timestamp": datetime.datetime.now(),
+                        "comment": "submitted by " + cherrypy.session["email"],
+                        "oldState": max(hist["timestamp"] for hist in oldHistory)["newState"],
+                        "newState": "pending"
+                    })
+                myRequest["history"] = oldHistory
+
         # insert the data into the database
         self.colRequests.replace_one(query, myRequest, upsert=True)
 
@@ -508,6 +552,18 @@ class ApiGateway(object):
                 {'status': "updates for manager"}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
+
+        # find old history and append to myRequest
+        oldHistory = list(self.colRequests.find(findQuery))[0]["history"]   #will have history
+        oldHistory.append({
+            "actor": cherrypy.session["email"],
+            "timestamp": datetime.datetime.now(),
+            "comment": "submitted by " + cherrypy.session["email"],
+            "oldState": "updates for manager",
+            "newState": "pending"
+        })
+        myRequest["history"] = oldHistory
+
         updateRule = {"$set": myRequest}
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -564,6 +620,18 @@ class ApiGateway(object):
                 {'status': "updates for admin"}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
+
+        # find old history and append to myRequest
+        oldHistory = list(self.colRequests.find(findQuery))[0]["history"]   #will have history
+        oldHistory.append({
+            "actor": cherrypy.session["email"],
+            "timestamp": datetime.datetime.now(),
+            "comment": "submitted by " + cherrypy.session["email"],
+            "oldState": "updates for admin",
+            "newState": "manager approved"
+        })
+        myRequest["history"] = oldHistory
+
         updateRule = {"$set": myRequest}
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
