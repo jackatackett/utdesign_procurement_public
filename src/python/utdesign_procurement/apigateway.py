@@ -101,7 +101,7 @@ class ApiGateway(object):
                 'request': myRequest,
             })
             #send notification email to manager
-            self.email_handler.notifyRequestManagerAdmin(**{
+            self.email_handler.notifyRequestManager(**{
                 'email': myRequest['manager'],
                 'requestNumber': myRequest['requestNumber'],
                 'projectNumber': myRequest['projectNumber'],
@@ -552,6 +552,13 @@ class ApiGateway(object):
             'requestNumber': myRequest['requestNumber'],
             'projectNumber': myRequest['projectNumber'],
             'action': 'resubmitted to manager'
+        })
+
+        # send notification email to manager
+        self.email_handler.notifyRequestManager(**{
+            'email': myRequest['manager'],
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
         })
 
         # TODO send notification email to manager
