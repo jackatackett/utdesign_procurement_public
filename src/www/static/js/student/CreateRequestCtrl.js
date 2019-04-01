@@ -217,6 +217,7 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher'
         request = JSON.parse(JSON.stringify(request));
         delete request.requestNumber;
         delete request.status;
+        delete request.history;
         $scope.request = request;
         //remove the dollar signs on unit and total cost
         for (var x in $scope.request["items"]) {
