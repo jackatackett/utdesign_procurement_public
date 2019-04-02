@@ -116,13 +116,26 @@ class EmailHandler(object):
             'domain': self.domain,
             'requestNumber': requestNumber,
             'projectNumber': projectNumber,
-            'action': action,
+            'action': action
         }
 
         subject = 'Request %s is now %s' % (requestNumber, action)
         template = self.templateLookup.get_template('confirmStudent.html')
         body = template.render(**renderArgs)
         self.send(teamEmails, subject, body)
+
+    def confirmRequestManagerAdmin(self, email, requestNumber, projectNumber, action):
+        renderArgs = {
+            'domain': self.domain,
+            'requestNumber': requestNumber,
+            'projectNumber': projectNumber,
+            'action': action
+        }
+
+        subject = 'Request %s is now %s' % (requestNumber, action)
+        template = self.templateLookup.get_template('confirmRequestManagerAdmin.html')
+        body = template.render(**renderArgs)
+        self.send(email, subject, body)
 
     def notifyStudent(self, teamEmails, requestNumber, projectNumber, action,
                       user, role):
