@@ -8,10 +8,18 @@ from utdesign_procurement.emailer import fork_emailer
 def main():
 
     # setup the email server
+
+    email_template_dir = os.path.abspath(os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        '..', '..', 'smtp'))
+
+    cherrypy.log('Email template dir: %s' % email_template_dir)
+
     # TODO prompt for these credentials!
     email_process, email_queue = fork_emailer(email_user='noreplygettit@gmail.com',
                          email_password='0ddrun knows all',
-                         email_inwardly=True)
+                         email_inwardly=True,
+                         template_dir=email_template_dir)
 
     email_process.start()
 
