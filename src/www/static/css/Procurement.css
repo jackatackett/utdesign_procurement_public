@@ -9,6 +9,10 @@
     z-index: 1;
 }
 
+.navbar .active {
+    background-color: #AE4200 !important;
+}
+
 .errbar {
     background-color: #be2d28;
     height: 3.2em;
