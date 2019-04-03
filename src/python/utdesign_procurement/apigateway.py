@@ -1336,13 +1336,13 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def addProject(self):
         """
-        This adds a project, and can only be done by the admin.
+        This adds a project, and can only be done by an admin.
         If the projectNumber is already in use, an error is thrown
         {
             “projectNumber”: (int),
             “sponsorName”: (string),
             “projectName”: (string),
-            “membersEmails: [(string), …],
+            “membersEmails: [(string), …], # list of strings
             “defaultBudget”: (int),
             “availableBudget”: (int),
             “pendingBudget”: (int)
@@ -1356,6 +1356,8 @@ class ApiGateway(object):
             raise cherrypy.HTTPError(400, 'No data was given')
 
         raise cherrypy.HTTPError(101, "not yet implemented")
+
+        # TODO implement this
 
         # TODO send confirmation email to admin? maybe not
 
@@ -1463,6 +1465,11 @@ class ApiGateway(object):
             data = dict()
 
         raise cherrypy.HTTPError(101, "not yet implemented")
+
+        # TODO implement
+
+        # TODO confirmation email to admin maybe
+        # TODO notification email to project members maybe
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -1867,13 +1874,18 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def userPages(self):
         """
-            returns an int
+        Returns an int: the number of pages it would take to
+        display all current users if 10 users are displayed
+        per page. At present time, the page size (number of
+        users per page) cannot be configured.
         """
-
         pageSize = 10 # TODO stretch goal make this configurable
-        d, m = divmod(self.colUsers.find().count(), pageSize)
-        return d+1 if m else d
 
+        div, remainder = divmod(self.colUsers.find({'status':'current'}).count(), pageSize)
+        if remainder:
+            return div + 1
+        else:
+            return div
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()

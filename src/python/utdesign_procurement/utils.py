@@ -261,6 +261,9 @@ def requestCreate(data, status, optional=False):
             myDict[key] = checkValidData(key, theirDict, int, optional)
         myDict['totalCost'] = checkValidData("totalCost", theirDict, str, optional)
 
+        # TODO check
+        # TODO convert cost strings to ints of cents
+
         #convert unitCost and totalCost to cents, and calculate the subTotal
         for key in ("unitCost", "totalCost"):
             myDict[key] = convertToCents(myDict[key])
