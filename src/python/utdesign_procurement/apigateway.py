@@ -868,73 +868,73 @@ class ApiGateway(object):
         })
 
 
-    @cherrypy.expose
-    @cherrypy.tools.json_in()
-    @authorizedRoles("admin")
-    def procurementApproveAdmin(self):
-        """
-        This REST endpoint changes the status of a procurement request
-        to reflect that its items have been ordered by an admin.
-
-        Expected input::
-
-            {
-                "_id": (string)
-            }
-        """
-        # check that we actually have json
-        if hasattr(cherrypy.request, 'json'):
-            data = cherrypy.request.json
-        else:
-            raise cherrypy.HTTPError(400, 'No data was given')
-
-        myID = checkValidID(data)
-        findQuery = {
-            '$and': [
-                {'_id': ObjectId(myID)},
-                {'status': "manager approved"}
-            ]}
-        updateQuery = {'_id': ObjectId(myID)}
-        updateRule = {
-            "$set":
-                {'status': "admin approved"},
-            "$push":
-                {"history":
-                    {
-                    "actor": cherrypy.session["email"],
-                    "timestamp": datetime.datetime.now(),
-                    "comment": "approved by admin",
-                    "oldState": "manager approved",
-                    "newState": "admin approved"
-                    }
-    }
-        }
-
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
-
-        myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
-        if myRequest is None:
-            cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
-            return
-
-        # send confirmation email to admin
-        self.email_handler.confirmRequestManagerAdmin(**{
-            'email': cherrypy.session['email'],
-            'requestNumber': myRequest['requestNumber'],
-            'projectNumber': myRequest['projectNumber'],
-            'action': 'approved'
-        })
-
-        # send notification emails to students
-        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
-        self.email_handler.notifyStudent(**{
-            'teamEmails': teamEmails,
-            'requestNumber': myRequest['requestNumber'],
-            'projectNumber': myRequest['projectNumber'],
-            'action': 'approved by an admin',
-            'user': cherrypy.session['email'],
-            'role': 'admin'
-        })
+    # @cherrypy.expose
+    # @cherrypy.tools.json_in()
+    # @authorizedRoles("admin")
+    # def procurementApproveAdmin(self):
+    #     """
+    #     This REST endpoint changes the status of a procurement request
+    #     to reflect that its items have been ordered by an admin.
+    #
+    #     Expected input::
+    #
+    #         {
+    #             "_id": (string)
+    #         }
+    #     """
+    #     # check that we actually have json
+    #     if hasattr(cherrypy.request, 'json'):
+    #         data = cherrypy.request.json
+    #     else:
+    #         raise cherrypy.HTTPError(400, 'No data was given')
+    #
+    #     myID = checkValidID(data)
+    #     findQuery = {
+    #         '$and': [
+    #             {'_id': ObjectId(myID)},
+    #             {'status': "manager approved"}
+    #         ]}
+    #     updateQuery = {'_id': ObjectId(myID)}
+    #     updateRule = {
+    #         "$set":
+    #             {'status': "admin approved"},
+    #         "$push":
+    #             {"history":
+    #                 {
+    #                 "actor": cherrypy.session["email"],
+    #                 "timestamp": datetime.datetime.now(),
+    #                 "comment": "approved by admin",
+    #                 "oldState": "manager approved",
+    #                 "newState": "admin approved"
+    #                 }
+    # }
+    #     }
+    #
+    #     self._updateDocument(myID, findQuery, updateQuery, updateRule)
+    #
+    #     myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
+    #     if myRequest is None:
+    #         cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
+    #         return
+    #
+    #     # send confirmation email to admin
+    #     self.email_handler.confirmRequestManagerAdmin(**{
+    #         'email': cherrypy.session['email'],
+    #         'requestNumber': myRequest['requestNumber'],
+    #         'projectNumber': myRequest['projectNumber'],
+    #         'action': 'approved'
+    #     })
+    #
+    #     # send notification emails to students
+    #     teamEmails = self.getTeamEmails(myRequest['projectNumber'])
+    #     self.email_handler.notifyStudent(**{
+    #         'teamEmails': teamEmails,
+    #         'requestNumber': myRequest['requestNumber'],
+    #         'projectNumber': myRequest['projectNumber'],
+    #         'action': 'approved by an admin',
+    #         'user': cherrypy.session['email'],
+    #         'role': 'admin'
+    #     })
 
 
     @cherrypy.expose
@@ -964,7 +964,7 @@ class ApiGateway(object):
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
-                {'status': "admin approved"}
+                {'status': "manager approved"}
             ]}
         try:
             totalAmt = int(list(self.colRequests.find(findQuery))[0]["requestTotal"]) + shippingAmt
@@ -984,7 +984,7 @@ class ApiGateway(object):
                         "actor": cherrypy.session["email"],
                         "timestamp": datetime.datetime.now(),
                         "comment": "marked as ordered by admin",
-                        "oldState": "admin approved",
+                        "oldState": "manager approved",
                         "newState": "ordered"
                         }
                     }
@@ -1470,6 +1470,8 @@ class ApiGateway(object):
             data = cherrypy.request.json
         else:
             data = dict()
+
+        # TODO validate projectNumbers; verify projectNumbers is list of ints
 
         validNum = []
         result = []
@@ -2079,6 +2081,7 @@ class ApiGateway(object):
                 400, 'Request matching id and status not found in database')
 
     # helper function, do not expose!
+    # TODO edge cases?
     def getTeamEmails(self, projectNumber):
         teamEmails = []
         for user in self.colUsers.find({'projectNumbers': projectNumber}):
@@ -2087,6 +2090,7 @@ class ApiGateway(object):
         return teamEmails
 
     #helper function, do not expose
+    # TODO check if redundant (getAdminList)
     def getAdminEmails(self):
         adminEmails = []
         for user in self.colUsers.find({'role': 'admin'})
