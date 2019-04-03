@@ -1,8 +1,8 @@
 app.controller('StudentBudgetCtrl', ['$scope', '$location', '$http', '$window', '$timeout', '$interval', function($scope, $location, $http, $window, $timeout, $interval) {
-    console.log("budget");
+//    console.log("budget");
 
     function convertCosts(value) {
-        console.log(value);
+//        console.log(value);
         if (typeof value === "undefined") {
             return "0.00";
         }
@@ -40,11 +40,11 @@ app.controller('StudentBudgetCtrl', ['$scope', '$location', '$http', '$window', 
 
     $scope.getTeams = function() {
         $http.post('/findProject', {}).then(function(resp) {
-            console.log("Project Success", resp);
+//            console.log("Project Success", resp);
             projectData = resp.data;
 
             numProjects = projectData.length;
-            console.log("number projects: " + numProjects);
+//            console.log("number projects: " + numProjects);
 
             $scope.projects = [];
 
@@ -63,16 +63,16 @@ app.controller('StudentBudgetCtrl', ['$scope', '$location', '$http', '$window', 
     $scope.getData = function() {
         var filterData = {"projectNumbers": [$scope.projects[curProject]["number"]]};
         $http.post('/procurementStatuses', filterData).then(function(resp) {
-            console.log("Status Success", resp);
+//            console.log("Status Success", resp);
             procurementData = resp.data;
             filterRequests();
-            console.log("current requests:");
-            console.log($scope.curRequestData);
+//            console.log("current requests:");
+//            console.log($scope.curRequestData);
         }, function(err) {
             console.error("Status Error", err.data);
         });
         $http.post('/getCosts', filterData).then(function(resp) {
-            console.log("Costs Success", resp);
+//            console.log("Costs Success", resp);
             costData = resp.data;
             filterCosts();
         }, function(err) {

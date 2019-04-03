@@ -289,7 +289,7 @@ db.requests.insert({
 
 db.sequence.insert({
     "name" : "requests",
-    "number" : 3
+    "number" : 5
 })
 
 //~ db.costs.insert({
