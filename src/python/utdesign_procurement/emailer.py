@@ -45,11 +45,16 @@ class EmailHandler(object):
         self.queue = Queue()
         self.emailer = Emailer(self.queue, email_user, email_password, email_inwardly)
         self.process = Process(target=email_listen, args=(self.emailer, self.queue))
+        self._started = False
+
+    def start(self):
         self.process.start()
+        self._started = True
 
     def die(self):
-        self.queue.put(('die', {}))
-        self.process.join()
+        if self._started:
+            self.queue.put(('die', {}))
+            self.process.join()
 
     def send(self, to, subject, body):
         self.queue.put(('send', {

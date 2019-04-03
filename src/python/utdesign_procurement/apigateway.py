@@ -1678,11 +1678,10 @@ class ApiGateway(object):
                 self.colInvitations.insert(myInvitation)
                 cherrypy.log('Created new user. Setup UUID: %s' % myInvitation['uuid'])
 
-                self.email_queue.put(('invite', {
+                self.email_handler.userAdd(**{
                     'email': myInvitation['email'],
                     'uuid': myInvitation['uuid'],
-                    'expiration': myInvitation['expiration']
-                }))
+                })
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -1990,7 +1989,7 @@ class ApiGateway(object):
             myUser = dict()
             myUser['_id'] = str(user['_id'])
             for key in ('firstName', 'lastName', 'email', 'status', 'role'):
-                myUser[key] = user[key]
+                myUser[key] = user.get(key, '')
 
             myUser['netID'] = user.get('netID', '')
 
