@@ -1,3 +1,5 @@
+src/python/.notwindows
+
 # Development tool related things
 .idea/
 *.swp

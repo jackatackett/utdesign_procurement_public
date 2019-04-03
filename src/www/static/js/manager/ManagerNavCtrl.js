@@ -5,24 +5,28 @@ app.controller('ManagerNavCtrl', ['$scope', '$location', '$window', '$http', fun
         // TODO What you want on the event.
 
         var hash = $location.hash();
+        $scope.activeTab = "";
 
-        if (hash == 'viewRequests') {
+        if (hash == 'help') {
             //show status
-            $("#viewRequestsCtrlDiv").show();
+            $scope.activeTab = 'help';
+            $("#viewRequestsCtrlDiv").hide();
             $("#viewBudgetDiv").hide();
-            $("#managerHelpDiv").hide();
+            $("#managerHelpDiv").show();
         }
         else if (hash == 'budget') {
             //show status
+            $scope.activeTab = 'budget';
             $("#viewRequestsCtrlDiv").hide();
             $("#viewBudgetDiv").show();
             $("#managerHelpDiv").hide();
         }
         else {
             //show help
-            $("#viewRequestsCtrlDiv").hide();
+            $scope.activeTab = 'requestDashboard';
+            $("#viewRequestsCtrlDiv").show();
             $("#viewBudgetDiv").hide();
-            $("#managerHelpDiv").show();
+            $("#managerHelpDiv").hide();
         }
 
         console.log("manager stuff", $location.hash());

@@ -8,12 +8,12 @@ from bson.objectid import ObjectId
 from io import BytesIO
 from uuid import uuid4
 
-from utdesign_procurement.utils import authorizedRoles, generateSalt, hashPassword, \
-    checkProjectNumbers, checkValidData, checkValidID, checkValidNumber, \
-    verifyPassword, requestCreate, convertToCents
+from utdesign_procurement.utils import (authorizedRoles, generateSalt,
+    hashPassword, checkProjectNumbers, checkValidData, checkValidID,
+    checkValidNumber, verifyPassword, requestCreate, convertToCents,
+    getKeywords)
 
 from datetime import datetime, timedelta
-
 
 class ApiGateway(object):
 
@@ -1364,7 +1364,7 @@ class ApiGateway(object):
             myProjectNumber = checkValidData(key, data, int)
             query = {"projectNumber": myProjectNumber}
             if self.colProjects.find(query).count() > 0:
-                raise cherrypy.HTTPError(400, "project with projectNumber %s already in database", myProjectNumber)
+                raise cherrypy.HTTPError(400, "project with projectNumber %s already in database" % myProjectNumber)
             else:
                 myProject[key] = myProjectNumber
 
@@ -1381,7 +1381,7 @@ class ApiGateway(object):
                 if isinstance(email, str):
                     newEmailList.append(email)
                 else:
-                    raise cherrypy.HTTPError(400, "invalid %s type, emails must be strings", key)
+                    raise cherrypy.HTTPError(400, "invalid %s type, emails must be strings" % key)
             myProject[key] = newEmailList
 
         # insert the data into the database
@@ -1507,19 +1507,20 @@ class ApiGateway(object):
                 if isinstance(email, str):
                     newEmailList.append(email)
                 else:
-                    raise cherrypy.HTTPError(400, "invalid %s type, emails must be strings", key)
+                    raise cherrypy.HTTPError(400, "invalid %s type, emails must be strings" % key)
             myProject[key] = newEmailList
 
 
         findQuery = {'projectNumber': myProject['projectNumber']}
         updateRule = {
-            "$set":
-                {'projectName': myProject['projectName']},
-                {'sponsorName': myProject['sponsorName']},
-                {'membersEmails': myProject['membersEmails']}
+            "$set": {
+                'projectName': myProject['projectName'],
+                'sponsorName': myProject['sponsorName'],
+                'membersEmails': myProject['membersEmails']
+            }
         }
 
-        self._updateDocument(findQuery, findQuery, updateRule, collection=self.Projects)
+        self._updateDocument(findQuery, findQuery, updateRule, collection=self.colProjects)
 
         # TODO confirmation email to admin maybe
         # TODO notification email to project members maybe
@@ -1795,7 +1796,7 @@ class ApiGateway(object):
                 {'status': 'removed'}
         }
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule, collection=self.colUsers)
+        self._updateDocument(findQuery, updateQuery, updateRule, collection=self.colUsers)
 
         # TODO send confirmation email to admin?
         # don't send notification to student?
@@ -1922,6 +1923,7 @@ class ApiGateway(object):
         return ret
 
     @cherrypy.expose
+    @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
     @authorizedRoles("admin")
     def userPages(self):
@@ -1930,10 +1932,28 @@ class ApiGateway(object):
         display all current users if 10 users are displayed
         per page. At present time, the page size (number of
         users per page) cannot be configured.
+
+        {
+            "projectNumbers": (int or list of ints, optional),
+            "firstName": (string, optional),
+            "lastName": (string, optional),
+            "netID": (string, optional),
+            "email": (string, optional),
+            "course": (string, optional),
+            "role": (string, optional)
+        }
+
         """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            myFilter = getKeywords(cherrypy.request.json)
+        else:
+            myFilter = dict()
+        myFilter['status'] = 'current'
+
         pageSize = 10 # TODO stretch goal make this configurable
 
-        div, remainder = divmod(self.colUsers.find({'status':'current'}).count(), pageSize)
+        div, remainder = divmod(self.colUsers.find(myFilter).count(), pageSize)
         if remainder:
             return div + 1
         else:
@@ -1958,6 +1978,16 @@ class ApiGateway(object):
                 (Optional. Default: "ascending")
             'pageNumber': (int)
                 (Optional. Default: 0)
+            'keywordSearch': (dict)
+                {
+                    "projectNumbers": (int or list of ints, optional),
+                    "firstName": (string, optional),
+                    "lastName": (string, optional),
+                    "netID": (string, optional),
+                    "email": (string, optional),
+                    "course": (string, optional),
+                    "role": (string, optional)
+                }
         }
 
         Outgoing ::
@@ -1981,6 +2011,7 @@ class ApiGateway(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
+        # prepare the sort, order, and page number
         sortBy = checkValidData('sortBy', data, str, default='email',
                                 optional=True)
 
@@ -2004,12 +2035,21 @@ class ApiGateway(object):
                                 optional=True)
 
         if pageNumber < 0:
-            raise cherrypy.HTTPError(400, "Invalid pageNumber format. Expected nonnegative integer. See: %s" % pageNumber)
+            raise cherrypy.HTTPError(
+                400, "Invalid pageNumber format. "
+                     "Expected nonnegative integer. "
+                     "See: %s" % pageNumber)
 
         pageSize = 10 # TODO stretch goal make this configurable
 
+        if 'keywordSearch' in data:
+            myFilter = getKeywords(data['keywordSearch'])
+        else:
+            myFilter = dict()
+        myFilter['status'] = 'current'
+
         # finds users who are current only
-        userCursor = self.colUsers.find({'status':'current'}).sort(sortBy, direction)
+        userCursor = self.colUsers.find(myFilter).sort(sortBy, direction)
 
         retUsers = []
         for user in userCursor[pageSize*pageNumber: pageSize*(pageNumber+1)]:
@@ -2025,6 +2065,7 @@ class ApiGateway(object):
                     myUser[key] = user[key]
 
             retUsers.append(myUser)
+
 
         return retUsers
 

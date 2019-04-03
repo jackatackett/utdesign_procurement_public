@@ -1,18 +1,33 @@
-<div id="signInCtrlDiv" ng-controller="SignInCtrl">
-    <form ng-submit="doSignIn()">
-        <table>
-            <tr>
-                <td>Email:</td>
-                <td><input type="text" ng-model="credentials.email"></td>
-            </tr>
-            <tr>
-                <td>Password:</td>
-                <td><input type="password" ng-model="credentials.password"></td>
-            </tr>
-            <tr>
-                <td><a href="#forgotpassword" class="btn btn-danger">Forgot password?</button></td>
-                <td><button type="submit" class="btn btn-success">Sign In</button></td>
-            </tr>
-        </table>
+<div id="signInCtrlDiv" ng-controller="SignInCtrl" class="login-modal">
+    <form ng-submit="doSignIn()" class="login-content">
+
+        <h3>Sign In</h3>
+        <h7>with your GettIt account</h7>
+
+        <br>
+        <br>
+
+        <p>Email</p>
+        <input type="text" ng-model="credentials.email">
+
+        <br>
+        <br>
+
+        <div>
+            <label style="float: left; display: inline-block">Password</label>
+            <label style="float: right; display: inline-block">
+                <a href="#forgotpassword">Forgot password?</a>
+            </label>
+        </div>
+        <input type="password" ng-model="credentials.password">
+
+        <br>
+        <br>
+
+        <button type="submit" class="btn btn-success">Sign In</button>
+
+        <br>
+        <br>
+
     </form>
 </div>

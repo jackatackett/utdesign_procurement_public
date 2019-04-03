@@ -1,21 +1,16 @@
 app.controller('AdminNavCtrl', ['$scope', '$location', '$window', '$http', function($scope, $location, $window, $http) {
 
+    $scope.activeTab = "";
+
     //add a listener for the nav bar
     $scope.$on('$locationChangeSuccess', function() {
         // TODO What you want on the event.
 
         var hash = $location.hash();
 
-        if (hash == 'requestSummary') {
-            //show summary
-            $("#addUsersCtrlDiv").hide();
-            $("#editUsersCtrlDiv").hide();
-            $("#requestSummaryCtrlDiv").show();
-            $("#adminHelpDiv").hide();
-            $("#adminAddCostsDiv").hide();
-            $("#adminEditCostsDiv").hide();
-        } else if (hash == 'addUsers') {
+        if (hash == 'addUsers') {
             //show add users
+            $scope.activeTab = 'addUsers';
             $("#addUsersCtrlDiv").show();
             $("#editUsersCtrlDiv").hide();
             $("#requestSummaryCtrlDiv").hide();
@@ -24,6 +19,7 @@ app.controller('AdminNavCtrl', ['$scope', '$location', '$window', '$http', funct
             $("#adminEditCostsDiv").hide();
         } else if (hash == 'editUsers') {
             //show edit users
+            $scope.activeTab = 'editUsers';
             $("#addUsersCtrlDiv").hide();
             $("#editUsersCtrlDiv").show();
             $("#requestSummaryCtrlDiv").hide();
@@ -32,6 +28,7 @@ app.controller('AdminNavCtrl', ['$scope', '$location', '$window', '$http', funct
             $("#adminEditCostsDiv").hide();
         } else if (hash == 'addCosts') {
             //show add costs
+            $scope.activeTab = 'addCosts';
             $("#addUsersCtrlDiv").hide();
             $("#editUsersCtrlDiv").hide();
             $("#requestSummaryCtrlDiv").hide();
@@ -40,18 +37,29 @@ app.controller('AdminNavCtrl', ['$scope', '$location', '$window', '$http', funct
             $("#adminEditCostsDiv").hide();
         } else if (hash == 'viewCosts') {
             //show edit costs
+            $scope.activeTab = 'viewCosts';
             $("#addUsersCtrlDiv").hide();
             $("#editUsersCtrlDiv").hide();
             $("#requestSummaryCtrlDiv").hide();
             $("#adminHelpDiv").hide();
             $("#adminAddCostsDiv").hide();
             $("#adminEditCostsDiv").show();
-        } else {
+        } else if (hash == 'help') {
             //show help
+            $scope.activeTab = 'help';
             $("#addUsersCtrlDiv").hide();
             $("#editUsersCtrlDiv").hide();
             $("#requestSummaryCtrlDiv").hide();
             $("#adminHelpDiv").show();
+            $("#adminAddCostsDiv").hide();
+            $("#adminEditCostsDiv").hide();
+        } else {
+            //show summary
+            $scope.activeTab = 'requestDashboard';
+            $("#addUsersCtrlDiv").hide();
+            $("#editUsersCtrlDiv").hide();
+            $("#requestSummaryCtrlDiv").show();
+            $("#adminHelpDiv").hide();
             $("#adminAddCostsDiv").hide();
             $("#adminEditCostsDiv").hide();
         }

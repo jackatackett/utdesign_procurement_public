@@ -21,9 +21,6 @@ def main():
                          email_inwardly=True,
                          template_dir=email_template_dir)
 
-    # Uncomment this line for emails
-    # email_handler.start()
-
     #configure the cherrypy server
     cherrypy.Application.wwwDir = os.path.join(os.path.dirname(os.path.realpath(__file__)),
         os.path.join('..', '..', 'www'))
@@ -37,9 +34,19 @@ def main():
         '/',
         config=server_config)
 
+    # Uncomment this line for emails
+    email_handler.start()
     cherrypy.engine.start()
-    input()
-    cherrypy.engine.stop()
+
+    # so windows users can exit gracefully
+    windows = not os.path.exists('./.notwindows')
+
+    if windows:
+        input()
+        cherrypy.engine.stop()
+    else: #linux
+        cherrypy.engine.block()
+
     email_handler.die()
 
 if __name__ == '__main__':

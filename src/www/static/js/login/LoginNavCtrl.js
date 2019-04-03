@@ -6,26 +6,26 @@ app.controller('LoginNavCtrl', ['$scope', '$location', function($scope, $locatio
 
         var hash = $location.hash();
 
-        if (hash == 'help') {
-            //show create
-            $("#signInCtrlDiv").hide();
-            $("#forgotPasswordCtrlDiv").hide();
-            $("#loginHelpDiv").show();
-
-        } else if (hash == 'forgotpassword') {
+//        if (hash == 'help') {
+//            //show create
+//            $("#signInCtrlDiv").hide();
+//            $("#forgotPasswordCtrlDiv").hide();
+////            $("#loginHelpDiv").show();
+//
+//        } else
+        if (hash == 'forgotpassword') {
             //show status
             $("#signInCtrlDiv").hide();
             $("#forgotPasswordCtrlDiv").show();
-            $("#loginHelpDiv").hide();
+//            $("#loginHelpDiv").hide();
 
         } else {
             //show help
             $("#signInCtrlDiv").show();
             $("#forgotPasswordCtrlDiv").hide();
-            $("#loginHelpDiv").hide();
+//            $("#loginHelpDiv").hide();
         }
 
-        console.log("moo", $location.hash());
     });
 
 }]);

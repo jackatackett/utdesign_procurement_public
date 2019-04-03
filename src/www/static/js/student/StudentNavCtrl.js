@@ -8,28 +8,31 @@ app.controller('StudentNavCtrl', ['$scope', '$location', '$window', '$http', fun
 
         if (hash == 'create') {
             //show create
+            $scope.activeTab = 'createRequest';
             $("#createRequestCtrlDiv").show();
             $("#requestSummaryCtrlDiv").hide();
             $("#studentHelpDiv").hide();
             $("#viewBudgetDiv").hide();
-        } else if (hash == 'status') {
-            //show status
-            $("#createRequestCtrlDiv").hide();
-            $("#requestSummaryCtrlDiv").show();
-            $("#studentHelpDiv").hide();
-            $("#viewBudgetDiv").hide();
         } else if (hash == 'budget') {
             //show budget
+            $scope.activeTab = 'budget';
             $("#createRequestCtrlDiv").hide();
             $("#requestSummaryCtrlDiv").hide();
             $("#studentHelpDiv").hide();
             $("#viewBudgetDiv").show();
-        }
-        else {
+        } else if (hash == 'create') {
             //show help
+            $scope.activeTab = 'help';
             $("#createRequestCtrlDiv").hide();
             $("#requestSummaryCtrlDiv").hide();
             $("#studentHelpDiv").show();
+            $("#viewBudgetDiv").hide();
+        } else {
+            //show status
+            $scope.activeTab = 'requestDashboard';
+            $("#createRequestCtrlDiv").hide();
+            $("#requestSummaryCtrlDiv").show();
+            $("#studentHelpDiv").hide();
             $("#viewBudgetDiv").hide();
         }
 

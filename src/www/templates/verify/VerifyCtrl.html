@@ -1,28 +1,34 @@
-<div ng-controller="VerifyCtrl">
-    <p>
-        You have been invited to use the UTDesign Procurement System.
-        Set up your account.
-    </p>
+<div id="verifyCtrlDiv" ng-controller="VerifyCtrl" class="login-modal">
+    <form ng-submit="doVerify()" class="login-content" style="height: 420px;">
 
-    <p ng-bind="id"></p>
+        <h3>Account Setup</h3>
+        <h7>Set up you GettIt account password!</h7>
 
-    <form ng-submit="doVerify()">
-        <table>
-            <tr>
-                <td>Email:</td>
-                <td><input type="text" ng-model="credentials.email"></td>
-            </tr>
-            <tr>
-                <td>New Password:</td>
-                <td><input type="password" ng-model="credentials.password"></td>
-            </tr>
-            <tr>
-                <td>Confirm Password:</td>
-                <td><input type="password" ng-model="confirmPassword"></td>
-            </tr>
-            <tr>
-                <td><button type="submit" class="btn btn-success">Register</button></td>
-            </tr>
-        </table>
+        <br>
+        <br>
+
+        <p>Confirm Email</p>
+        <input type="text" ng-model="credentials.email">
+
+        <br>
+        <br>
+
+        <p>New Password</p>
+        <input type="password" ng-model="credentials.password">
+
+        <br>
+        <br>
+
+        <p>Confirm Password</p>
+        <input type="password" ng-model="confirmPassword">
+
+        <br>
+        <br>
+
+        <button type="submit" class="btn btn-success">Register</button>
+
+        <br>
+        <br>
+
     </form>
 </div>
