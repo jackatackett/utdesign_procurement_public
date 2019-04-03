@@ -26,8 +26,8 @@ class ApiGateway(object):
         self.colRequests = db['requests']
         self.colUsers = db['users']
         self.colInvitations = db['invitations']
-        self.costs = db['costs']
-        self.projects = db['projects']
+        self.colCosts = db['costs']
+        self.colProjects = db['projects']
 
         self.colSequence = db['sequence']
 
@@ -1266,15 +1266,15 @@ class ApiGateway(object):
                 cost[key] = convertToCents(cost[key])
         #~ cost["timestamp"] = datetime.now().isoformat()
         cost["timestamp"] = datetime.now()
-        self.costs.insert(cost)
+        self.colCosts.insert(cost)
 
         #update the project budget if type == funding or cut
         if cost["type"] == "funding":
-            newBudget = list(self.projects.find({"projectNumber": cost["projectNumber"]}))[0]["defaultBudget"] + cost["amount"]
-            self.projects.update_one({"projectNumber": cost["projectNumber"]}, {"$set": {"defaultBudget": newBudget}})
+            newBudget = list(self.colProjects.find({"projectNumber": cost["projectNumber"]}))[0]["defaultBudget"] + cost["amount"]
+            self.colProjects.update_one({"projectNumber": cost["projectNumber"]}, {"$set": {"defaultBudget": newBudget}})
         elif cost["type"] == "cut":
-            newBudget = list(self.projects.find({"projectNumber": cost["projectNumber"]}))[0]["defaultBudget"] - cost["amount"]
-            self.projects.update_one({"projectNumber": cost["projectNumber"]}, {"$set": {"defaultBudget": newBudget}})
+            newBudget = list(self.colProjects.find({"projectNumber": cost["projectNumber"]}))[0]["defaultBudget"] - cost["amount"]
+            self.colProjects.update_one({"projectNumber": cost["projectNumber"]}, {"$set": {"defaultBudget": newBudget}})
 
         # TODO send confirmation email to admin
         # TODO send notification emails to students
@@ -1309,7 +1309,7 @@ class ApiGateway(object):
                         validNum.append(pNum)
 
             for project in validNum:
-                for res in self.costs.find({'projectNumber': project}):
+                for res in self.colCosts.find({'projectNumber': project}):
                     res['_id'] = str(res['_id'])
                     res["timestamp"] = res["timestamp"].isoformat()
                     result.append(res)
@@ -1318,13 +1318,13 @@ class ApiGateway(object):
             if cherrypy.session['role'] != 'admin':
                 validNum = cherrypy.session['projectNumbers']
                 for project in validNum:
-                    for res in self.costs.find({'projectNumber': project}):
+                    for res in self.colCosts.find({'projectNumber': project}):
                         res['_id'] = str(res['_id'])
                         res["timestamp"] = res["timestamp"].isoformat()
                         result.append(res)
                 return result
             else:   # is admin
-                for res in self.costs.find({}):
+                for res in self.colCosts.find({}):
                     res['_id'] = str(res['_id'])
                     res["timestamp"] = res["timestamp"].isoformat()
                     result.append(res)
@@ -1338,6 +1338,7 @@ class ApiGateway(object):
         """
         This adds a project, and can only be done by an admin.
         If the projectNumber is already in use, an error is thrown
+
         {
             “projectNumber”: (int),
             “sponsorName”: (string),
@@ -1355,9 +1356,34 @@ class ApiGateway(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        raise cherrypy.HTTPError(101, "not yet implemented")
+        myProject = dict()
 
-        # TODO implement this
+        for key in ("projectNumber",):
+            myProjectNumber = checkValidData(key, data, int)
+            query = {"projectNumber": myProjectNumber}
+            if self.colProjects.find(query).count() > 0:
+                raise cherrypy.HTTPError(400, "project with projectNumber %s already in database", myProjectNumber)
+            else:
+                myProject[key] = myProjectNumber
+
+        for key in ("defaultBudget", "availableBudget", "pendingBudget"):
+            myProject[key] = checkValidData(key, data, int)
+
+        for key in ("sponsorName", "projectName"):
+            myProject[key] = checkValidData(key, data, str)
+
+        for key in ("membersEmails",):
+            emailList = checkValidData(key, data, list)
+            newEmailList = []
+            for email in emailList:
+                if isinstance(email, str):
+                    newEmailList.append(email)
+                else:
+                    raise cherrypy.HTTPError(400, "invalid %s type, emails must be strings", key)
+            myProject[key] = newEmailList
+
+        # insert the data into the database
+        self.colProjects.insert(myProject)
 
         # TODO send confirmation email to admin? maybe not
 
@@ -1394,7 +1420,7 @@ class ApiGateway(object):
                         validNum.append(pNum)
 
             for project in validNum:
-                for res in self.projects.find({'projectNumber': project}):
+                for res in self.colProjects.find({'projectNumber': project}):
                     res['_id'] = str(res['_id'])
                     result.append(res)
             #~ return result
@@ -1402,12 +1428,12 @@ class ApiGateway(object):
             if cherrypy.session['role'] != 'admin':
                 validNum = cherrypy.session['projectNumbers']
                 for project in validNum:
-                    for res in self.projects.find({'projectNumber': project}):
+                    for res in self.colProjects.find({'projectNumber': project}):
                         res['_id'] = str(res['_id'])
                         result.append(res)
                 #~ return result
             else:   # is admin
-                for res in self.projects.find({}):
+                for res in self.colProjects.find({}):
                     res['_id'] = str(res['_id'])
                     result.append(res)
                 #~ return result
@@ -1429,7 +1455,7 @@ class ApiGateway(object):
             #~ print(pendingCosts, actualCosts)
 
             miscCosts = 0
-            addCosts = self.costs.find({"projectNumber": res["projectNumber"]})
+            addCosts = self.colCosts.find({"projectNumber": res["projectNumber"]})
             for co in addCosts:
                 if co["type"] == "refund":
                     miscCosts -= co["amount"]
@@ -1886,6 +1912,7 @@ class ApiGateway(object):
             return div + 1
         else:
             return div
+
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
