@@ -103,20 +103,6 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
         });
     };
 
-    $scope.approveRequest = function(e, rowIdx) {
-        console.log($scope.data);
-        console.log(rowIdx);
-        $http.post('/procurementApproveAdmin', {'_id':$scope.data[rowIdx]._id}).then(function(resp) {
-            console.log("Success", resp);
-            alert("Success!");
-            $scope.refreshStatuses();
-        }, function(err) {
-            console.error("Error", err.data);
-            alert("Error");
-            $scope.refreshStatuses();
-        });
-    };
-
     $scope.rejectRequest = function(e, rowIdx) {
         $scope.adminComment = "";
         $("#rejectModal").show();
@@ -230,12 +216,8 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
         });
     };
 
-    $scope.canApprove = function(status) {
-        return status == "manager approved";
-    };
-
     $scope.canOrder = function(status) {
-        return status == "admin approved";
+        return status == "manager approved";
     };
 
     $scope.canPickup = function(status) {
