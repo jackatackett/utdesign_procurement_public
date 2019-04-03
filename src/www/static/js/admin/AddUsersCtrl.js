@@ -52,11 +52,29 @@ app.controller('AddUsersCtrl', ['$scope', '$location', '$http', '$window', funct
         });
     };
 
-    $scope.uploadSpreadsheet = function(e) {
+    $scope.selectSpreadsheet = function(e) {
+        console.log("selectSpreadsheet");
         var target = e.currentTarget;
-        console.log("upload spreadsheet");
         $("#spreadsheetField").click();
     };
+
+    $scope.submitSpreadsheet = function(files) {
+        console.log("submitSpreadsheet");
+
+        var fd = new FormData();
+        //Take the first selected file
+        fd.append("sheet", files[0]);
+
+        $http.post('/userAddBulk', fd, {
+            withCredentials: true,
+            headers: {'Content-Type': undefined },
+            transformRequest: angular.identity
+        }).then(function(resp) {
+            console.log("userAddBulk success", resp)
+        }, function(err) {
+            console.error("userAddBulk fail", err)
+        });
+    }
 
     $scope.regeneratePage = function(e) {
         var target = e.currentTarget;

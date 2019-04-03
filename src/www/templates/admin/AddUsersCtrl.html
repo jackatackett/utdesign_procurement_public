@@ -13,8 +13,8 @@
         <tr>
             <td colspan="2">
                 <button type="button" class="btn btn-primary" ng-click="addUser($event)" >Add</button>
-                <button type="button" class="btn btn-primary" ng-click="uploadSpreadsheet($event)" >Upload Spreadsheet</button>
-                <input type="file" style="display: none" id="spreadsheetField">
+                <button type="button" class="btn btn-primary" ng-click="selectSpreadsheet($event)" >Upload Spreadsheet</button>
+                <input type="file" style="display: none" id="spreadsheetField" name="file" onchange="angular.element(this).scope().submitSpreadsheet(this.files)"/>
             </td>
         </tr>
     </table>

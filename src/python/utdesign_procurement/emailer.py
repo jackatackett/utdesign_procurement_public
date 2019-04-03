@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import smtplib
+import traceback
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -9,9 +10,7 @@ from multiprocessing import Process, Queue
 
 def email_listen(emailer, queue):
     function_lut = {
-        'invite': emailer.emailInvite,
-        'forgot': emailer.emailForgot,
-        'send': emailer._emailSend
+        'send': emailer.emailSend,
     }
 
     while True:
@@ -24,31 +23,42 @@ def email_listen(emailer, queue):
 
         func = function_lut.get(header, None)
         if func:
-            func(**kwargs)
+            try:
+                func(**kwargs)
+            except Exception as e:
+                print("Emailer encountered an exception.")
+                traceback.print_exc()
         elif header == 'die':
             break
 
+class EmailHandler(object):
+    """
+    Fills templates and sends emails using an Emailer in a separate thread
+    """
 
-def fork_emailer(email_user, email_password, email_inwardly,
+    def __init__(self, email_user, email_password, email_inwardly,
                  template_dir, domain='utdprocure.utdallas.edu'):
-    queue = Queue()
-    emailer = Emailer(queue, email_user, email_password, email_inwardly,
-                      template_dir, domain)
-    process = Process(target=email_listen, args=(emailer, queue))
-    return process, queue
 
-class Emailer(object):
-
-    def __init__(self, email_queue, email_user, email_password, email_inwardly,
-                 template_dir, domain):
-        self.email_queue = email_queue
-        self.email_user = email_user
-        self.email_password = email_password
-        self.email_inwardly = email_inwardly
-        self.templateLookup = TemplateLookup(directories=template_dir)
         self.domain = domain
+        self.templateLookup = TemplateLookup(template_dir)
 
-    def emailInvite(self, email=None, uuid=None):
+        self.queue = Queue()
+        self.emailer = Emailer(self.queue, email_user, email_password, email_inwardly)
+        self.process = Process(target=email_listen, args=(self.emailer, self.queue))
+        self.process.start()
+
+    def die(self):
+        self.queue.put(('die', {}))
+        self.process.join()
+
+    def send(self, to, subject, body):
+        self.queue.put(('send', {
+            'to': to,
+            'subject': subject,
+            'html': body
+        }))
+
+    def userAdd(self, email=None, uuid=None):
         """
         Sends an invitation for a new user to set up their password for the
         first time.
@@ -58,11 +68,11 @@ class Emailer(object):
         :return:
         """
 
-        template = self.templateLookup.get_template('invite.html')
+        template = self.templateLookup.get_template('userAdd.html')
         body = template.render(uuid=uuid, domain=self.domain)
-        self._emailSend(email, 'UTDesign GettIt Invite', html=body)
+        self.send(email, 'UTDesign GettIt Invite', body)
 
-    def emailForgot(self, email=None, uuid=None, expiration=None):
+    def userForgotPassword(self, email=None, uuid=None, expiration=None):
         """
         Sends a recovery link for an existing user to reset their password.
 
@@ -72,9 +82,109 @@ class Emailer(object):
         :return:
         """
 
-        template = self.templateLookup.get_template('forgot.html')
-        body = template.render(uuid=uuid, domain=self.domain)
-        self._emailSend(email, 'UTDesign GettIt Password Reset', html=body)
+        template = self.templateLookup.get_template('userForgotPassword.html')
+        body = template.render(uuid=uuid, domain=self.domain, expiration=expiration)
+        self.send(email, 'UTDesign GettIt Password Reset', body)
+
+    def procurementSave(self, teamEmails=None, request=None):
+        """
+
+        :param request:
+        :return:
+        """
+
+        renderArgs = {
+            'domain': self.domain,
+            'requestNumber': request['requestNumber'],
+            'projectNumber': request['projectNumber'],
+            'managerEmail': request['manager'],
+            'vendor': request['vendor'],
+            'vendorURL': request['URL'],
+            'justification': request['justification'],
+            'additionalInfo': request['additionalInfo'],
+            'itemCount': len(request['items'])
+        }
+
+        subject = 'New Request For Project %s' % request['projectNumber']
+        template = self.templateLookup.get_template('procurementSaveStudent.html')
+        body = template.render(**renderArgs)
+        self.send(teamEmails, subject, body)
+        self.send(request['manager'], subject, body)
+
+    def confirmStudent(self, teamEmails, requestNumber, projectNumber, action):
+        renderArgs = {
+            'domain': self.domain,
+            'requestNumber': requestNumber,
+            'projectNumber': projectNumber,
+            'action': action
+        }
+
+        subject = 'Request %s is now %s' % (requestNumber, action)
+        template = self.templateLookup.get_template('confirmStudent.html')
+        body = template.render(**renderArgs)
+        self.send(teamEmails, subject, body)
+
+    def confirmRequestManagerAdmin(self, email, requestNumber, projectNumber, action):
+        renderArgs = {
+            'domain': self.domain,
+            'requestNumber': requestNumber,
+            'projectNumber': projectNumber,
+            'action': action
+        }
+
+        subject = 'Request %s is now %s' % (requestNumber, action)
+        template = self.templateLookup.get_template('confirmRequestManagerAdmin.html')
+        body = template.render(**renderArgs)
+        self.send(email, subject, body)
+
+    def notifyStudent(self, teamEmails, requestNumber, projectNumber, action,
+                      user, role):
+        renderArgs = {
+            'domain': self.domain,
+            'requestNumber': requestNumber,
+            'projectNumber': projectNumber,
+            'action': action,
+            'user': user,
+            'role': role
+        }
+
+        subject = 'Request %s has been %s' % (requestNumber, action)
+        template = self.templateLookup.get_template('notifyStudent.html')
+        body = template.render(**renderArgs)
+        self.send(teamEmails, subject, body)
+
+    def notifyRequestManager(self, email, projectNumber, requestNumber):
+        renderArgs = {
+            'domain': self.domain,
+            'requestNumber': requestNumber,
+            'projectNumber': projectNumber
+        }
+        subject = "Request %s has been submitted to you" % (requestNumber)
+        template = self.templateLookup.get_template('notifyRequestManager.html')
+        body = template.render(**renderArgs)
+        self.send(email, subject, body)
+
+    def notifyRequestAdmin(self, adminEmails, projectNumber, requestNumber):
+        renderArgs = {
+            'domain': self.domain,
+            'requestNumber': requestNumber,
+            'projectNumber': projectNumber
+        }
+        subject = "Request %s needs admin approval" % (requestNumber)
+        template = self.templateLookup.get_template('notifyRequestAdmin.html')
+        body = template.render(**renderArgs)
+        self.send(adminEmails, subject, body)
+
+class Emailer(object):
+    """
+    Manages email connections and sends HTML emails in MIMEMultipart messages
+    """
+
+    def __init__(self, email_queue, email_user, email_password, email_inwardly):
+        self.email_queue = email_queue
+        self.email_user = email_user
+        self.email_password = email_password
+        self.email_inwardly = email_inwardly
 
     def _emailDo(self, func):
         server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
@@ -83,7 +193,7 @@ class Emailer(object):
         func(server)
         server.quit()
 
-    def _emailSend(self, to=None, subject=None, html=None):
+    def emailSend(self, to=None, subject=None, html=None):
         assert to and subject
 
         if self.email_inwardly:
@@ -93,7 +203,10 @@ class Emailer(object):
         msg = MIMEMultipart('alternative')
         msg['Subject'] = subject
         msg['From'] = self.email_user
-        msg['To'] = to
+        if isinstance(to, str):
+            msg['To'] = to
+        else:
+            msg['To'] = ','.join(to)
 
         msg.attach(MIMEText("This email is meant to be HTML.", 'plain'))
         msg.attach(MIMEText(html, 'html'))

@@ -23,8 +23,8 @@ def authorizedRoles(*acceptableRoles, redirect=False):
         def decorated_function(*args, **kwargs):
             role = cherrypy.session.get('role', None)
 
-            cherrypy.log("authorizedRoles called with user role %s and "
-                         "roles %s" % (role, acceptableRoles))
+            # cherrypy.log("authorizedRoles called with user role %s and "
+            #              "roles %s" % (role, acceptableRoles))
 
             # no role means force a login
             if role is None and redirect:
