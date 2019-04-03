@@ -38,8 +38,16 @@ def main():
         config=server_config)
 
     cherrypy.engine.start()
-    input()
-    cherrypy.engine.stop()
+
+    # so windows users can exit gracefully
+    windows = not os.path.exists('./.notwindows')
+
+    if windows:
+        input()
+        cherrypy.engine.stop()
+    else: #linux
+        cherrypy.engine.block()
+
     email_handler.die()
 
 if __name__ == '__main__':
