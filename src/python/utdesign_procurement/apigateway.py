@@ -10,9 +10,8 @@ from utdesign_procurement.utils import authorizedRoles, generateSalt, hashPasswo
     checkProjectNumbers, checkValidData, checkValidID, checkValidNumber, \
     verifyPassword, requestCreate, convertToCents
 
-# TODO integrate existing code with these changes?
+from datetime import datetime, timedelta
 
-import datetime
 
 class ApiGateway(object):
 
@@ -287,12 +286,8 @@ class ApiGateway(object):
         else:
             bigFilter = {}
 
-        #~ print("whoami:", cherrypy.session['role'])
-        #~ print("filtering on:", bigFilter)
-
         listRequests = []
         for request in self.colRequests.find(bigFilter):
-            #~ print(request)
             request['_id'] = str(request['_id'])
             if 'history' in request:
                 for hist in range(len(request['history'])):
@@ -1306,6 +1301,54 @@ class ApiGateway(object):
         self.email_queue.put(('invite', {
             'email': myInvitation['email'],
             'uuid':  myInvitation['uuid'],
+        }))
+
+        return {'uuid': myInvitation['uuid']}
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    def userForgotPassword(self):
+        """
+        This REST endpoint takes in a user's email address and send them
+        a recovery link that will expire at some point in the near future.
+
+        Expected input::
+
+            {
+                "email": (string),
+            }
+
+        """
+
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myEmail = checkValidData('email', data, str)
+
+        userDoc = self.colUsers.find_one({'email': myEmail})
+
+        # if no user with this email exists, we don't want to give an adversary
+        # the satisfaction of knowing that.
+        if not userDoc:
+            return
+
+        # create a link (invitation) so the user can set a password
+        myInvitation = {
+            'uuid': str(uuid4()),
+            'expiration': datetime.now() + timedelta(minutes=15),
+            'email': myEmail
+        }
+
+        self.colInvitations.insert(myInvitation)
+        cherrypy.log('Created new invitation. Setup UUID: %s' % myInvitation['uuid'])
+
+        self.email_queue.put(('forgot', {
+            'email': myInvitation['email'],
+            'uuid':  myInvitation['uuid'],
             'expiration': myInvitation['expiration']
         }))
 
@@ -1428,7 +1471,7 @@ class ApiGateway(object):
         # find invitation with given uuid
         invitation = self.colInvitations.find_one({'uuid': myData['uuid']})
 
-        cherrypy.log("Email: %s. Invitation: %s" % (data['email'], invitation))
+        cherrypy.log("Email: %s. Invitation: %s. UUID: %s" % (data['email'], invitation, myData['uuid']))
 
         # invitation may not be None, email may be None
         if invitation and invitation.get('email', None) == myData['email']:
