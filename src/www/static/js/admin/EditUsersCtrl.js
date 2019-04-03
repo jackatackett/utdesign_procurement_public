@@ -87,7 +87,7 @@ app.controller('EditUsersCtrl', ['$scope', '$location', '$http', function($scope
     }
 
     $scope.nextPage = function() {
-        if ($scope.pageNumber < $scope.numberOfPages.length) {
+        if ($scope.pageNumber < $scope.numberOfPages) {
             $scope.changePage($scope.pageNumber+1)
         }
     }
