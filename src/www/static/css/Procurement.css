@@ -98,6 +98,11 @@
     margin-bottom: 0;
 }
 
+.login-content a {
+    color: rgb(0,0,255) !important;
+    text-decoration: underline;
+}
+
 .interfaceDiv {
     margin: 2%;
     box-sizing: border-box;
