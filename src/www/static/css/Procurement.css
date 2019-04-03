@@ -6,11 +6,19 @@
 
 .navbar {
     background-color: #C75B12 !important;
-    z-index: 1;
+    z-index: 2;
+    position: fixed;
+    width: 100%; top: 0;
+    height: 59px;
 }
 
 .navbar .active {
     background-color: #AE4200 !important;
+}
+
+.pageContent {
+    padding-top: 59px;
+    height: calc(100% - 60px);
 }
 
 .errbar {
@@ -153,4 +161,9 @@
 
 #editUserTable th.descending::after {
   content: "\2B07";
+}
+
+#editUserTable {
+    overflow-x: auto;
+    width: 100%;
 }

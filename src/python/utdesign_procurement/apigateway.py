@@ -1710,7 +1710,7 @@ class ApiGateway(object):
 
             # get from excel
             myUser = {
-                "projectNumbers": [int(e) for e in str(row[0]).split(',')],
+                "projectNumbers": [int(e) for e in str(row[0]).split()],
                 "firstName": row[1],
                 "lastName": row[2],
                 "netID": row[3],
