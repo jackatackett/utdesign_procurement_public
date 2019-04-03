@@ -1486,16 +1486,12 @@ class ApiGateway(object):
             membersEmails: [(string), …, optional]
         }
         """
-
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
         else:
             data = dict()
 
-        # raise cherrypy.HTTPError(101, "not yet implemented")
-
-        # TODO implement
         myProject = dict()
 
         for key in ("projectNumber"):
@@ -1504,11 +1500,23 @@ class ApiGateway(object):
         for key in ("projectName", "sponsorName"):
             myProject[key] = checkValidData(key, data, str)
 
+        for key in ("membersEmails",):
+            emailList = checkValidData(key, data, list)
+            newEmailList = []
+            for email in emailList:
+                if isinstance(email, str):
+                    newEmailList.append(email)
+                else:
+                    raise cherrypy.HTTPError(400, "invalid %s type, emails must be strings", key)
+            myProject[key] = newEmailList
+
+
         findQuery = {'projectNumber': myProject['projectNumber']}
         updateRule = {
             "$set":
                 {'projectName': myProject['projectName']},
-                {'sponsorName': myProject['sponsorName']}
+                {'sponsorName': myProject['sponsorName']},
+                {'membersEmails': myProject['membersEmails']}
         }
 
         self._updateDocument(findQuery, findQuery, updateRule, collection=self.Projects)
