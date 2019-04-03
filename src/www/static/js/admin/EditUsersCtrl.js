@@ -10,7 +10,10 @@ app.controller('EditUsersCtrl', ['$scope', '$location', '$http', function($scope
     $scope.columns = ["Project Number", "First Name", "Last Name", "NetID", "Email", "Course", "Role"];
     $scope.sortTableBy = 'lastName';
     $scope.orderTableBy = 'ascending';
-    $scope.numberOfPages = [];
+    $scope.numberOfPages = 1;
+    $scope.currentPage = 1;
+    $scope.pageNumberArray = [];
+    $scope.projectNumbers = [];
 
     $scope.users = [];
     $scope.selectedUser = {};
@@ -68,25 +71,69 @@ app.controller('EditUsersCtrl', ['$scope', '$location', '$http', function($scope
         $scope.closeEditBox();
     };
 
-    $scope.changePage = function() {
-        console.log("change page");
+    $scope.changePage = function(pageNumber) {
+        console.log(pageNumber);
+
+        $http.post('/userData', {
+            'sortBy': $scope.sortTableBy,
+            'orderBy':$scope.orderTableBy,
+            'pageNumber': pageNumber-1
+        }).then(function(resp) {
+            console.log("userData success", resp);
+            $scope.users = resp.data;
+            $scope.pageNumber = pageNumber;
+            $scope.updatePageNumberArray();
+        }, function(err) {
+            console.error("Error", err.data);
+        });
     };
 
+    $scope.prevPage = function() {
+        if ($scope.pageNumber > 1) {
+            $scope.changePage($scope.pageNumber-1)
+        }
+    }
+
+    $scope.nextPage = function() {
+        if ($scope.pageNumber < $scope.numberOfPages.length) {
+            $scope.changePage($scope.pageNumber+1)
+        }
+    }
+
+    $scope.firstPage = function() {
+        $scope.changePage(1);
+    }
+
+    $scope.lastPage = function() {
+        $scope.changePage($scope.numberOfPages);
+    }
+
+    $scope.updatePageNumberArray = function() {
+        var low = Math.max(1, $scope.pageNumber - 5);
+        var high = Math.min(low + 9, $scope.numberOfPages);
+        low = Math.min(low, Math.max(1, high - 10));
+
+        $scope.pageNumberArray.length = 0;
+        for (var x = low; x <= high; x++) {
+            $scope.pageNumberArray.push(x);
+        }
+        console.log("pageNumberArray", pageNumberArray)
+    }
+
     $http.post('/userPages', {}).then(function(resp) {
-        console.log("userPages success", resp);
-        $scope.numberOfPages.length = 0;
-
-        for (var i = 0; i < resp.data; i++)
-            $scope.numberOfPages.push(i+1);
-
+        $scope.numberOfPages = resp.data;
     }, function(err) {
         console.error("Error", err.data);
     });
 
-    $http.post('/userData', {'sortBy': $scope.sortTableBy, 'orderBy':$scope.orderTableBy}).then(function(resp) {
-        console.log("userData success", resp);
-        $scope.users = resp.data;
+    //get the project numbers associated with this user
+    $http.post('/userProjects').then(function(resp) {
+        $scope.projectNumbers = resp.data;
     }, function(err) {
-        console.error("Error", err.data);
+        console.error(err);
     });
+
+
+    $scope.changePage(1);
+
 }]);
