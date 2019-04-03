@@ -1,9 +1,36 @@
 app.controller('RequestSummaryCtrl', ['$scope', '$http', '$location', '$timeout', '$interval', 'dispatcher', function($scope, $http, $location, $timeout, $interval, dispatcher) {
 
+    function convertCosts(value) {
+        console.log(value);
+        if (typeof value === "undefined") {
+            return "$0.00";
+        }
+        value = String(value);
+        if (value !== "undefined") {
+            while (value.length < 3) {
+                value = "0" + value;
+            }
+            return "$" + value.slice(0, -2) + "." + value.slice(value.length-2);
+        }
+        return "$0.00"
+    };
+
+    function cleanData(data) {
+        var result = [];
+        for (var d in data) {
+            result[d] = data[d];
+            for (var item in data[d]["items"]) {
+                result[d]["items"][item]["unitCost"] = convertCosts(data[d]["items"][item]["unitCost"]);
+                result[d]["items"][item]["totalCost"] = convertCosts(data[d]["items"][item]["totalCost"]);
+            }
+        }
+        return result;
+    };
+
     $scope.fieldKeys = ["requestNumber", "projectNumber", "manager", "status", "vendor", "URL", "justification", "additionalInfo"];
     $scope.fields = ["Request Number", "Project Number", "Assigned Manager Email", "Status", "Vendor", "URL", "Justification", "Additional Info"];
     $scope.grid = [];
-    $scope.itemFieldKeys = ["description", "itemURL", "partNo", "quantity", "unitCost", "total"];
+    $scope.itemFieldKeys = ["description", "itemURL", "partNo", "quantity", "unitCost", "totalCost"];
     $scope.itemFields = ["Description", "Item URL", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
 
     $scope.data = [ {
@@ -86,7 +113,7 @@ app.controller('RequestSummaryCtrl', ['$scope', '$http', '$location', '$timeout'
     $scope.refreshStatuses = function() {
         $http.post('/procurementStatuses', {}).then(function(resp) {
             console.log("procurementStatuses success", resp)
-            $scope.data = resp.data;
+            $scope.data = cleanData(resp.data);
         }, function(err) {
             console.error("Error", err.data)
         });
@@ -97,4 +124,32 @@ app.controller('RequestSummaryCtrl', ['$scope', '$http', '$location', '$timeout'
 
     dispatcher.on("refreshStatuses", $scope.refreshStatuses);
 
+    $scope.historyFields = ["Timestamp", "Source", "Comment", "Old State", "New State"];
+    $scope.historyFieldKeys = ["timestamp", "actor", "comment", "oldState", "newState"];
+
+    $scope.viewHistory = function(e, rowIdx) {
+        console.log("history");
+        //~ console.log($scope.data[rowIdx]);
+        //~ console.log($scope.data[rowIdx]["history"]);
+        $("#historyBody").empty();
+        var historyHTML = "";
+        for (var hist in $scope.data[rowIdx]["history"]) {
+            historyHTML += '<tr style="border-bottom: 1.5px solid black">';
+                //~ console.log($scope.data[rowIdx]["history"][hist]);
+            for (var ele in $scope.historyFieldKeys) {
+                historyHTML += '<td scope="col" style="background-color: #eee;">' + $scope.data[rowIdx]["history"][hist][$scope.historyFieldKeys[ele]] + '</td>';
+            }
+            historyHTML += '</tr>';
+        }
+        if (historyHTML == "") {
+            historyHTML = "No history";
+        }
+        $("#historyBody").append(historyHTML);
+        console.log(historyHTML);
+        $("#historyModal").show();
+    };
+
+    $scope.closeHistoryBox = function(e) {
+        $("#historyModal").hide();
+    };
 }]);

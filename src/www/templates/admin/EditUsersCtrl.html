@@ -11,7 +11,7 @@
 
         <tbody>
 
-            <tr ng-repeat="user in users | filter : editFilter" id="user[email]" ng-init="rowIdx = $index">
+            <tr ng-repeat="user in users | filter : editFilter" ng-init="rowIdx = $index">
                 <td ng-repeat="fieldK in fieldKeys" ng-bind="user[fieldK]"></td>
                 <td style="border: 0px;">
                     <button type="button" class="btn btn-primary" ng-click="editUser($event, rowIdx)">Edit</button>
@@ -25,18 +25,19 @@
         <div class="modal-content">
             <table class="table" id="editLightBoxTable" style="margin: 0; width: 100%; display:table;">
 
-                <tr ng-repeat="info in fields track by $index" ng-init="rowIdx = $index">
+                <tr ng-repeat="info in editableFields track by $index" ng-init="rowIdx = $index">
                     <td>
                         {{info}}
                     </td>
                     <td>
-                        <input type="text" ng-model="selectedUser[fieldKeys[rowIdx]]">
+                        <input type="text" ng-model="selectedUser[editableKeys[rowIdx]]">
                     </td>
                 </tr>
                 <tr>
                     <td colspan="2">
-                        <button type="button" class="btn btn-primary" ng-click="closeEditBox($event)">Close</button>
+                        <button type="button" class="btn btn-primary" ng-click="closeEditBox()">Close</button>
                         <button type="button" class="btn btn-primary" ng-click="saveUserEdit($event)">Save</button>
+                        <button type="button" class="btn btn-primary" ng-click="deleteUser($event)">Remove</button>
                     </td>
                 </tr>
             </table>

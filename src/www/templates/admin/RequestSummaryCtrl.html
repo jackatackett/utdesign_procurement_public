@@ -1,4 +1,4 @@
-<div id="requestSummaryCtrlDiv" ng-controller="RequestSummaryCtrl as $ctrl" style="margin: 2%; box-sizing: border-box;">
+<div id="requestSummaryCtrlDiv" ng-controller="RequestSummaryCtrl as $ctrl" style="margin: 2%; box-sizing: border-box; display:flex;">
 
     <table class="table" style="float: left; width: 10%;">
         <tr>
@@ -6,21 +6,32 @@
                 <input type="text" ng-model="summaryFilter" placeholder="search">
             </td>
         </tr>
-        <tr ng-repeat="filter in filters">
+        <tr ng-repeat="filter in filters track by $index">
             <td>
                 {{filter}}
-                <input type="text">
+                <input type="text" ng-model="filterValues[filterKeys[$index]]">
             </td>
         </tr>
-        <tr ng-repeat="status in statuses">
-            <td>
-                <input type="checkbox">
-                {{status}}
+        <tr>
+            <td>Status
+                <form>
+                  <div class="multiselect">
+                    <div class="selectBox" ng-click="showCheckboxes()">
+                      <select></select>
+                      <div class="overSelect"></div>
+                    </div>
+                    <div id="checkboxes">
+                        <label ng-repeat="status in statuses track by $index">
+                            <input type="checkbox" checklist-value="status" ng-click="addToSelectedStatuses(statusesKeys[$index])"> {{status}}
+                        </label>
+                    </div>
+                  </div>
+                </form>
             </td>
         </tr>
         <tr>
             <td>
-                <button type="button" class="btn btn-primary" ng-click="regenerateTable($event)" >Refresh</button>
+                <button type="button" class="btn btn-primary" ng-click="regenerateTable($event)" style="width:100%;">Refresh</button>
             </td>
         </tr>
     </table>
@@ -58,11 +69,12 @@
 
                         <tr>
                             <td colspan = "7" style="text-align:center">
-                                <button type="button" class="btn btn-success" ng-click="approveRequest($event, dictIdx)" ng-if="canApprove(dict.status)" style="width:49%">Approve</button>
-                                <button type="button" class="btn btn-danger" ng-click="rejectRequest($event, dictIdx)" ng-if="canApprove(dict.status)" style="width:49%">Reject</button>
-                                <button type="button" class="btn btn-success" ng-click="orderRequest($event, dictIdx)" ng-if="canOrder(dict.status)" style="width:49%">Mark as Ordered</button>
-                                <button type="button" class="btn btn-success" ng-click="readyRequest($event, dictIdx)" ng-if="canPickup(dict.status)" style="width:49%">Mark as Ready for Pickup</button>
-                                <button type="button" class="btn btn-success" ng-click="completeRequest($event, dictIdx)" ng-if="canComplete(dict.status)" style="width:49%">Mark as Complete</button>
+                                <button type="button" class="btn btn-primary col-md-2" ng-click="viewHistory($event, dictIdx)">View History</button>
+                                <button type="button" class="btn btn-success col-md-2" ng-click="approveRequest($event, dictIdx)" ng-if="canApprove(dict.status)" style="width:44%">Approve</button>
+                                <button type="button" class="btn btn-danger col-md-2" ng-click="rejectRequest($event, dictIdx)" ng-if="canApprove(dict.status)" style="width:44%">Reject</button>
+                                <button type="button" class="btn btn-success col-md-2" ng-click="orderRequest($event, dictIdx)" ng-if="canOrder(dict.status)" style="width:44%">Mark as Ordered</button>
+                                <button type="button" class="btn btn-success col-md-2" ng-click="readyRequest($event, dictIdx)" ng-if="canPickup(dict.status)" style="width:44%">Mark as Ready for Pickup</button>
+                                <button type="button" class="btn btn-success col-md-2" ng-click="completeRequest($event, dictIdx)" ng-if="canComplete(dict.status)" style="width:44%">Mark as Complete</button>
                             </td>
                         </tr>
 
@@ -74,11 +86,27 @@
 
     </table>
 
+    <div id="historyModal" class="modal">
+        <div class="modal-content" style="width:75%">
+            <table>
+                <thead>
+                    <tr>
+                        <th ng-repeat="field in historyFields">{{field}}</th>
+                    </tr>
+                </thead>
+
+                <tbody id="historyBody">
+                </tbody>
+            </table>
+            <button type="button" class="btn btn-primary" ng-click="closeHistoryBox($event)" style="float:left; width:100%;">Close</button>
+        </div>
+    </div>
+
     <div id="rejectModal" class="modal">
         <div class="modal-content" style="width:50%;">
             <div class="row">
                 <div class="col-md-12">
-                    <input type="text" id="rejectCommentBox" placeholder="comment" style="width:100%;">
+                    <input type="text" id="rejectCommentBox" placeholder="comment" style="width:100%;" ng-model="adminComment">
                 </div>
             </div>
             <div class="row">
@@ -93,6 +121,24 @@
                 </div>
                 <div>
                     <button type="button" class="btn btn-primary" ng-click="sendForUpdatesManagerAdmin($event)" style="float:left; width:100%;">Send for Updates, Return to Manager</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="shippingModal" class="modal">
+        <div class="modal-content" style="width:50%;">
+            <div class="row">
+                <div class="col-md-12">
+                    <input type="text" id="shippingAmt" placeholder="Shipping Amount" style="width:100%;">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-primary" ng-click="setShipping($event)" style="float:left; width:100%;">Set Shipping Cost</button>
+                </div>
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-primary" ng-click="cancelShippingBox($event)" style="float:left; width:100%;">Cancel</button>
                 </div>
             </div>
         </div>

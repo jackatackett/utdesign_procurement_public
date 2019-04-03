@@ -1,0 +1,51 @@
+<div id="adminAddCostsDiv" ng-controller="AdminAddCosts as $ctrl" style="margin: 2%; box-sizing: border-box;">
+    <div class="errbar" ng-show="errorText">
+        <p class="errtext" ng-bind="errorText"></p>
+    </div>
+
+    <table class="table" id="addCostTable" style="width: 50%; display:table;">
+
+<!--
+        <tr ng-repeat="info in fields track by $index">
+            <td>
+                {{info}}
+            </td>
+            <td>
+                <input type="text" ng-model="cost[fieldKeys[$index]]" id="newCost{{fieldKeys[$index]}}">
+            </td>
+        </tr>
+-->
+        <tr>
+            <td>Type</td>
+            <td>
+                <select ng-model="cost['type']" id="newCosttype" style="width:100%">
+                    <option ng-repeat="type in types">{{type}}</option>
+                </select>
+            </td>
+        </tr>
+        <tr ng-repeat="info in fields track by $index">
+            <td>
+                {{info}}
+            </td>
+            <td>
+                <input type="text" ng-model="cost[fieldKeys[$index]]" id="newCost{{fieldKeys[$index]}}" style="width:100%">
+            </td>
+        </tr>
+        <tr>
+            <td>Assignee</td>
+            <td>
+                <select ng-model="cost['actor']" id="newCostactor" style="width:100%">
+                    <option ng-selected="{{em == userEmail}}" ng-repeat="em in adminEmails">{{em}}</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <button type="button" class="btn btn-primary" ng-click="addCost($event)" >Add</button>
+                <button type="button" class="btn btn-primary" ng-click="uploadSpreadsheet($event)" >Upload Spreadsheet</button>
+                <input type="file" style="display: none" id="spreadsheetField">
+            </td>
+        </tr>
+    </table>
+
+</div>

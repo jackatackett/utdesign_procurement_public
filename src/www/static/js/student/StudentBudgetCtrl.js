@@ -1,127 +1,31 @@
-app.controller('StudentBudgetCtrl', ['$scope', '$location', '$http', '$window', function($scope, $location, $http, $window) {
+app.controller('StudentBudgetCtrl', ['$scope', '$location', '$http', '$window', '$timeout', '$interval', function($scope, $location, $http, $window, $timeout, $interval) {
     console.log("budget");
-/*
-    $scope.fieldKeys = ["status", "vendor", "URL", "justification", "additionalInfo", "cost"];
-    $scope.fields = ["Status", "Vendor", "URL", "Justification", "Additional Info", "Cost"];
-    $scope.grid = [];
-    $scope.itemFieldKeys = ["description", "partNo", "quantity", "unitCost", "total"];
-    $scope.itemFields = ["Description", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
-
-    $scope.maxBudget = 2000.00;             //need to pull this from a defaults list
-
-    $scope.data = [ {
-                        "vendor" : "Bunning's warehouse",
-                        "URL" : "https://www.bunnings.com.au/",
-                        "justification" : "They're fluffy!",
-                        "status" : "pending",
-                        "projectNumber" : 844,
-                        "additionalInfo" : "I want them",
-                        "items" : [
-                            {
-                                "description" : "Bunny",
-                                "partNo" : "1",
-                                "quantity" : 2,
-                                "unitCost" : 642,
-                                "totalCost" : 1284,
-                                "itemURL" : "bunnyurl"
-                            },
-                            {
-                                "description" : "Squirrel",
-                                "partNo" : "2",
-                                "quantity" : 1,
-                                "unitCost" : 432,
-                                "totalCost" : 432,
-                                "itemURL" : "squirrelurl"
-                            }
-                        ],
-                        "requestTotal" : 1716,
-                        "history" : [ ]
-                    },
-                    {
-                        "vendor" : "vendor2",
-                        "URL" : "requestor2URL",
-                        "justification" : "",
-                        "status" : "approved",
-                        "projectNumber" : 844,
-                        "additionalInfo" : "",
-                        "items" : [
-                            {
-                                "description" : "item1",
-                                "partNo" : "part2",
-                                "quantity" : 3,
-                                "unitCost" : 600,
-                                "totalCost" : 900,
-                                "itemURL" : "item1url"
-                            }
-                        ],
-                        "requestTotal" : 900,
-                        "history" : [
-                            {
-                                "actor" : "manager@utdallas.edu",
-                                "timestamp" : "2019-03-01T15:00:00Z",
-                                "comment" : "approved",
-                                "oldState" : "pending",
-                                "newState" : "approved"
-                            }
-                        ]
-                    }
-                  ]
-
-    $scope.toggleCollapse = function(e) {
-        var target = e.currentTarget;
-        $(target.nextElementSibling).toggle();
-    };
-
-    $scope.getMaxBudgetStr = function() {
-        return "$" + $scope.maxBudget;
-    };
-
-    $scope.getTotal = function() {
-        var total = 0
-        for (var i = 0; i < $scope.data.length; i++) {
-            if ($scope.data[i].status == "approved") {
-                total += $scope.data[i].cost;
-            }
-        }
-        return $scope.maxBudget - total;
-    };
-
-    $scope.getTotalStr = function() {
-        return "$" + $scope.getTotal();
-    };
-
-    $scope.getPending = function() {
-        var total = 0
-        for (var i = 0; i < $scope.data.length; i++) {
-            if ($scope.data[i].status == "approved" || $scope.data[i].status == "pending") {
-                total += $scope.data[i].cost;
-            }
-        }
-        return $scope.maxBudget - total;
-    };
-
-    $scope.getPendingStr = function() {
-        return "$" + $scope.getPending();
-    };
-
-    console.log($scope);
-    * */
 
     function convertCosts(value) {
+        console.log(value);
+        if (typeof value === "undefined") {
+            return "0.00";
+        }
         value = String(value);
-        return value.slice(0, -2) + "." + value.slice(value.length-2);
-    }
+        if (value !== "undefined") {
+            while (value.length < 3) {
+                value = "0" + value;
+            }
+            return value.slice(0, -2) + "." + value.slice(value.length-2);
+        }
+        return "0.00"
+    };
 
     var numProjects = -1;   //TODO: what happens if this is 0 or -1?
     
     //~ var currentProj = projectData[0]["projectNumber"]    //used to select which tab is shown
     var currentProj = 0   //used to select which tab is shown
 
-    $scope.requestKeys = ["status", "vendor", "requestTotal"];
-    $scope.requestFields = ["Status", "Vendor", "Cost"];
+    $scope.requestKeys = ["status", "vendor", "requestSubtotal", "shippingCost", "requestTotal"];
+    $scope.requestFields = ["Status", "Vendor", "Subtotal", "Shipping", "Total"];
 
-    $scope.costKeys = ["type", "comment", "amount"];
-    $scope.costFields = ["Type", "Comment", "Amount"];
+    $scope.costKeys = ["timestamp", "type", "comment", "amount"];
+    $scope.costFields = ["Timestamp", "Type", "Comment", "Amount"];
 
     $scope.curRequestData = [];
     $scope.curCostData = [];
@@ -130,29 +34,35 @@ app.controller('StudentBudgetCtrl', ['$scope', '$location', '$http', '$window', 
     
     var costData = [];
     
-    $scope.projects = []
-
+    $scope.projects = [];
+    var curProject = 0;
     var projectData = [];
-    $http.post('/findProject', {}).then(function(resp) {
-        console.log("Project Success", resp);
-        projectData = resp.data;
 
-        numProjects = projectData.length;
-        console.log("number projects: " + numProjects);
+    $scope.getTeams = function() {
+        $http.post('/findProject', {}).then(function(resp) {
+            console.log("Project Success", resp);
+            projectData = resp.data;
 
-        for (var pr in projectData) {
-            var tempData = {}
-            tempData["number"] = projectData[pr]["projectNumber"];
-            tempData["name"] = projectData[pr]["projectName"];
-            $scope.projects.push(tempData);
-            //~ $scope.projects.push({"number": pr["projectNumber"], "name": pr["projectName"]});
-        }
-        console.log("project mapping:");
-        console.log($scope.projects);
-    }, function(err) {
-        console.error("Project Error", err.data)
-    }).then(function(resp) {
-        $http.post('/procurementStatuses', {}).then(function(resp) {
+            numProjects = projectData.length;
+            console.log("number projects: " + numProjects);
+
+            $scope.projects = [];
+
+            for (var pr in projectData) {
+                var tempData = {}
+                tempData["number"] = projectData[pr]["projectNumber"];
+                tempData["name"] = projectData[pr]["projectName"];
+                $scope.projects.push(tempData);
+                //~ $scope.projects.push({"number": pr["projectNumber"], "name": pr["projectName"]});
+            }
+        }, function(err) {
+            console.error("Error", err.data);
+        });
+    };
+
+    $scope.getData = function() {
+        var filterData = {"projectNumbers": [$scope.projects[curProject]["number"]]};
+        $http.post('/procurementStatuses', filterData).then(function(resp) {
             console.log("Status Success", resp);
             procurementData = resp.data;
             filterRequests();
@@ -161,40 +71,49 @@ app.controller('StudentBudgetCtrl', ['$scope', '$location', '$http', '$window', 
         }, function(err) {
             console.error("Status Error", err.data);
         });
-    }).then(function(resp) {
-        $http.post('/getCosts', {}).then(function(resp) {
+        $http.post('/getCosts', filterData).then(function(resp) {
             console.log("Costs Success", resp);
             costData = resp.data;
             filterCosts();
         }, function(err) {
             console.error("Costs Error", err.data);
         });
-    });
+    };
+
+    //~ $scope.getTeams();
+    $timeout($scope.getTeams, 0);
+    $interval($scope.getTeams, 5000);
+    $timeout($scope.getData, 500);
+    $interval($scope.getData, 5000);
 
     function filterRequests() {
         $scope.curRequestData = [];
         for (var req in procurementData) {
+            procurementData[req]["requestSubtotal"] = "$" + convertCosts(procurementData[req]["requestSubtotal"]);
+            procurementData[req]["shippingCost"] = "$" + convertCosts(procurementData[req]["shippingCost"]);
             procurementData[req]["requestTotal"] = "-$" + convertCosts(procurementData[req]["requestTotal"]);
-            if (procurementData[req]["projectNumber"] == $scope.projects[currentProj]["number"]) {
-                $scope.curRequestData.push(procurementData[req]);
-            }
+            //~ if (procurementData[req]["projectNumber"] == $scope.projects[currentProj]["number"]) {
+                //~ $scope.curRequestData.push(procurementData[req]);
+            //~ }
         }
-    }
+        $scope.curRequestData = procurementData;
+    };
 
     function filterCosts() {
         $scope.curCostData = [];
         for (var co in costData) {
-            if (costData[co]["type"] == "refund") {
+            if (costData[co]["type"] == "refund" || costData[co]["type"] == "funding") {
                 costData[co]["amount"] = "+$" + convertCosts(costData[co]["amount"]);
             }
             else {
                 costData[co]["amount"] = "-$" + convertCosts(costData[co]["amount"]);
             }
-            if (costData[co]["projectNumber"] == $scope.projects[currentProj]["number"]) {
-                $scope.curCostData.push(costData[co]);
-            }
+            //~ if (costData[co]["projectNumber"] == $scope.projects[currentProj]["number"]) {
+                //~ $scope.curCostData.push(costData[co]);
+            //~ }
         }
-    }
+        $scope.curCostData = costData;
+    };
     
     $scope.getMaxBudgetStr = function() {
         //~ console.log(projectData);
@@ -221,8 +140,9 @@ app.controller('StudentBudgetCtrl', ['$scope', '$location', '$http', '$window', 
     $scope.regenerateTable = function(e) {
         var targ = e.target.id.substring(6, e.target.id.length);
         currentProj = targ;
-        filterRequests();
-        filterCosts();
+        $scope.getData();
+        //~ filterRequests();
+        //~ filterCosts();
         
         /*if (targ == "All") {        //taken from old manager code; "All" should only be for manager
             $scope.data = $scope.allData;

@@ -8,7 +8,7 @@ from uuid import uuid4
 
 from utdesign_procurement.utils import authorizedRoles, generateSalt, hashPassword, \
     checkProjectNumbers, checkValidData, checkValidID, checkValidNumber, \
-    verifyPassword, requestCreate
+    verifyPassword, requestCreate, convertToCents
 
 from datetime import datetime, timedelta
 
@@ -48,7 +48,7 @@ class ApiGateway(object):
                 "requestNumber": (int) optional,
                 "manager": (string), //email of manager who can approve this
                 "vendor": (string),
-                "projectNumber": (int or list of int),
+                "projectNumber": (int),
                 "URL": (string),
                 "justification": (string) optional,
                 "additionalInfo": (string) optional,
@@ -88,6 +88,55 @@ class ApiGateway(object):
         myRequest['requestNumber'] = myRequestNumber
 
         query = {"requestNumber": myRequestNumber}
+
+        # find old history and append to myRequest
+        oldHistory = list(self.colRequests.find(query))
+        print()
+        print("status", status)
+        print("old history")
+        print(oldHistory)
+        print(len(oldHistory))
+        print()
+
+        if len(oldHistory) == 0: #this is a new request
+            if status == "pending":
+                oldHistory = [{
+                "actor": cherrypy.session["email"],
+                "timestamp": datetime.datetime.now(),
+                "comment": "submitted by " + cherrypy.session["email"],
+                "oldState": "start",
+                "newState": "pending"
+                }]
+                myRequest["history"] = oldHistory
+            # don't need to add an entry to history if only saving
+        else:   #this request exists in a saved state
+            oldHistory = oldHistory[0]["history"]
+            if status == "saved":
+                # don't need to add an entry to the history if only saving
+                myRequest["history"] = oldHistory
+            else:
+                if len(oldHistory) == 0:
+                    oldHistory = [{
+                        "actor": cherrypy.session["email"],
+                        "timestamp": datetime.datetime.now(),
+                        "comment": "submitted by " + cherrypy.session["email"],
+                        "oldState": "start",
+                        "newState": "pending"
+                        }]
+                else:
+                    maxHist = None
+                    for hist in oldHistory:
+                        if maxHist is None or hist['timestamp'] > maxHist['timestamp']:
+                            maxHist = hist
+
+                    oldHistory.append({
+                        "actor": cherrypy.session["email"],
+                        "timestamp": datetime.datetime.now(),
+                        "comment": "submitted by " + cherrypy.session["email"],
+                        "oldState": maxHist['newState'],
+                        "newState": "pending"
+                    })
+                myRequest["history"] = oldHistory
 
         # insert the data into the database
         self.colRequests.replace_one(query, myRequest, upsert=True)
@@ -174,7 +223,8 @@ class ApiGateway(object):
         {
             vendor: (string, optional),
             projectNumbers: (int or list of ints, optional),
-            URL: (string, optional)
+            URL: (string, optional),
+            statuses: (string or list of strings, optional)
         }
 
         If the user is a manager, they will not be able to see "saved" requests
@@ -191,6 +241,13 @@ class ApiGateway(object):
         if 'vendor' in data:
             myVendor = checkValidData('vendor', data, str)
             filters.append({'vendor': {'$eq': myVendor}})
+
+        if 'statuses' in data:
+            myStatuses = checkValidData('statuses', data, list)
+            for s in myStatuses:
+                if not isinstance(s, str):
+                    raise cherrypy.HTTPError(400, "Invalid status type: %s" % s)
+            filters.append({'status': {'$in': myStatuses}})
 
         if 'projectNumbers' in data:
             myProjects = checkProjectNumbers(data)
@@ -278,8 +335,19 @@ class ApiGateway(object):
             ]
         }
         updateQuery = {'_id': ObjectId(myID)}
+        currentState = list(self.colRequests.find(findQuery))[0]["status"]
         updateRule = {'$set':
-                          {'status': "cancelled"}
+                          {'status': "cancelled"},
+                      "$push":
+                          {"history":
+                            {
+                            "actor": cherrypy.session["email"],
+                            "timestamp": datetime.datetime.now(),
+                            "comment": "cancelled by user",
+                            "oldState": currentState,
+                            "newState": "cancelled"
+                            }
+                          }
                       }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -318,7 +386,17 @@ class ApiGateway(object):
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             '$set':
-                {'status': "manager approved"}
+                {'status': "manager approved"},
+            "$push":
+                {"history":
+                    {
+                    "actor": cherrypy.session["email"],
+                    "timestamp": datetime.datetime.now(),
+                    "comment": "approved by manager",
+                    "oldState": "pending",
+                    "newState": "manager approved"
+                    }
+                }
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -336,7 +414,8 @@ class ApiGateway(object):
         Expected input::
 
             {
-                "_id": (string)
+                "_id": (string),
+                "comment": (string)
             }
         """
         # check that we actually have json
@@ -346,6 +425,9 @@ class ApiGateway(object):
             raise cherrypy.HTTPError(400, 'No data was given')
 
         myID = checkValidID(data)
+        myComment = checkValidData("comment", data, str)
+        if myComment == "":
+            myComment = "No comment"
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
@@ -354,7 +436,17 @@ class ApiGateway(object):
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': "updates for manager"}
+                {'status': "updates for manager"},
+            "$push":
+                {"history":
+                    {
+                    "actor": cherrypy.session["email"],
+                    "timestamp": datetime.datetime.now(),
+                    "comment": myComment,
+                    "oldState": "pending",
+                    "newState": "updates for manager"
+                    }
+                }
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -372,7 +464,8 @@ class ApiGateway(object):
         Expected input::
 
             {
-                "_id": (string)
+                "_id": (string),
+                "comment": (string)
             }
         """
         # check that we actually have json
@@ -382,6 +475,9 @@ class ApiGateway(object):
             raise cherrypy.HTTPError(400, 'No data was given')
 
         myID = checkValidID(data)
+        myComment = checkValidData("comment", data, str)
+        if myComment == "":
+            myComment = "No comment"
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
@@ -390,7 +486,17 @@ class ApiGateway(object):
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': "updates for manager"}
+                {'status': "updates for manager"},
+            "$push":
+                {"history":
+                    {
+                    "actor": cherrypy.session["email"],
+                    "timestamp": datetime.datetime.now(),
+                    "comment": myComment,
+                    "oldState": "manager approved",
+                    "newState": "updates for manager"
+                    }
+                }
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -414,7 +520,7 @@ class ApiGateway(object):
                 "requestNumber": (int) optional,
                 "manager": (string), //email of manager who can approve this
                 "vendor": (string),
-                "projectNumber": (int or list of int),
+                "projectNumber": (int),
                 "URL": (string),
                 "justification": (string) optional,
                 "additionalInfo": (string) optional,
@@ -447,6 +553,18 @@ class ApiGateway(object):
                 {'status': "updates for manager"}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
+
+        # find old history and append to myRequest
+        oldHistory = list(self.colRequests.find(findQuery))[0]["history"]   #will have history
+        oldHistory.append({
+            "actor": cherrypy.session["email"],
+            "timestamp": datetime.datetime.now(),
+            "comment": "submitted by " + cherrypy.session["email"],
+            "oldState": "updates for manager",
+            "newState": "pending"
+        })
+        myRequest["history"] = oldHistory
+
         updateRule = {"$set": myRequest}
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -470,7 +588,7 @@ class ApiGateway(object):
                 "requestNumber": (int) optional,
                 "manager": (string), //email of manager who can approve this
                 "vendor": (string),
-                "projectNumber": (int or list of int),
+                "projectNumber": (int),
                 "URL": (string),
                 "justification": (string) optional,
                 "additionalInfo": (string) optional,
@@ -503,6 +621,18 @@ class ApiGateway(object):
                 {'status': "updates for admin"}
             ]}
         updateQuery = {'_id': ObjectId(myID)}
+
+        # find old history and append to myRequest
+        oldHistory = list(self.colRequests.find(findQuery))[0]["history"]   #will have history
+        oldHistory.append({
+            "actor": cherrypy.session["email"],
+            "timestamp": datetime.datetime.now(),
+            "comment": "submitted by " + cherrypy.session["email"],
+            "oldState": "updates for admin",
+            "newState": "manager approved"
+        })
+        myRequest["history"] = oldHistory
+
         updateRule = {"$set": myRequest}
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -521,7 +651,8 @@ class ApiGateway(object):
         Expected input::
 
             {
-                "_id": (string)
+                "_id": (string),
+                "comment": (string)
             }
         """
         # check that we actually have json
@@ -531,6 +662,10 @@ class ApiGateway(object):
             raise cherrypy.HTTPError(400, 'No data was given')
 
         myID = checkValidID(data)
+        myComment = checkValidData("comment", data, str)
+        if myComment == "":
+            myComment = "No comment"
+
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
@@ -539,7 +674,17 @@ class ApiGateway(object):
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': "updates for admin"}
+                {'status': "updates for admin"},
+            "$push":
+                {"history":
+                    {
+                    "actor": cherrypy.session["email"],
+                    "timestamp": datetime.datetime.now(),
+                    "comment": myComment,
+                    "oldState": "manager approved",
+                    "newState": "updates for admin"
+                    }
+                }
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -575,7 +720,17 @@ class ApiGateway(object):
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': "admin approved"}
+                {'status': "admin approved"},
+            "$push":
+                {"history":
+                    {
+                    "actor": cherrypy.session["email"],
+                    "timestamp": datetime.datetime.now(),
+                    "comment": "approved by admin",
+                    "oldState": "manager approved",
+                    "newState": "admin approved"
+                    }
+    }
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -589,11 +744,13 @@ class ApiGateway(object):
         """
         This REST endpoint changes the status of a procurement request
         to reflect that its items have been ordered by an admin.
+        The shipping cost is also set.
 
         Expected input::
 
             {
-                "_id": (string)
+                "_id": (string),
+                "amount": (string)
             }
         """
         # check that we actually have json
@@ -603,20 +760,42 @@ class ApiGateway(object):
             raise cherrypy.HTTPError(400, 'No data was given')
 
         myID = checkValidID(data)
+        shippingAmt = convertToCents(checkValidData("amount", data, str))
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
                 {'status': "admin approved"}
             ]}
-        updateQuery = {'_id': ObjectId(myID)}
-        updateRule = {
-            "$set":
-                {'status': "ordered"}
-        }
+        try:
+            totalAmt = int(list(self.colRequests.find(findQuery))[0]["requestTotal"]) + shippingAmt
+            #~ print()
+            #~ print(totalAmt)
+            #~ print()
+            #~ totalAmt = totalAmt[0]["requestTotal"]
+            updateQuery = {'_id': ObjectId(myID)}
+            updateRule = {
+                "$set":
+                    {'status': "ordered",
+                     'shippingCost': shippingAmt,
+                     'requestTotal': totalAmt},
+                "$push":
+                    {"history":
+                        {
+                        "actor": cherrypy.session["email"],
+                        "timestamp": datetime.datetime.now(),
+                        "comment": "marked as ordered by admin",
+                        "oldState": "admin approved",
+                        "newState": "ordered"
+                        }
+                    }
+            }
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+            self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
-        # TODO send email
+            # TODO send email
+        except:
+            raise cherrypy.HTTPError(400, "Error updating shipping")
+        
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -648,7 +827,17 @@ class ApiGateway(object):
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': "ready for pickup"}
+                {'status': "ready for pickup"},
+            "$push":
+                {"history":
+                    {
+                    "actor": cherrypy.session["email"],
+                    "timestamp": datetime.datetime.now(),
+                    "comment": "marked as ready by admin",
+                    "oldState": "ordered",
+                    "newState": "ready for pickup"
+                    }
+                }
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -685,7 +874,17 @@ class ApiGateway(object):
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': "complete"}
+                {'status': "complete"},
+            "$push":
+                {"history":
+                    {
+                    "actor": cherrypy.session["email"],
+                    "timestamp": datetime.datetime.now(),
+                    "comment": "marked as complete by admin",
+                    "oldState": "ready for pickup",
+                    "newState": "complete"
+                    }
+                }
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -704,7 +903,8 @@ class ApiGateway(object):
         Expected input::
 
             {
-                "_id": (string)
+                "_id": (string),
+                "comment": (string)
             }
         """
         # check that we actually have json
@@ -716,6 +916,9 @@ class ApiGateway(object):
         # TODO check this action is allowed
 
         myID = checkValidID(data)
+        myComment = checkValidData("comment", data, str)
+        if myComment == "":
+            myComment = "No comment"
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
@@ -724,7 +927,17 @@ class ApiGateway(object):
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': "rejected"}
+                {'status': "rejected"},
+            "$push":
+                {"history":
+                    {
+                    "actor": cherrypy.session["email"],
+                    "timestamp": datetime.datetime.now(),
+                    "comment": myComment,
+                    "oldState": "pending",
+                    "newState": "rejected"
+                    }
+                }
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -743,7 +956,8 @@ class ApiGateway(object):
         Expected input::
 
             {
-                "_id": (string)
+                "_id": (string),
+                "comment": (string)
             }
         """
         # check that we actually have json
@@ -753,6 +967,10 @@ class ApiGateway(object):
             raise cherrypy.HTTPError(400, 'No data was given')
 
         myID = checkValidID(data)
+        myComment = checkValidData("comment", data, str)
+        if myComment == "":
+            myComment = "No comment"
+
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
@@ -761,7 +979,17 @@ class ApiGateway(object):
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
-                {'status': "rejected"}
+                {'status': "rejected"},
+            "$push":
+                {"history":
+                    {
+                    "actor": cherrypy.session["email"],
+                    "timestamp": datetime.datetime.now(),
+                    "comment": myComment,
+                    "oldState": "manager approved",
+                    "newState": "rejected"
+                    }
+                }
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
@@ -770,13 +998,31 @@ class ApiGateway(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
+    @authorizedRoles("admin")
+    def getAdminList(self):
+        """
+        This returns the emails of all admins in the system
+        """
+        if cherrypy.session['role'] == 'admin':
+            results = []
+            for res in self.colUsers.find({"role": "admin"}):
+                results.append(res["email"])
+            return results
+        raise cherryp.HTTPError(400, "Unauthorized access")
+
+    @cherrypy.expose
+    #~ @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
     @authorizedRoles("admin")
     def addCost(self):
         """
-        This adds a cost (refund, reimbursement, or shipping) to a project, and can only be done by the admin
+        This adds a cost (refund, reimbursement, funding, or cut) to a project, and can only be done by the admin
         {
-            projectNumber: (int)
+            projectNumber: (int),
+            type: (string: refund, reimbursement, funding, cut),
+            amount: (string, dollar amount),
+            comment: (string),
+            actor: (string, email of admin)
         }
         """
 
@@ -786,7 +1032,27 @@ class ApiGateway(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        raise cherrypy.HTTPError(101, "not yet implemented")
+        cost = {}
+
+        cost["projectNumber"] = checkValidData("projectNumber", data, int)
+        for key in ("type", "amount", "comment", "actor"):
+            if key == "type" and data[key] not in ["refund", "reimbursement", "funding", "cut"]:
+                print(data[key])
+                raise cherrypy.HTTPError(400, "Bad cost type")
+            cost[key] = checkValidData(key, data, str)
+            if key == "amount":
+                cost[key] = convertToCents(cost[key])
+        #~ cost["timestamp"] = datetime.datetime.now().isoformat()
+        cost["timestamp"] = datetime.datetime.now()
+        self.costs.insert(cost)
+
+        #update the project budget if type == funding or cut
+        if cost["type"] == "funding":
+            newBudget = list(self.projects.find({"projectNumber": cost["projectNumber"]}))[0]["defaultBudget"] + cost["amount"]
+            self.projects.update_one({"projectNumber": cost["projectNumber"]}, {"$set": {"defaultBudget": newBudget}})
+        elif cost["type"] == "cut":
+            newBudget = list(self.projects.find({"projectNumber": cost["projectNumber"]}))[0]["defaultBudget"] - cost["amount"]
+            self.projects.update_one({"projectNumber": cost["projectNumber"]}, {"$set": {"defaultBudget": newBudget}})
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -820,6 +1086,7 @@ class ApiGateway(object):
             for project in validNum:
                 for res in self.costs.find({'projectNumber': project}):
                     res['_id'] = str(res['_id'])
+                    res["timestamp"] = res["timestamp"].isoformat()
                     result.append(res)
             return result
         else:
@@ -828,11 +1095,13 @@ class ApiGateway(object):
                 for project in validNum:
                     for res in self.costs.find({'projectNumber': project}):
                         res['_id'] = str(res['_id'])
+                        res["timestamp"] = res["timestamp"].isoformat()
                         result.append(res)
                 return result
             else:   # is admin
                 for res in self.costs.find({}):
                     res['_id'] = str(res['_id'])
+                    res["timestamp"] = res["timestamp"].isoformat()
                     result.append(res)
                 return result
 
@@ -843,6 +1112,7 @@ class ApiGateway(object):
     def addProject(self):
         """
         This adds a project, and can only be done by the admin.
+        If the projectNumber is already in use, an error is thrown
         {
             “projectNumber”: (int),
             “sponsorName”: (string),
@@ -868,7 +1138,7 @@ class ApiGateway(object):
     @authorizedRoles("student", "manager", "admin")
     def findProject(self):
         """
-        This finds all projects with the given project numbers. If none given, then all authorized projects are returned.
+        This finds all projects with the given project numbers and recalculates their budget. If none given, then all authorized projects are returned.
         {
             projectNumbers: (list of ints, optional)
         }
@@ -895,7 +1165,7 @@ class ApiGateway(object):
                 for res in self.projects.find({'projectNumber': project}):
                     res['_id'] = str(res['_id'])
                     result.append(res)
-            return result
+            #~ return result
         else:
             if cherrypy.session['role'] != 'admin':
                 validNum = cherrypy.session['projectNumbers']
@@ -903,12 +1173,41 @@ class ApiGateway(object):
                     for res in self.projects.find({'projectNumber': project}):
                         res['_id'] = str(res['_id'])
                         result.append(res)
-                return result
+                #~ return result
             else:   # is admin
                 for res in self.projects.find({}):
                     res['_id'] = str(res['_id'])
                     result.append(res)
-                return result
+                #~ return result
+
+        #~ print()
+        #~ print("calculating budget")
+        #calculate the budget
+        for res in result:
+            #~ print(res)
+            pendingCosts = 0
+            actualCosts = 0
+            #~ requests = self.procurementStatuses({"projectNumbers": res["projectNumber"]})
+            requests = self.colRequests.find({"projectNumber": res["projectNumber"]})
+            for req in requests:
+                #~ print(req)
+                if req["status"] in ["admin approved", "ordered", "ready for pickup", "complete"]:
+                    actualCosts += req["requestTotal"]
+                pendingCosts += req["requestTotal"]
+            #~ print(pendingCosts, actualCosts)
+
+            miscCosts = 0
+            addCosts = self.costs.find({"projectNumber": res["projectNumber"]})
+            for co in addCosts:
+                if co["type"] == "refund":
+                    miscCosts -= co["amount"]
+                elif co["type"] == "reimbursement":
+                    miscCosts += co["amount"]
+            res["availableBudget"] = res["defaultBudget"] - actualCosts - miscCosts
+            res["pendingBudget"] = res["defaultBudget"] - pendingCosts - miscCosts
+            #~ print(res)
+        #~ print()
+        return result
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -917,6 +1216,7 @@ class ApiGateway(object):
     def modifyProject(self):
         """
         This changes a project's values. It can only be done by an admin.
+        The projectNumber is required, and cannot be changed.
         Changing the budget will 
         {
             projectNumber: (int),
@@ -1091,7 +1391,7 @@ class ApiGateway(object):
 
         # the optional projectNumbers of the user
         if 'projectNumbers' in data:
-            myData = checkProjectNumbers(data)
+            myData['projectNumbers'] = checkProjectNumbers(data)
 
         # optional keys, string
         for key in ("firstName", "lastName", "netID", "course"):
@@ -1101,7 +1401,7 @@ class ApiGateway(object):
         # update the document
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {'$set': myData}
-        self._updateDocument(myID, updateQuery, updateQuery, updateRule)
+        self._updateDocument(myID, updateQuery, updateQuery, updateRule, collection=self.colUsers)
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -1137,7 +1437,7 @@ class ApiGateway(object):
                 {'status': 'removed'}
         }
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(myID, findQuery, updateQuery, updateRule, collection=self.colUsers)
 
         # TODO send email?
 
@@ -1244,6 +1544,7 @@ class ApiGateway(object):
 
     # this function is for debugging for now. If that never changes then
     # TODO remove this function before production if it isn't needed
+    # NOTE we can use this as a welcome screen; ie "Welcome User". This can also be used to set some default values (ie project number, email)
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def userInfo(self):
@@ -1334,7 +1635,7 @@ class ApiGateway(object):
 
         pageSize = 10 # TODO stretch goal make this configurable
 
-        userCursor = self.colUsers.find().sort(sortBy, direction)
+        userCursor = self.colUsers.find({'status':'current'}).sort(sortBy, direction)
 
         retUsers = []
         for user in userCursor[pageSize*pageNumber: pageSize*(pageNumber+1)]:
@@ -1361,7 +1662,7 @@ class ApiGateway(object):
         cherrypy.lib.sessions.expire()
 
     # finds document in database and updates it using provided queries
-    def _updateDocument(self, myID, findQuery, updateQuery, updateRule):
+    def _updateDocument(self, myID, findQuery, updateQuery, updateRule, collection=None):
         """
         This function updates a document. It finds the document in the
         database and updates it using the provided queries/rules.
@@ -1371,8 +1672,11 @@ class ApiGateway(object):
         :param updateQuery: query to find document to update
         :param updateRule: rule to update document to update
         """
-        if self.colRequests.find(findQuery).count() > 0:
-            self.colRequests.update_one(updateQuery, updateRule, upsert=False)
+
+        if collection is None:
+            collection = self.colRequests
+        if collection.find(findQuery).count() > 0:
+            collection.update_one(updateQuery, updateRule, upsert=False)
         else:
             raise cherrypy.HTTPError(
                 400, 'Request matching id and status not found in database')

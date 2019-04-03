@@ -21,7 +21,8 @@
                 <td>
                     <select ng-model="request.projectNumber"
                             ng-options="pNo for pNo in projectNumbers"
-                            ng-change="refreshManagers()">
+                            ng-change="refreshManagers()"
+                            style="width:30%">
                     </select>
                 </td>
             </tr>
@@ -30,7 +31,8 @@
                 <td style="width: 15em">Manager Email: </td>
                 <td>
                     <select ng-model="request.manager"
-                            ng-options="manager for manager in projectManagers">
+                            ng-options="manager for manager in projectManagers"
+                            style="width:30%">
                     </select>
                 </td>
             </tr>
@@ -38,14 +40,14 @@
             <tr>
                 <td style="width: 15em">Vendor: </td>
                 <td>
-                    <input ng-model="request.vendor">
+                    <input ng-model="request.vendor" style="width:30%">
                 </td>
             </tr>
 
             <tr>
                 <td>Vendor URL: </td>
                 <td>
-                    <input ng-model="request.URL">
+                    <input ng-model="request.URL" style="width:30%">
                 </td>
             </tr>
 
