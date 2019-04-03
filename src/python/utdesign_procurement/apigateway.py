@@ -341,7 +341,7 @@ class ApiGateway(object):
                           }
                       }
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(findQuery, updateQuery, updateRule)
 
         myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
         if myRequest is None:
@@ -404,7 +404,7 @@ class ApiGateway(object):
                 }
         }
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(findQuery, updateQuery, updateRule)
 
         myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
         if myRequest is None:
@@ -486,7 +486,7 @@ class ApiGateway(object):
                 }
         }
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(findQuery, updateQuery, updateRule)
 
         myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
         if myRequest is None:
@@ -561,7 +561,7 @@ class ApiGateway(object):
                 }
         }
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(findQuery, updateQuery, updateRule)
 
         myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
         if myRequest is None:
@@ -656,7 +656,7 @@ class ApiGateway(object):
 
         updateRule = {"$set": myRequest}
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(findQuery, updateQuery, updateRule)
 
         myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
         if myRequest is None:
@@ -745,7 +745,7 @@ class ApiGateway(object):
 
         updateRule = {"$set": myRequest}
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(findQuery, updateQuery, updateRule)
 
         myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
         if myRequest is None:
@@ -817,7 +817,7 @@ class ApiGateway(object):
                 }
         }
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(findQuery, updateQuery, updateRule)
 
 
         myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
@@ -897,7 +897,7 @@ class ApiGateway(object):
                     }
             }
 
-            self._updateDocument(myID, findQuery, updateQuery, updateRule)
+            self._updateDocument(findQuery, updateQuery, updateRule)
 
             # TODO send email
         except:
@@ -970,7 +970,7 @@ class ApiGateway(object):
                 }
         }
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(findQuery, updateQuery, updateRule)
 
         myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
         if myRequest is None:
@@ -1040,7 +1040,7 @@ class ApiGateway(object):
                 }
         }
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(findQuery, updateQuery, updateRule)
 
         myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
         if myRequest is None:
@@ -1116,7 +1116,7 @@ class ApiGateway(object):
                 }
         }
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(findQuery, updateQuery, updateRule)
 
         myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
         if myRequest is None:
@@ -1191,7 +1191,7 @@ class ApiGateway(object):
                 }
         }
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(findQuery, updateQuery, updateRule)
 
         myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
         if myRequest is None:
@@ -1339,17 +1339,19 @@ class ApiGateway(object):
         This adds a project, and can only be done by an admin.
         If the projectNumber is already in use, an error is thrown
 
+
         {
             “projectNumber”: (int),
             “sponsorName”: (string),
             “projectName”: (string),
             “membersEmails: [(string), …], # list of strings
             “defaultBudget”: (int),
-            “availableBudget”: (int),
-            “pendingBudget”: (int)
+            “availableBudget”: (int) optional,
+            “pendingBudget”: (int) optional
         }
         """
-
+        # TODO default budget from value in database
+        # TODO discuss available and pending budget
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
@@ -1474,8 +1476,9 @@ class ApiGateway(object):
     def modifyProject(self):
         """
         This changes a project's values. It can only be done by an admin.
-        The projectNumber is required, and cannot be changed.
-        Changing the budget will 
+        The projectNumber is required, but its value cannot be changed.
+        projectNumber is used to specify which project will be edited,
+        while the other values are what the values in the database will be set to.
         {
             projectNumber: (int),
             sponsorName: (string, optional),
@@ -1490,9 +1493,25 @@ class ApiGateway(object):
         else:
             data = dict()
 
-        raise cherrypy.HTTPError(101, "not yet implemented")
+        # raise cherrypy.HTTPError(101, "not yet implemented")
 
         # TODO implement
+        myProject = dict()
+
+        for key in ("projectNumber"):
+            myProject['projectNumber'] = checkValidData(key, data, int)
+
+        for key in ("projectName", "sponsorName"):
+            myProject[key] = checkValidData(key, data, str)
+
+        findQuery = {'projectNumber': myProject['projectNumber']}
+        updateRule = {
+            "$set":
+                {'projectName': myProject['projectName']},
+                {'sponsorName': myProject['sponsorName']}
+        }
+
+        self._updateDocument(findQuery, findQuery, updateRule, collection=self.Projects)
 
         # TODO confirmation email to admin maybe
         # TODO notification email to project members maybe
@@ -1730,7 +1749,7 @@ class ApiGateway(object):
         # update the document
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {'$set': myData}
-        self._updateDocument(myID, updateQuery, updateQuery, updateRule, collection=self.colUsers)
+        self._updateDocument(updateQuery, updateQuery, updateRule, collection=self.colUsers)
 
         # TODO send notification email to student
 
@@ -2009,7 +2028,7 @@ class ApiGateway(object):
         cherrypy.lib.sessions.expire()
 
     # helper function, do not expose!
-    def _updateDocument(self, myID, findQuery, updateQuery, updateRule, collection=None):
+    def _updateDocument(self, findQuery, updateQuery, updateRule, collection=None):
         """
         This function updates a document. It finds the document in the
         database and updates it using the provided queries/rules.
