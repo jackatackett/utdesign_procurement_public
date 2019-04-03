@@ -172,25 +172,26 @@ db.requests.insert({
     "URL" : "https://www.bunnings.com.au/",
     "manager": "manager@utdallas.edu",
     "justification" : "They're fluffy!",
-    "status" : "pending",
+    "status" : "manager approved",
     "projectNumber" : 844,
     "additionalInfo" : "I want them",
     "items" : [ {
         "description" : "Bunny",
         "partNo" : "1",
         "quantity" : 2,
-        "unitCost" : "642",
-        "totalCost": "1284",
+        "unitCost" : 642,
+        "totalCost": 1284,
         "itemURL": "bunnyurl"
     }, {
         "description" : "Squirrel",
         "partNo" : "2",
         "quantity" : 1,
-        "unitCost" : "432",
-        "totalCost": "432",
+        "unitCost" : 432,
+        "totalCost": 432,
         "itemURL": "squirrelurl"
     } ],
-    "requestTotal": "1716",
+    "requestSubtotal": 1716,
+    "requestTotal": 1716,
     "history": []
 })
 
@@ -200,18 +201,20 @@ db.requests.insert({
     "URL": "requestor2URL",
     "manager": "manager@utdallas.edu",
     "justification": "",
-    "status": "manager approved",
+    "status": "ordered",
     "projectNumber": 844,
     "additionalInfo": "",
     "items": [{
         "description": "item1",
         "partNo": "part2",
         "quantity": 3,
-        "unitCost": "600",
-        "totalCost": "900",
+        "unitCost": 300,
+        "totalCost": 900,
         "itemURL": "item1url"
     }],
-    "requestTotal": "900",
+    "requestSubtotal": 900,
+    "shippingCost": 1000,
+    "requestTotal": 1900,
     "history": [
     {
         "actor": "manager@utdallas.edu",
@@ -222,23 +225,86 @@ db.requests.insert({
     }]
 })
 
+db.requests.insert({
+    "requestNumber": 3,
+    "vendor": "vendor2",
+    "URL": "request3URL",
+    "manager": "manager@utdallas.edu",
+    "justification": "",
+    "status": "manager approved",
+    "projectNumber": 846,
+    "additionalInfo": "",
+    "items": [{
+        "description": "item1",
+        "partNo": "1001",
+        "quantity": 5,
+        "unitCost": 800,
+        "totalCost": 4000,
+        "itemURL": "item1url"
+    }],
+    "requestSubtotal": 4000,
+    "shippingCost": 1000,
+    "requestTotal": 5000,
+    "history": [
+    {
+        "actor": "manager@utdallas.edu",
+        "timestamp": new Date("2019-03-01T09:00:00"),
+        "comment": "managerApproved",
+        "oldState": "pending",
+        "newState": "managerApproved"
+    }]
+})
+
+db.requests.insert({
+    "requestNumber": 4,
+    "vendor": "vendor2",
+    "URL": "request3URL",
+    "manager": "manager@utdallas.edu",
+    "justification": "",
+    "status": "complete",
+    "projectNumber": 846,
+    "additionalInfo": "",
+    "items": [{
+        "description": "item1",
+        "partNo": "1001",
+        "quantity": 5,
+        "unitCost": 800,
+        "totalCost": 4000,
+        "itemURL": "item1url"
+    }],
+    "requestSubtotal": 4000,
+    "shippingCost": 1000,
+    "requestTotal": 5000,
+    "history": [
+    {
+        "actor": "manager@utdallas.edu",
+        "timestamp": new Date("2019-03-01T09:00:00"),
+        "comment": "managerApproved",
+        "oldState": "pending",
+        "newState": "managerApproved"
+    }]
+})
+
+
+
 db.sequence.insert({
     "name" : "requests",
     "number" : 3
 })
 
-db.costs.insert({
-    "type": "shipping",
-    "amount": 1000,
-    "comment": "shipping cost for item1 from vendor2",
-    "actor": "admin@utdallas.edu",
-    "projectNumber": 844
-})
+//~ db.costs.insert({
+    //~ "type": "shipping",
+    //~ "amount": 1000,
+    //~ "comment": "shipping cost for item1 from vendor2",
+    //~ "actor": "admin@utdallas.edu",
+    //~ "projectNumber": 844
+//~ })
 
 db.costs.insert({
     "type": "refund",
     "amount": 1000,
     "comment": "test",
     "actor": "admin@utdallas.edu",
-    "projectNumber": 844
+    "projectNumber": 844,
+    "timestamp": new Date("2019-03-01T09:00:00")
 })

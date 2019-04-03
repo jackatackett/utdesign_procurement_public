@@ -1,0 +1,53 @@
+<div id="adminEditCostsDiv" ng-controller="AdminEditCosts as $ctrl" style="margin: 2%; box-sizing: border-box;">
+
+    <input type="text" id="costSearch" ng-model="editCostsFilter" placeholder="search" style="margin-top: 10px; margin-bottom:10px;">
+
+    <table class="table table-bordered" id="editCostsTbl" style="border:0px;">
+        <thead>
+            <tr>
+                <th ng-repeat="col in fields">{{col}}</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            <tr ng-repeat="co in costs | filter : editCostsFilter" ng-init="rowIdx = $index">
+                <td ng-repeat="fieldK in fieldKeys" ng-bind="co[fieldK]"></td>
+<!--
+                <td style="border: 0px;">
+                    <button type="button" class="btn btn-primary" ng-click="editCost($event, rowIdx)">Edit</button>
+                </td>
+-->
+            </tr>
+
+        </tbody>
+    </table>
+
+<!--
+    <div id="editCostModal" class="modal">
+        <div class="modal-content">
+            <div class="errbar" ng-show="errorText">
+                <p class="errtext" ng-bind="errorText"></p>
+            </div>
+            <table class="table" id="editLightBoxTable" style="margin: 0; width: 100%; display:table;">
+
+                <tr ng-repeat="info in fields track by $index" ng-init="rowIdx = $index">
+                    <td>
+                        {{info}}
+                    </td>
+                    <td>
+                        <input type="text" ng-model="selectedCost[fieldKeys[rowIdx]]" id="newCost{{fieldKeys[rowIdx]}}">
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <button type="button" class="btn btn-primary" ng-click="closeEditBox($event)">Close</button>
+                        <button type="button" class="btn btn-primary" ng-click="saveCostEdit($event)">Save</button>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+    </div>
+-->
+</div>
