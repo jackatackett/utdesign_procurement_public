@@ -4,13 +4,13 @@
             <a class="nav-link" href="/">UTDesign GettIt</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#viewRequests">Requests</a>
+            <a class="nav-link" href="#viewRequests" ng-class="{active: activeTab == 'requestDashboard'}">Request Dashboard</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#budget">Budget</a>
+            <a class="nav-link" href="#budget" ng-class="{active: activeTab == 'budget'}">Budget</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#help">About/Help</a>
+            <a class="nav-link" href="#help" ng-class="{active: activeTab == 'help'}">About/Help</a>
         </li>
         <li class="nav-item ml-auto">
             <button type="button" class="btn btn-danger" ng-click="doLogout()">Logout</button>

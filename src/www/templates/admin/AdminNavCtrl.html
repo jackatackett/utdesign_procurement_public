@@ -4,22 +4,22 @@
             <a class="nav-link" href="/">UTDesign GettIt</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#requestSummary">Summary</a>
+            <a class="nav-link" href="#requestSummary" ng-class="{active: activeTab == 'requestDashboard'}">Requests Dashboard</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#addUsers">Add Users</a>
+            <a class="nav-link" href="#addUsers" ng-class="{active: activeTab == 'addUsers'}">Add Users</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#editUsers">Edit Users</a>
+            <a class="nav-link" href="#editUsers" ng-class="{active: activeTab == 'editUsers'}">Edit Users</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#addCosts">Add Costs</a>
+            <a class="nav-link" href="#addCosts" ng-class="{active: activeTab == 'addCosts'}">Add Costs</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#viewCosts">View Costs</a>
+            <a class="nav-link" href="#viewCosts" ng-class="{active: activeTab == 'viewCosts'}">View Costs</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#help">About/Help</a>
+            <a class="nav-link" href="#help" ng-class="{active: activeTab == 'help'}">About/Help</a>
         </li>
         <li class="nav-item ml-auto">
             <button type="button" class="btn btn-danger" ng-click="doLogout()">Logout</button>
