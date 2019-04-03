@@ -119,7 +119,7 @@ class ApiGateway(object):
         # insert the data into the database
         self.colRequests.replace_one(query, myRequest, upsert=True)
 
-        # send emails
+        # send emails only if status is pending i.e. request is officially submitted
         if status == 'pending':
             #send confirmation emails to students
             teamEmails = self.getTeamEmails(myRequest['projectNumber'])
@@ -1435,7 +1435,8 @@ class ApiGateway(object):
     @authorizedRoles("student", "manager", "admin")
     def findProject(self):
         """
-        This finds all projects with the given project numbers and recalculates their budget. If none given, then all authorized projects are returned.
+        This finds all projects with the given project numbers and recalculates
+        their budget. If none given, then all authorized projects are returned.
         {
             projectNumbers: (list of ints, optional)
         }
@@ -1582,7 +1583,11 @@ class ApiGateway(object):
             myUser[key] = checkValidData(key, data, str)
 
 
-        # TODO: make sure the user's email is unique
+        # TODO: do something
+        emailExisting = self.colUsers.find_one({'email': myUser['email']})
+        if emailExisting:
+            return # do something
+
         # insert the data into the database
         self.colUsers.insert(myUser)
 
@@ -1608,8 +1613,11 @@ class ApiGateway(object):
     @cherrypy.tools.json_in()
     def userForgotPassword(self):
         """
-        This REST endpoint takes in a user's email address and send them
-        a recovery link that will expire at some point in the near future.
+        This REST endpoint allows a user to change their password. It
+        takes in a user's email address and send that email address a
+        recovery link that will expire at some point in the near future.
+        This link will allow a user to set a new password through the
+        userVerify endpoint.
 
         Expected input::
 
@@ -1657,6 +1665,11 @@ class ApiGateway(object):
     # @cherrypy.tools.json_in()
     @authorizedRoles("admin")
     def userAddBulk(self, sheet):
+        """
+
+        :param sheet:
+        :return:
+        """
 
         # get the whole file
         xlsx = bytearray()
@@ -1711,10 +1724,11 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def userEdit(self):
         """
-        This REST endpoint takes a MongoDB ObjectID and optional data fields
-        for a user. The ObjectID is used to identify the user whose information
-        will be edited and the optional data is what the data will be changed
-        to.
+        This REST endpoint edits a user document in the databse. It takes a
+        MongoDB ObjectID and optional data fields for a user. The ObjectID is
+        used to identify the user whose information will be edited and the
+        optional data provided to the endpoint is what the existing data will
+        be changed to.
 
         Expected input::
 
@@ -1761,9 +1775,9 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def userRemove(self):
         """
-        This REST endpoint changes the status of a user with the effect that
-        the user is "removed" from the system, meaning they are no longer
-        active and therefore no longer able to interact with the system.
+        This REST endpoint "removes" a user from the system. It changes the
+        status of a user with the effect that the user is no longer able to
+        interact with the system, but doesn't delete their data from the database.
 
         Expected input::
 
@@ -1795,13 +1809,16 @@ class ApiGateway(object):
         # TODO send confirmation email to admin
         # don't send notification to student?
 
-    # don't need to check role for this
     @cherrypy.expose
     @cherrypy.tools.json_in()
     def userVerify(self):
         """
-        This REST endpoint checks that a provided email is matched with a given
-        UUID, and if so, creates and stores a password hash and salt.
+        This REST endpoint allows a new user to set their password.
+        It checks that a provided email is matched with a provided UUID.
+        If so, it creates and stores a password hash and salt for the user.
+        The UUID is a key in an invitation document. The document is created
+        when a user is first invited to use the system and when a user
+        forgets their password.
 
         Expected input::
 
@@ -1841,12 +1858,11 @@ class ApiGateway(object):
         else:
             raise cherrypy.HTTPError(403, 'Invalid email for this invitation')
 
-    # don't need to check role for this
     @cherrypy.expose
     @cherrypy.tools.json_in()
     def userLogin(self):
         """
-        This REST endpoint takes an email and password, checks if the hash
+        This REST endpoint takes an email and password, checks if the password's hash
         is associated with the given email, and if so, logs in a user.
 
         Expected input::
@@ -1932,6 +1948,9 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def userData(self):
         """
+        This REST endpoint returns a list of 10 users from the database. The users may be
+        sorted by a key and ordered by ascending or descending, and the pageNumber
+        decides which 10 users are returned. pageNumber must be a non-negative integer.
 
         Incoming ::
         {
@@ -1992,6 +2011,7 @@ class ApiGateway(object):
 
         pageSize = 10 # TODO stretch goal make this configurable
 
+        # finds users who are current only
         userCursor = self.colUsers.find({'status':'current'}).sort(sortBy, direction)
 
         retUsers = []
@@ -2018,7 +2038,7 @@ class ApiGateway(object):
         """
         cherrypy.lib.sessions.expire()
 
-    # finds document in database and updates it using provided queries
+    # helper function, do not expose!
     def _updateDocument(self, myID, findQuery, updateQuery, updateRule, collection=None):
         """
         This function updates a document. It finds the document in the
