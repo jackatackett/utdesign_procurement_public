@@ -68,7 +68,7 @@ app.controller('EditUsersCtrl', ['$scope', '$location', '$http', function($scope
 
         $http.post('/userData', {
             'sortBy': $scope.sortTableBy,
-            'orderBy':$scope.orderTableBy,
+            'order':$scope.orderTableBy,
             'pageNumber': pageNumber-1,
             'keywordSearch': $scope.keywordSearch
         }).then(function(resp) {
@@ -129,6 +129,21 @@ app.controller('EditUsersCtrl', ['$scope', '$location', '$http', function($scope
         }, function(err) {
             console.error("Error", err.data);
         });
+    }
+
+    $scope.toggleSort = function(keyword) {
+        console.log(keyword);
+        if (keyword == $scope.sortTableBy) {
+            if($scope.orderTableBy == 'ascending') {
+                $scope.orderTableBy = 'descending';
+            } else {
+                $scope.orderTableBy = 'ascending';
+            }
+        } else {
+            $scope.sortTableBy = keyword;
+            $scope.orderTableBy = 'ascending';
+        }
+        $scope.requery();
     }
 
     $scope.repage();

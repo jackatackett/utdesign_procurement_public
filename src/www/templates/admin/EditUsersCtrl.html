@@ -13,7 +13,10 @@
     <table class="table table-bordered" id="editUserTable" style="border:0px;">
         <thead>
             <tr>
-                <th ng-repeat="col in columns">{{col}}</th>
+                <th ng-repeat="col in columns track by $index"
+                    ng-click="toggleSort(fieldKeys[$index])"
+                    ng-class="{ascending: fieldKeys[$index] == sortTableBy && orderTableBy == 'ascending',
+                               descending: fieldKeys[$index] == sortTableBy && orderTableBy == 'descending'}">{{col}}</th>
             </tr>
             <tr>
                 <td ng-repeat="col in fields track by $index" ng-init="fieldKey = fieldKeys[$index]">

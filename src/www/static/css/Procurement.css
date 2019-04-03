@@ -142,3 +142,15 @@
 #checkboxes label:hover {
   background-color: #1e90ff;
 }
+
+#editUserTable thead th:hover {
+  background-color: #1e90ff;
+}
+
+#editUserTable th.ascending::after {
+  content: "\2B06";
+}
+
+#editUserTable th.descending::after {
+  content: "\2B07";
+}
