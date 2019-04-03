@@ -27,8 +27,8 @@ class ApiGateway(object):
         self.colRequests = db['requests']
         self.colUsers = db['users']
         self.colInvitations = db['invitations']
-        self.costs = db['costs']
-        self.projects = db['projects']
+        self.colCosts = db['costs']
+        self.colProjects = db['projects']
 
         self.colSequence = db['sequence']
 
@@ -342,7 +342,7 @@ class ApiGateway(object):
                           }
                       }
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(findQuery, updateQuery, updateRule)
 
         myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
         if myRequest is None:
@@ -405,7 +405,7 @@ class ApiGateway(object):
                 }
         }
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(findQuery, updateQuery, updateRule)
 
         myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
         if myRequest is None:
@@ -487,7 +487,7 @@ class ApiGateway(object):
                 }
         }
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(findQuery, updateQuery, updateRule)
 
         myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
         if myRequest is None:
@@ -562,7 +562,7 @@ class ApiGateway(object):
                 }
         }
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(findQuery, updateQuery, updateRule)
 
         myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
         if myRequest is None:
@@ -657,7 +657,7 @@ class ApiGateway(object):
 
         updateRule = {"$set": myRequest}
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(findQuery, updateQuery, updateRule)
 
         myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
         if myRequest is None:
@@ -746,7 +746,7 @@ class ApiGateway(object):
 
         updateRule = {"$set": myRequest}
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(findQuery, updateQuery, updateRule)
 
         myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
         if myRequest is None:
@@ -818,7 +818,7 @@ class ApiGateway(object):
                 }
         }
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(findQuery, updateQuery, updateRule)
 
 
         myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
@@ -898,7 +898,7 @@ class ApiGateway(object):
                     }
             }
 
-            self._updateDocument(myID, findQuery, updateQuery, updateRule)
+            self._updateDocument(findQuery, updateQuery, updateRule)
 
             # TODO send email
         except:
@@ -971,7 +971,7 @@ class ApiGateway(object):
                 }
         }
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(findQuery, updateQuery, updateRule)
 
         myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
         if myRequest is None:
@@ -1041,7 +1041,7 @@ class ApiGateway(object):
                 }
         }
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(findQuery, updateQuery, updateRule)
 
         myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
         if myRequest is None:
@@ -1117,7 +1117,7 @@ class ApiGateway(object):
                 }
         }
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(findQuery, updateQuery, updateRule)
 
         myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
         if myRequest is None:
@@ -1192,7 +1192,7 @@ class ApiGateway(object):
                 }
         }
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule)
+        self._updateDocument(findQuery, updateQuery, updateRule)
 
         myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
         if myRequest is None:
@@ -1267,15 +1267,15 @@ class ApiGateway(object):
                 cost[key] = convertToCents(cost[key])
         #~ cost["timestamp"] = datetime.now().isoformat()
         cost["timestamp"] = datetime.now()
-        self.costs.insert(cost)
+        self.colCosts.insert(cost)
 
         #update the project budget if type == funding or cut
         if cost["type"] == "funding":
-            newBudget = list(self.projects.find({"projectNumber": cost["projectNumber"]}))[0]["defaultBudget"] + cost["amount"]
-            self.projects.update_one({"projectNumber": cost["projectNumber"]}, {"$set": {"defaultBudget": newBudget}})
+            newBudget = list(self.colProjects.find({"projectNumber": cost["projectNumber"]}))[0]["defaultBudget"] + cost["amount"]
+            self.colProjects.update_one({"projectNumber": cost["projectNumber"]}, {"$set": {"defaultBudget": newBudget}})
         elif cost["type"] == "cut":
-            newBudget = list(self.projects.find({"projectNumber": cost["projectNumber"]}))[0]["defaultBudget"] - cost["amount"]
-            self.projects.update_one({"projectNumber": cost["projectNumber"]}, {"$set": {"defaultBudget": newBudget}})
+            newBudget = list(self.colProjects.find({"projectNumber": cost["projectNumber"]}))[0]["defaultBudget"] - cost["amount"]
+            self.colProjects.update_one({"projectNumber": cost["projectNumber"]}, {"$set": {"defaultBudget": newBudget}})
 
         # TODO send confirmation email to admin
         # TODO send notification emails to students
@@ -1310,7 +1310,7 @@ class ApiGateway(object):
                         validNum.append(pNum)
 
             for project in validNum:
-                for res in self.costs.find({'projectNumber': project}):
+                for res in self.colCosts.find({'projectNumber': project}):
                     res['_id'] = str(res['_id'])
                     res["timestamp"] = res["timestamp"].isoformat()
                     result.append(res)
@@ -1319,13 +1319,13 @@ class ApiGateway(object):
             if cherrypy.session['role'] != 'admin':
                 validNum = cherrypy.session['projectNumbers']
                 for project in validNum:
-                    for res in self.costs.find({'projectNumber': project}):
+                    for res in self.colCosts.find({'projectNumber': project}):
                         res['_id'] = str(res['_id'])
                         res["timestamp"] = res["timestamp"].isoformat()
                         result.append(res)
                 return result
             else:   # is admin
-                for res in self.costs.find({}):
+                for res in self.colCosts.find({}):
                     res['_id'] = str(res['_id'])
                     res["timestamp"] = res["timestamp"].isoformat()
                     result.append(res)
@@ -1339,26 +1339,54 @@ class ApiGateway(object):
         """
         This adds a project, and can only be done by an admin.
         If the projectNumber is already in use, an error is thrown
+
+
         {
             “projectNumber”: (int),
             “sponsorName”: (string),
             “projectName”: (string),
             “membersEmails: [(string), …], # list of strings
             “defaultBudget”: (int),
-            “availableBudget”: (int),
-            “pendingBudget”: (int)
+            “availableBudget”: (int) optional,
+            “pendingBudget”: (int) optional
         }
         """
-
+        # TODO default budget from value in database
+        # TODO discuss available and pending budget
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        raise cherrypy.HTTPError(101, "not yet implemented")
+        myProject = dict()
 
-        # TODO implement this
+        for key in ("projectNumber",):
+            myProjectNumber = checkValidData(key, data, int)
+            query = {"projectNumber": myProjectNumber}
+            if self.colProjects.find(query).count() > 0:
+                raise cherrypy.HTTPError(400, "project with projectNumber %s already in database", myProjectNumber)
+            else:
+                myProject[key] = myProjectNumber
+
+        for key in ("defaultBudget", "availableBudget", "pendingBudget"):
+            myProject[key] = checkValidData(key, data, int)
+
+        for key in ("sponsorName", "projectName"):
+            myProject[key] = checkValidData(key, data, str)
+
+        for key in ("membersEmails",):
+            emailList = checkValidData(key, data, list)
+            newEmailList = []
+            for email in emailList:
+                if isinstance(email, str):
+                    newEmailList.append(email)
+                else:
+                    raise cherrypy.HTTPError(400, "invalid %s type, emails must be strings", key)
+            myProject[key] = newEmailList
+
+        # insert the data into the database
+        self.colProjects.insert(myProject)
 
         # TODO send confirmation email to admin? maybe not
 
@@ -1395,7 +1423,7 @@ class ApiGateway(object):
                         validNum.append(pNum)
 
             for project in validNum:
-                for res in self.projects.find({'projectNumber': project}):
+                for res in self.colProjects.find({'projectNumber': project}):
                     res['_id'] = str(res['_id'])
                     result.append(res)
             #~ return result
@@ -1403,12 +1431,12 @@ class ApiGateway(object):
             if cherrypy.session['role'] != 'admin':
                 validNum = cherrypy.session['projectNumbers']
                 for project in validNum:
-                    for res in self.projects.find({'projectNumber': project}):
+                    for res in self.colProjects.find({'projectNumber': project}):
                         res['_id'] = str(res['_id'])
                         result.append(res)
                 #~ return result
             else:   # is admin
-                for res in self.projects.find({}):
+                for res in self.colProjects.find({}):
                     res['_id'] = str(res['_id'])
                     result.append(res)
                 #~ return result
@@ -1430,7 +1458,7 @@ class ApiGateway(object):
             #~ print(pendingCosts, actualCosts)
 
             miscCosts = 0
-            addCosts = self.costs.find({"projectNumber": res["projectNumber"]})
+            addCosts = self.colCosts.find({"projectNumber": res["projectNumber"]})
             for co in addCosts:
                 if co["type"] == "refund":
                     miscCosts -= co["amount"]
@@ -1449,8 +1477,9 @@ class ApiGateway(object):
     def modifyProject(self):
         """
         This changes a project's values. It can only be done by an admin.
-        The projectNumber is required, and cannot be changed.
-        Changing the budget will 
+        The projectNumber is required, but its value cannot be changed.
+        projectNumber is used to specify which project will be edited,
+        while the other values are what the values in the database will be set to.
         {
             projectNumber: (int),
             sponsorName: (string, optional),
@@ -1458,16 +1487,40 @@ class ApiGateway(object):
             membersEmails: [(string), …, optional]
         }
         """
-
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
         else:
             data = dict()
 
-        raise cherrypy.HTTPError(101, "not yet implemented")
+        myProject = dict()
 
-        # TODO implement
+        for key in ("projectNumber"):
+            myProject['projectNumber'] = checkValidData(key, data, int)
+
+        for key in ("projectName", "sponsorName"):
+            myProject[key] = checkValidData(key, data, str)
+
+        for key in ("membersEmails",):
+            emailList = checkValidData(key, data, list)
+            newEmailList = []
+            for email in emailList:
+                if isinstance(email, str):
+                    newEmailList.append(email)
+                else:
+                    raise cherrypy.HTTPError(400, "invalid %s type, emails must be strings", key)
+            myProject[key] = newEmailList
+
+
+        findQuery = {'projectNumber': myProject['projectNumber']}
+        updateRule = {
+            "$set":
+                {'projectName': myProject['projectName']},
+                {'sponsorName': myProject['sponsorName']},
+                {'membersEmails': myProject['membersEmails']}
+        }
+
+        self._updateDocument(findQuery, findQuery, updateRule, collection=self.Projects)
 
         # TODO confirmation email to admin maybe
         # TODO notification email to project members maybe
@@ -1705,7 +1758,7 @@ class ApiGateway(object):
         # update the document
         updateQuery = {'_id': ObjectId(myID)}
         updateRule = {'$set': myData}
-        self._updateDocument(myID, updateQuery, updateQuery, updateRule, collection=self.colUsers)
+        self._updateDocument(updateQuery, updateQuery, updateRule, collection=self.colUsers)
 
         # TODO send notification email to student
 
@@ -1905,6 +1958,7 @@ class ApiGateway(object):
             return div + 1
         else:
             return div
+
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
@@ -2020,7 +2074,7 @@ class ApiGateway(object):
         cherrypy.lib.sessions.expire()
 
     # helper function, do not expose!
-    def _updateDocument(self, myID, findQuery, updateQuery, updateRule, collection=None):
+    def _updateDocument(self, findQuery, updateQuery, updateRule, collection=None):
         """
         This function updates a document. It finds the document in the
         database and updates it using the provided queries/rules.
