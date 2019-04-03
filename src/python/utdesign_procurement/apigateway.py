@@ -1514,10 +1514,11 @@ class ApiGateway(object):
 
         findQuery = {'projectNumber': myProject['projectNumber']}
         updateRule = {
-            "$set":
-                {'projectName': myProject['projectName']},
-                {'sponsorName': myProject['sponsorName']},
-                {'membersEmails': myProject['membersEmails']}
+            "$set": {
+                'projectName': myProject['projectName'],
+                'sponsorName': myProject['sponsorName'],
+                'membersEmails': myProject['membersEmails']
+            }
         }
 
         self._updateDocument(findQuery, findQuery, updateRule, collection=self.Projects)
