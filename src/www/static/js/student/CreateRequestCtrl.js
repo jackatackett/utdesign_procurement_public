@@ -50,10 +50,12 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher'
         console.log($scope.request);
         var endpoint = "/procurementSave";
 
-        if ($scope.request.status == "updates for manager") {
-            endpoint = "/procurementResubmitToManager";
-        } else if ($scope.request.status == "updates for admin") {
-            endpoint = "/procurementResubmitToAdmin";
+        if (submit) {
+            if ($scope.request.status == "updates for manager") {
+                endpoint = "/procurementResubmitToManager";
+            } else if ($scope.request.status == "updates for admin") {
+                endpoint = "/procurementResubmitToAdmin";
+            }
         }
 
         $http.post(endpoint, $scope.request).then(function(resp) {
@@ -218,6 +220,7 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher'
         delete request.requestNumber;
         delete request.status;
         delete request.history;
+        console.log('cloneRequest', request)
         $scope.request = request;
         //remove the dollar signs on unit and total cost
         for (var x in $scope.request["items"]) {

@@ -90,54 +90,31 @@ class ApiGateway(object):
 
         query = {"requestNumber": myRequestNumber}
 
-        # find old history and append to myRequest
-        oldHistory = list(self.colRequests.find(query))
-        print()
-        print("status", status)
-        print("old history")
-        print(oldHistory)
-        print(len(oldHistory))
-        print()
+        # if pending, append new history to this
+        oldRequest = self.colRequests.find_one(query)
 
-        if len(oldHistory) == 0: #this is a new request
-            if status == "pending":
-                oldHistory = [{
+        # find old history
+        if oldRequest is not None and 'history' in oldRequest:
+            oldHistory = oldRequest['history']
+        else:
+            oldHistory = []
+
+        # find old state
+        if len(oldHistory) and 'newState' in oldHistory[-1]:
+            oldState = oldHistory[-1]['newState']
+        else:
+            oldState = 'saved'
+
+        if status == "pending":
+            oldHistory.append({
                 "actor": cherrypy.session["email"],
-                "timestamp": datetime.datetime.now(),
+                "timestamp": datetime.now(),
                 "comment": "submitted by " + cherrypy.session["email"],
-                "oldState": "start",
+                "oldState": oldState,
                 "newState": "pending"
-                }]
-                myRequest["history"] = oldHistory
-            # don't need to add an entry to history if only saving
-        else:   #this request exists in a saved state
-            oldHistory = oldHistory[0]["history"]
-            if status == "saved":
-                # don't need to add an entry to the history if only saving
-                myRequest["history"] = oldHistory
-            else:
-                if len(oldHistory) == 0:
-                    oldHistory = [{
-                        "actor": cherrypy.session["email"],
-                        "timestamp": datetime.datetime.now(),
-                        "comment": "submitted by " + cherrypy.session["email"],
-                        "oldState": "start",
-                        "newState": "pending"
-                        }]
-                else:
-                    maxHist = None
-                    for hist in oldHistory:
-                        if maxHist is None or hist['timestamp'] > maxHist['timestamp']:
-                            maxHist = hist
+            })
 
-                    oldHistory.append({
-                        "actor": cherrypy.session["email"],
-                        "timestamp": datetime.datetime.now(),
-                        "comment": "submitted by " + cherrypy.session["email"],
-                        "oldState": maxHist['newState'],
-                        "newState": "pending"
-                    })
-                myRequest["history"] = oldHistory
+        myRequest["history"] = oldHistory
 
         # insert the data into the database
         self.colRequests.replace_one(query, myRequest, upsert=True)
@@ -356,7 +333,7 @@ class ApiGateway(object):
                           {"history":
                             {
                             "actor": cherrypy.session["email"],
-                            "timestamp": datetime.datetime.now(),
+                            "timestamp": datetime.now(),
                             "comment": "cancelled by user",
                             "oldState": currentState,
                             "newState": "cancelled"
@@ -419,7 +396,7 @@ class ApiGateway(object):
                 {"history":
                     {
                     "actor": cherrypy.session["email"],
-                    "timestamp": datetime.datetime.now(),
+                    "timestamp": datetime.now(),
                     "comment": "approved by manager",
                     "oldState": "pending",
                     "newState": "manager approved"
@@ -501,7 +478,7 @@ class ApiGateway(object):
                 {"history":
                     {
                     "actor": cherrypy.session["email"],
-                    "timestamp": datetime.datetime.now(),
+                    "timestamp": datetime.now(),
                     "comment": myComment,
                     "oldState": "pending",
                     "newState": "updates for manager"
@@ -576,7 +553,7 @@ class ApiGateway(object):
                 {"history":
                     {
                     "actor": cherrypy.session["email"],
-                    "timestamp": datetime.datetime.now(),
+                    "timestamp": datetime.now(),
                     "comment": myComment,
                     "oldState": "manager approved",
                     "newState": "updates for manager"
@@ -670,7 +647,7 @@ class ApiGateway(object):
         oldHistory = list(self.colRequests.find(findQuery))[0]["history"]   #will have history
         oldHistory.append({
             "actor": cherrypy.session["email"],
-            "timestamp": datetime.datetime.now(),
+            "timestamp": datetime.now(),
             "comment": "submitted by " + cherrypy.session["email"],
             "oldState": "updates for manager",
             "newState": "pending"
@@ -756,10 +733,10 @@ class ApiGateway(object):
         updateQuery = {'_id': ObjectId(myID)}
 
         # find old history and append to myRequest
-        oldHistory = list(self.colRequests.find(findQuery))[0]["history"]   #will have history
+        oldHistory = self.colRequests.find_one(findQuery)["history"]   #will have history
         oldHistory.append({
             "actor": cherrypy.session["email"],
-            "timestamp": datetime.datetime.now(),
+            "timestamp": datetime.now(),
             "comment": "submitted by " + cherrypy.session["email"],
             "oldState": "updates for admin",
             "newState": "manager approved"
@@ -832,7 +809,7 @@ class ApiGateway(object):
                 {"history":
                     {
                     "actor": cherrypy.session["email"],
-                    "timestamp": datetime.datetime.now(),
+                    "timestamp": datetime.now(),
                     "comment": myComment,
                     "oldState": "manager approved",
                     "newState": "updates for admin"
@@ -866,76 +843,6 @@ class ApiGateway(object):
             'user': cherrypy.session['email'],
             'role': 'manager'
         })
-
-
-    # @cherrypy.expose
-    # @cherrypy.tools.json_in()
-    # @authorizedRoles("admin")
-    # def procurementApproveAdmin(self):
-    #     """
-    #     This REST endpoint changes the status of a procurement request
-    #     to reflect that its items have been ordered by an admin.
-    #
-    #     Expected input::
-    #
-    #         {
-    #             "_id": (string)
-    #         }
-    #     """
-    #     # check that we actually have json
-    #     if hasattr(cherrypy.request, 'json'):
-    #         data = cherrypy.request.json
-    #     else:
-    #         raise cherrypy.HTTPError(400, 'No data was given')
-    #
-    #     myID = checkValidID(data)
-    #     findQuery = {
-    #         '$and': [
-    #             {'_id': ObjectId(myID)},
-    #             {'status': "manager approved"}
-    #         ]}
-    #     updateQuery = {'_id': ObjectId(myID)}
-    #     updateRule = {
-    #         "$set":
-    #             {'status': "admin approved"},
-    #         "$push":
-    #             {"history":
-    #                 {
-    #                 "actor": cherrypy.session["email"],
-    #                 "timestamp": datetime.datetime.now(),
-    #                 "comment": "approved by admin",
-    #                 "oldState": "manager approved",
-    #                 "newState": "admin approved"
-    #                 }
-    # }
-    #     }
-    #
-    #     self._updateDocument(myID, findQuery, updateQuery, updateRule)
-    #
-    #     myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
-    #     if myRequest is None:
-    #         cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
-    #         return
-    #
-    #     # send confirmation email to admin
-    #     self.email_handler.confirmRequestManagerAdmin(**{
-    #         'email': cherrypy.session['email'],
-    #         'requestNumber': myRequest['requestNumber'],
-    #         'projectNumber': myRequest['projectNumber'],
-    #         'action': 'approved'
-    #     })
-    #
-    #     # send notification emails to students
-    #     teamEmails = self.getTeamEmails(myRequest['projectNumber'])
-    #     self.email_handler.notifyStudent(**{
-    #         'teamEmails': teamEmails,
-    #         'requestNumber': myRequest['requestNumber'],
-    #         'projectNumber': myRequest['projectNumber'],
-    #         'action': 'approved by an admin',
-    #         'user': cherrypy.session['email'],
-    #         'role': 'admin'
-    #     })
-
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -982,7 +889,7 @@ class ApiGateway(object):
                     {"history":
                         {
                         "actor": cherrypy.session["email"],
-                        "timestamp": datetime.datetime.now(),
+                        "timestamp": datetime.now(),
                         "comment": "marked as ordered by admin",
                         "oldState": "manager approved",
                         "newState": "ordered"
@@ -1055,7 +962,7 @@ class ApiGateway(object):
                 {"history":
                     {
                     "actor": cherrypy.session["email"],
-                    "timestamp": datetime.datetime.now(),
+                    "timestamp": datetime.now(),
                     "comment": "marked as ready by admin",
                     "oldState": "ordered",
                     "newState": "ready for pickup"
@@ -1125,7 +1032,7 @@ class ApiGateway(object):
                 {"history":
                     {
                     "actor": cherrypy.session["email"],
-                    "timestamp": datetime.datetime.now(),
+                    "timestamp": datetime.now(),
                     "comment": "marked as complete by admin",
                     "oldState": "ready for pickup",
                     "newState": "complete"
@@ -1201,7 +1108,7 @@ class ApiGateway(object):
                 {"history":
                     {
                     "actor": cherrypy.session["email"],
-                    "timestamp": datetime.datetime.now(),
+                    "timestamp": datetime.now(),
                     "comment": myComment,
                     "oldState": "pending",
                     "newState": "rejected"
@@ -1276,7 +1183,7 @@ class ApiGateway(object):
                 {"history":
                     {
                     "actor": cherrypy.session["email"],
-                    "timestamp": datetime.datetime.now(),
+                    "timestamp": datetime.now(),
                     "comment": myComment,
                     "oldState": "manager approved",
                     "newState": "rejected"
@@ -1323,7 +1230,7 @@ class ApiGateway(object):
             for res in self.colUsers.find({"role": "admin"}):
                 results.append(res["email"])
             return results
-        raise cherryp.HTTPError(400, "Unauthorized access")
+        raise cherrypy.HTTPError(400, "Unauthorized access")
 
     @cherrypy.expose
     #~ @cherrypy.tools.json_out()
@@ -1357,8 +1264,8 @@ class ApiGateway(object):
             cost[key] = checkValidData(key, data, str)
             if key == "amount":
                 cost[key] = convertToCents(cost[key])
-        #~ cost["timestamp"] = datetime.datetime.now().isoformat()
-        cost["timestamp"] = datetime.datetime.now()
+        #~ cost["timestamp"] = datetime.now().isoformat()
+        cost["timestamp"] = datetime.now()
         self.costs.insert(cost)
 
         #update the project budget if type == funding or cut
@@ -2031,6 +1938,9 @@ class ApiGateway(object):
         pageNumber = checkValidData('pageNumber', data, int, default=0,
                                 optional=True)
 
+        if pageNumber < 0:
+            raise cherrypy.HTTPError(400, "Invalid pageNumber format. Expected nonnegative integer. See: %s" % pageNumber)
+
         pageSize = 10 # TODO stretch goal make this configurable
 
         # finds users who are current only
@@ -2093,6 +2003,6 @@ class ApiGateway(object):
     # TODO check if redundant (getAdminList)
     def getAdminEmails(self):
         adminEmails = []
-        for user in self.colUsers.find({'role': 'admin'})
+        for user in self.colUsers.find({'role': 'admin'}):
             adminEmails.append(user['email'])
         return adminEmails
