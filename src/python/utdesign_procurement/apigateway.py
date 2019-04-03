@@ -1334,7 +1334,7 @@ class ApiGateway(object):
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
     @authorizedRoles("admin")
-    def addProject(self):
+    def projectAdd(self):
         """
         This adds a project, and can only be done by an admin.
         If the projectNumber is already in use, an error is thrown
@@ -1473,7 +1473,7 @@ class ApiGateway(object):
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
     @authorizedRoles("admin")
-    def modifyProject(self):
+    def projectEdit(self):
         """
         This changes a project's values. It can only be done by an admin.
         The projectNumber is required, but its value cannot be changed.
@@ -1510,6 +1510,7 @@ class ApiGateway(object):
                     raise cherrypy.HTTPError(400, "invalid %s type, emails must be strings" % key)
             myProject[key] = newEmailList
 
+        # TODO check projectNumber in database?
 
         findQuery = {'projectNumber': myProject['projectNumber']}
         updateRule = {
@@ -1798,7 +1799,7 @@ class ApiGateway(object):
 
         self._updateDocument(findQuery, updateQuery, updateRule, collection=self.colUsers)
 
-        # TODO send confirmation email to admin
+        # TODO send confirmation email to admin?
         # don't send notification to student?
 
     @cherrypy.expose
