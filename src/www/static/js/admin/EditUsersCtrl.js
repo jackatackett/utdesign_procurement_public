@@ -14,6 +14,7 @@ app.controller('EditUsersCtrl', ['$scope', '$location', '$http', function($scope
     $scope.currentPage = 1;
     $scope.pageNumberArray = [];
     $scope.projectNumbers = [];
+    $scope.keywordSearch = {};
 
     $scope.users = [];
     $scope.selectedUser = {};
@@ -38,48 +39,39 @@ app.controller('EditUsersCtrl', ['$scope', '$location', '$http', function($scope
     $scope.saveUserEdit = function() {
         //need to validate input
         $http.post('/userEdit', {'_id': $scope.selectedUser._id, 'projectNumbers': $scope.selectedUser.projectNumbers, 'firstName':$scope.selectedUser.firstName, 'lastName':$scope.selectedUser.lastName, 'netID':$scope.selectedUser.netID, 'course':$scope.selectedUser.course}).then(function(resp) {
-            console.log("userData success", resp);
         }, function(err) {
             console.error("Error", err.data);
         });
 
-        $http.post('/userData', {'sortBy': $scope.sortTableBy, 'orderBy':$scope.orderTableBy}).then(function(resp) {
-            console.log("userData success", resp);
-            $scope.users = resp.data;
-        }, function(err) {
-            console.error("Error", err.data);
-        });
-
+        $scope.requery();
         $scope.closeEditBox();
     };
 
     $scope.deleteUser = function (e) {
-        console.log("remove user: " + $scope.selectedUser.firstName + " " + $scope.selectedUser.lastName);
+//        console.log("remove user: " + $scope.selectedUser.firstName + " " + $scope.selectedUser.lastName);
         $http.post('/userRemove', {'_id': $scope.selectedUser._id}).then(function(resp) {
-            console.log("userData success", resp);
+//            console.log("userData success", resp);
         }, function(err) {
             console.error("Error", err.data);
         });
 
-        $http.post('/userData', {'sortBy': $scope.sortTableBy, 'orderBy':$scope.orderTableBy}).then(function(resp) {
-            console.log("userData success", resp);
-            $scope.users = resp.data;
-        }, function(err) {
-            console.error("Error", err.data);
-        });
-
+        $scope.requery();
         $scope.closeEditBox();
     };
 
     $scope.changePage = function(pageNumber) {
-        console.log(pageNumber);
+        if (!($scope.keywordSearch.role == 'student' ||
+              $scope.keywordSearch.role == 'manager' ||
+              $scope.keywordSearch.role == 'admin')) {
+            $scope.keywordSearch.role = undefined;
+        }
 
         $http.post('/userData', {
             'sortBy': $scope.sortTableBy,
             'orderBy':$scope.orderTableBy,
-            'pageNumber': pageNumber-1
+            'pageNumber': pageNumber-1,
+            'keywordSearch': $scope.keywordSearch
         }).then(function(resp) {
-            console.log("userData success", resp);
             $scope.users = resp.data;
             $scope.pageNumber = pageNumber;
             $scope.updatePageNumberArray();
@@ -108,6 +100,11 @@ app.controller('EditUsersCtrl', ['$scope', '$location', '$http', function($scope
         $scope.changePage($scope.numberOfPages);
     }
 
+    $scope.requery = function() {
+        $scope.repage();
+        $scope.changePage($scope.pageNumber);
+    }
+
     $scope.updatePageNumberArray = function() {
         var low = Math.max(1, $scope.pageNumber - 5);
         var high = Math.min(low + 9, $scope.numberOfPages);
@@ -117,23 +114,24 @@ app.controller('EditUsersCtrl', ['$scope', '$location', '$http', function($scope
         for (var x = low; x <= high; x++) {
             $scope.pageNumberArray.push(x);
         }
-        console.log("pageNumberArray", pageNumberArray)
     }
 
-    $http.post('/userPages', {}).then(function(resp) {
-        $scope.numberOfPages = resp.data;
-    }, function(err) {
-        console.error("Error", err.data);
-    });
+    $scope.repage = function() {
+        if (!($scope.keywordSearch.role == 'student' ||
+              $scope.keywordSearch.role == 'manager' ||
+              $scope.keywordSearch.role == 'admin')) {
+            $scope.keywordSearch.role = undefined;
+        }
 
-    //get the project numbers associated with this user
-    $http.post('/userProjects').then(function(resp) {
-        $scope.projectNumbers = resp.data;
-    }, function(err) {
-        console.error(err);
-    });
+        $http.post('/userPages', $scope.keywordSearch).then(function(resp) {
+            $scope.numberOfPages = resp.data;
+            $scope.updatePageNumberArray();
+        }, function(err) {
+            console.error("Error", err.data);
+        });
+    }
 
-
+    $scope.repage();
     $scope.changePage(1);
 
 }]);

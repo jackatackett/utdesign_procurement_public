@@ -3,6 +3,7 @@
 import cherrypy
 import pymongo as pm
 import pandas as pd
+import re
 
 from bson.objectid import ObjectId
 from io import BytesIO
@@ -10,7 +11,7 @@ from uuid import uuid4
 
 from utdesign_procurement.utils import authorizedRoles, generateSalt, hashPassword, \
     checkProjectNumbers, checkValidData, checkValidID, checkValidNumber, \
-    verifyPassword, requestCreate, convertToCents
+    verifyPassword, requestCreate, convertToCents, getKeywords
 
 from datetime import datetime, timedelta
 
@@ -1869,6 +1870,7 @@ class ApiGateway(object):
         return ret
 
     @cherrypy.expose
+    @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
     @authorizedRoles("admin")
     def userPages(self):
@@ -1877,10 +1879,28 @@ class ApiGateway(object):
         display all current users if 10 users are displayed
         per page. At present time, the page size (number of
         users per page) cannot be configured.
+
+        {
+            "projectNumbers": (int or list of ints, optional),
+            "firstName": (string, optional),
+            "lastName": (string, optional),
+            "netID": (string, optional),
+            "email": (string, optional),
+            "course": (string, optional),
+            "role": (string, optional)
+        }
+
         """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            myFilter = getKeywords(cherrypy.request.json)
+        else:
+            myFilter = dict()
+        myFilter['status'] = 'current'
+
         pageSize = 10 # TODO stretch goal make this configurable
 
-        div, remainder = divmod(self.colUsers.find({'status':'current'}).count(), pageSize)
+        div, remainder = divmod(self.colUsers.find(myFilter).count(), pageSize)
         if remainder:
             return div + 1
         else:
@@ -1904,6 +1924,16 @@ class ApiGateway(object):
                 (Optional. Default: "ascending")
             'pageNumber': (int)
                 (Optional. Default: 0)
+            'keywordSearch': (dict)
+                {
+                    "projectNumbers": (int or list of ints, optional),
+                    "firstName": (string, optional),
+                    "lastName": (string, optional),
+                    "netID": (string, optional),
+                    "email": (string, optional),
+                    "course": (string, optional),
+                    "role": (string, optional)
+                }
         }
 
         Outgoing ::
@@ -1927,6 +1957,7 @@ class ApiGateway(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
+        # prepare the sort, order, and page number
         sortBy = checkValidData('sortBy', data, str, default='email',
                                 optional=True)
 
@@ -1954,8 +1985,14 @@ class ApiGateway(object):
 
         pageSize = 10 # TODO stretch goal make this configurable
 
+        if 'keywordSearch' in data:
+            myFilter = getKeywords(data['keywordSearch'])
+        else:
+            myFilter = dict()
+        myFilter['status'] = 'current'
+
         # finds users who are current only
-        userCursor = self.colUsers.find({'status':'current'}).sort(sortBy, direction)
+        userCursor = self.colUsers.find(myFilter).sort(sortBy, direction)
 
         retUsers = []
         for user in userCursor[pageSize*pageNumber: pageSize*(pageNumber+1)]:
@@ -1971,6 +2008,7 @@ class ApiGateway(object):
                     myUser[key] = user[key]
 
             retUsers.append(myUser)
+
 
         return retUsers
 

@@ -127,7 +127,7 @@ def checkValidData(key, data, dataType, optional=False, default=""):
         else:
             cherrypy.log("Expected %s of type %s. See: %s" %
             (key, dataType, localVar))
-            raise cherrypy.HTTPError(400, 'Invalid %s format' % key)
+            raise cherrypy.HTTPError(400, 'Invalid %s format. See: %s' % (key, data[key]))
     else:
         if not optional:
             raise cherrypy.HTTPError(400, 'Missing %s' % key)
@@ -278,3 +278,35 @@ def requestCreate(data, status, optional=False):
     myRequest["requestTotal"] = requestSubtotal
 
     return myRequest
+
+def getKeywords(keywords):
+    # parse the keyword search
+    myFilter = dict()
+
+    cherrypy.log(str(keywords))
+
+    for kw in ('projectNumbers', 'firstName', 'lastName', 'netID', 'email', 'course', 'role'):
+        if kw in keywords:
+            s = checkValidData(kw, keywords, str).strip()
+            if s:
+                myFilter[kw] = {
+                    '$regex': re.compile('.*' + re.escape(s) + '.*', re.IGNORECASE)
+                }
+
+    # parse out proper project numbers
+    if 'projectNumbers' in keywords:
+        try:
+            myFilter['projectNumbers'] = {'$in': list(
+                map(int, keywords['projectNumbers'].split()))}
+        except ValueError:
+            raise cherrypy.HTTPError(400, 'Invalid projectNumbers format')
+
+    # parse out proper role
+    if 'role' in keywords:
+        role = keywords['role']
+        if role in ('student', 'manager', 'admin'):
+            myFilter['role'] = role
+        else:
+            raise cherrypy.HTTPError(400, 'Invalid role. See: %s' % role)
+
+    return myFilter
