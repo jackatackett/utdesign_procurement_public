@@ -16,9 +16,9 @@ from datetime import datetime, timedelta
 
 class ApiGateway(object):
 
-    def __init__(self, email_queue):
+    def __init__(self, email_handler):
 
-        self.email_queue = email_queue
+        self.email_handler = email_handler
 
         client = pm.MongoClient()
         db = client['procurement']
@@ -141,7 +141,20 @@ class ApiGateway(object):
         # insert the data into the database
         self.colRequests.replace_one(query, myRequest, upsert=True)
 
-        # TODO send email
+        # send emails
+        if status == 'pending':
+            #send confirmation emails to students
+            teamEmails = self.getTeamEmails(myRequest['projectNumber'])
+            self.email_handler.procurementSave(**{
+                'teamEmails': teamEmails,
+                'request': myRequest,
+            })
+            #send notification email to manager
+            self.email_handler.notifyRequestManager(**{
+                'email': myRequest['manager'],
+                'requestNumber': myRequest['requestNumber'],
+                'projectNumber': myRequest['projectNumber']
+            })
 
     def sequence(self):
         """
@@ -164,7 +177,7 @@ class ApiGateway(object):
 
         self.colSequence.update_one(query, updateRule)
 
-        return current
+        return int(current)
 
 
     @cherrypy.expose
@@ -352,7 +365,21 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
-        # TODO send email
+        myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
+        if myRequest is None:
+            cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
+            return
+
+        # send confirmation emails to students
+        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
+        self.email_handler.confirmStudent(**{
+            'teamEmails': teamEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'cancelled'
+        })
+
+        # TODO send notification email to manager/admin?
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -400,6 +427,38 @@ class ApiGateway(object):
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
+
+        myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
+        if myRequest is None:
+            cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
+            return
+
+        # send confirmation email to manager
+        self.email_handler.confirmRequestManagerAdmin(**{
+            'email': cherrypy.session['email'],
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'approved'
+        })
+
+        # send notification emails to students
+        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
+        self.email_handler.notifyStudent(**{
+            'teamEmails': teamEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'approved by manager',
+            'user': cherrypy.session['email'],
+            'role': 'manager'
+        })
+
+        # send notification emails to admins
+        adminEmails = self.getAdminEmails()
+        self.email_handler.notifyRequestAdmin(**{
+            'adminEmails': adminEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber']
+        })
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -451,6 +510,31 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
+        myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
+        if myRequest is None:
+            cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
+            return
+
+        # send confirmation email to manager
+        self.email_handler.confirmRequestManagerAdmin(**{
+            'email': cherrypy.session['email'],
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'sent back to the students for updates'
+        })
+
+        # send notification emails to students
+        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
+        self.email_handler.notifyStudent(**{
+            'teamEmails': teamEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'sent back to you for updates',
+            'user': cherrypy.session['email'],
+            'role': 'manager'
+        })
+
+
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
@@ -500,6 +584,33 @@ class ApiGateway(object):
         }
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
+
+        myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
+        if myRequest is None:
+            cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
+            return
+
+        # send confirmation email to admin
+        self.email_handler.confirmRequestManagerAdmin(**{
+            'email': cherrypy.session['email'],
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'sent back to the students for updates'
+        })
+
+        # send notification emails to students
+        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
+        self.email_handler.notifyStudent(**{
+            'teamEmails': teamEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'sent back to you for updates',
+            'user': cherrypy.session['email'],
+            'role': 'admin'
+        })
+
+        # TODO send notification to manager who will receive it?
+
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -569,7 +680,28 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
-        # TODO send email
+        myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
+        if myRequest is None:
+            cherrypy.log("Unable to send email in procurementResubmitToManger: missing request with id %s" % myID)
+            return
+
+        # send confirmation emails to students
+        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
+        self.email_handler.confirmStudent(**{
+            'teamEmails': teamEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'resubmitted to manager'
+        })
+
+        # send notification email to manager
+        self.email_handler.notifyRequestManager(**{
+            'email': myRequest['manager'],
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber']
+        })
+
+        # TODO send email to admin?
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -637,7 +769,27 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
-        # TODO send email
+        myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
+        if myRequest is None:
+            cherrypy.log("Unable to send email in procurementResubmitToAction: missing request with id %s" % myID)
+            return
+
+        # send confirmation emails to students
+        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
+        self.email_handler.confirmStudent(**{
+            'teamEmails': teamEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'resubmitted to admin'
+        })
+
+        # send notification emails to admins
+        adminEmails = self.getAdminEmails()
+        self.email_handler.notifyRequestAdmin(**{
+            'adminEmails': adminEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber']
+        })
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -689,7 +841,31 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
-        # TODO send email
+
+        myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
+        if myRequest is None:
+            cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
+            return
+
+        # send confirmation email to admin
+        self.email_handler.confirmRequestManagerAdmin(**{
+            'email': cherrypy.session['email'],
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'sent back to the students for updates'
+        })
+
+        # send notification emails to students
+        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
+        self.email_handler.notifyStudent(**{
+            'teamEmails': teamEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'sent back to you for updates',
+            'user': cherrypy.session['email'],
+            'role': 'manager'
+        })
+
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -735,7 +911,30 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
-        # TODO send email
+        myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
+        if myRequest is None:
+            cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
+            return
+
+        # send confirmation email to admin
+        self.email_handler.confirmRequestManagerAdmin(**{
+            'email': cherrypy.session['email'],
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'approved'
+        })
+
+        # send notification emails to students
+        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
+        self.email_handler.notifyStudent(**{
+            'teamEmails': teamEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'approved by an admin',
+            'user': cherrypy.session['email'],
+            'role': 'admin'
+        })
+
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -796,7 +995,30 @@ class ApiGateway(object):
         except:
             raise cherrypy.HTTPError(400, "Error updating shipping")
         
+        myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
+        if myRequest is None:
+            cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
+            return
 
+        # send confirmation email to admin
+        self.email_handler.confirmRequestManagerAdmin(**{
+            'email': cherrypy.session['email'],
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'marked as ordered'
+        })
+
+        # send notification emails to students
+        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
+        self.email_handler.notifyStudent(**{
+            'teamEmails': teamEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'ordered',
+            'user': cherrypy.session['email'],
+            'role': 'admin'
+        })
+       
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @authorizedRoles("admin")
@@ -842,7 +1064,30 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
-        # TODO send email
+        myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
+        if myRequest is None:
+            cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
+            return
+
+        # send confirmation email to admin
+        self.email_handler.confirmRequestManagerAdmin(**{
+            'email': cherrypy.session['email'],
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'marked as ready for pickup'
+        })
+
+        # send notification emails to students
+        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
+        self.email_handler.notifyStudent(**{
+            'teamEmails': teamEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'delivered and is ready for pickup',
+            'user': cherrypy.session['email'],
+            'role': 'admin'
+        })
+
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -889,7 +1134,30 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
-        # TODO send email
+        myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
+        if myRequest is None:
+            cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
+            return
+
+        # send confirmation email to admin
+        self.email_handler.confirmRequestManagerAdmin(**{
+            'email': cherrypy.session['email'],
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'marked as picked up'
+        })
+
+        # send notification emails to students
+        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
+        self.email_handler.notifyStudent(**{
+            'teamEmails': teamEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'picked up',
+            'user': cherrypy.session['email'],
+            'role': 'admin'
+        })
+
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -942,7 +1210,30 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
-        # TODO send email
+        myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
+        if myRequest is None:
+            cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
+            return
+
+        # send confirmation email to manager
+        self.email_handler.confirmRequestManagerAdmin(**{
+            'email': cherrypy.session['email'],
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'rejected'
+        })
+
+        # send notification emails to students
+        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
+        self.email_handler.notifyStudent(**{
+            'teamEmails': teamEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'rejected by your technical manager',
+            'user': cherrypy.session['email'],
+            'role': 'manager'
+        })
+
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -994,7 +1285,30 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule)
 
-        # TODO send email
+        myRequest = self.colRequests.find_one({'_id': ObjectId(myID)})
+        if myRequest is None:
+            cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
+            return
+
+        # send confirmation email to admin
+        self.email_handler.confirmRequestManagerAdmin(**{
+            'email': cherrypy.session['email'],
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'rejected'
+        })
+
+        # send notification emails to students
+        teamEmails = self.getTeamEmails(myRequest['projectNumber'])
+        self.email_handler.notifyStudent(**{
+            'teamEmails': teamEmails,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber'],
+            'action': 'rejected by an admin',
+            'user': cherrypy.session['email'],
+            'role': 'admin'
+        })
+
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -1053,6 +1367,9 @@ class ApiGateway(object):
         elif cost["type"] == "cut":
             newBudget = list(self.projects.find({"projectNumber": cost["projectNumber"]}))[0]["defaultBudget"] - cost["amount"]
             self.projects.update_one({"projectNumber": cost["projectNumber"]}, {"$set": {"defaultBudget": newBudget}})
+
+        # TODO send confirmation email to admin
+        # TODO send notification emails to students
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -1131,6 +1448,8 @@ class ApiGateway(object):
             raise cherrypy.HTTPError(400, 'No data was given')
 
         raise cherrypy.HTTPError(101, "not yet implemented")
+
+        # TODO send confirmation email to admin? maybe not
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -1299,10 +1618,10 @@ class ApiGateway(object):
         self.colInvitations.insert(myInvitation)
         cherrypy.log('Created new user. Setup UUID: %s' % myInvitation['uuid'])
 
-        self.email_queue.put(('invite', {
+        self.email_handler.userAdd(**{
             'email': myInvitation['email'],
             'uuid':  myInvitation['uuid'],
-        }))
+        })
 
         return {'uuid': myInvitation['uuid']}
 
@@ -1347,11 +1666,11 @@ class ApiGateway(object):
         self.colInvitations.insert(myInvitation)
         cherrypy.log('Created new invitation. Setup UUID: %s' % myInvitation['uuid'])
 
-        self.email_queue.put(('forgot', {
+        self.email_handler.userForgotPassword(**{
             'email': myInvitation['email'],
             'uuid':  myInvitation['uuid'],
             'expiration': myInvitation['expiration']
-        }))
+        })
 
         return {'uuid': myInvitation['uuid']}
 
@@ -1403,6 +1722,8 @@ class ApiGateway(object):
         updateRule = {'$set': myData}
         self._updateDocument(myID, updateQuery, updateQuery, updateRule, collection=self.colUsers)
 
+        # TODO send notification email to student
+
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @authorizedRoles("admin")
@@ -1439,7 +1760,8 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule, collection=self.colUsers)
 
-        # TODO send email?
+        # TODO send confirmation email to admin
+        # don't send notification to student?
 
     # don't need to check role for this
     @cherrypy.expose
@@ -1680,3 +2002,18 @@ class ApiGateway(object):
         else:
             raise cherrypy.HTTPError(
                 400, 'Request matching id and status not found in database')
+
+    # helper function, do not expose!
+    def getTeamEmails(self, projectNumber):
+        teamEmails = []
+        for user in self.colUsers.find({'projectNumbers': projectNumber}):
+            if user['role'] == 'student':
+                teamEmails.append(user['email'])
+        return teamEmails
+
+    #helper function, do not expose
+    def getAdminEmails(self):
+        adminEmails = []
+        for user in self.colUsers.find({'role': 'admin'})
+            adminEmails.append(user['email'])
+        return adminEmails

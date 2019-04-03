@@ -10,8 +10,8 @@ from utdesign_procurement.utils import authorizedRoles
 
 class Root(ApiGateway):
 
-    def __init__(self, email_queue, show_debugger):
-        super(Root, self).__init__(email_queue)
+    def __init__(self, email_handler, show_debugger):
+        super(Root, self).__init__(email_handler)
 
         self.show_debugger = show_debugger
         templateDir = os.path.join(cherrypy.Application.wwwDir, 'templates')
