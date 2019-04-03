@@ -11,9 +11,15 @@ app.controller('VerifyCtrl', ['$scope', '$http', '$location', function($scope, $
 
         console.log($scope.credentials, $scope.id);
         $http.post('/userVerify', $scope.credentials).then(function(resp) {
-            console.log("Verify success", resp);
+            alert("Success!");
+            window.location = '/'
         }, function(err) {
-            console.log("Verify error", err);
+            if (err.status == 403) {
+                alert("Incorrect email", err);
+            } else {
+                alert("Infrastructure error.");
+                console.error("userVerify failed", err);
+            }
         })
     }
 
