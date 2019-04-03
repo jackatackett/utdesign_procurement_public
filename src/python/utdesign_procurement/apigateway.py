@@ -3,18 +3,17 @@
 import cherrypy
 import pymongo as pm
 import pandas as pd
-import re
 
 from bson.objectid import ObjectId
 from io import BytesIO
 from uuid import uuid4
 
-from utdesign_procurement.utils import authorizedRoles, generateSalt, hashPassword, \
-    checkProjectNumbers, checkValidData, checkValidID, checkValidNumber, \
-    verifyPassword, requestCreate, convertToCents, getKeywords
+from utdesign_procurement.utils import (authorizedRoles, generateSalt,
+    hashPassword, checkProjectNumbers, checkValidData, checkValidID,
+    checkValidNumber, verifyPassword, requestCreate, convertToCents,
+    getKeywords)
 
 from datetime import datetime, timedelta
-
 
 class ApiGateway(object):
 
@@ -1365,7 +1364,7 @@ class ApiGateway(object):
             myProjectNumber = checkValidData(key, data, int)
             query = {"projectNumber": myProjectNumber}
             if self.colProjects.find(query).count() > 0:
-                raise cherrypy.HTTPError(400, "project with projectNumber %s already in database", myProjectNumber)
+                raise cherrypy.HTTPError(400, "project with projectNumber %s already in database" % myProjectNumber)
             else:
                 myProject[key] = myProjectNumber
 
@@ -1382,7 +1381,7 @@ class ApiGateway(object):
                 if isinstance(email, str):
                     newEmailList.append(email)
                 else:
-                    raise cherrypy.HTTPError(400, "invalid %s type, emails must be strings", key)
+                    raise cherrypy.HTTPError(400, "invalid %s type, emails must be strings" % key)
             myProject[key] = newEmailList
 
         # insert the data into the database
@@ -1508,7 +1507,7 @@ class ApiGateway(object):
                 if isinstance(email, str):
                     newEmailList.append(email)
                 else:
-                    raise cherrypy.HTTPError(400, "invalid %s type, emails must be strings", key)
+                    raise cherrypy.HTTPError(400, "invalid %s type, emails must be strings" % key)
             myProject[key] = newEmailList
 
 
@@ -1521,7 +1520,7 @@ class ApiGateway(object):
             }
         }
 
-        self._updateDocument(findQuery, findQuery, updateRule, collection=self.Projects)
+        self._updateDocument(findQuery, findQuery, updateRule, collection=self.colProjects)
 
         # TODO confirmation email to admin maybe
         # TODO notification email to project members maybe
@@ -1797,7 +1796,7 @@ class ApiGateway(object):
                 {'status': 'removed'}
         }
 
-        self._updateDocument(myID, findQuery, updateQuery, updateRule, collection=self.colUsers)
+        self._updateDocument(findQuery, updateQuery, updateRule, collection=self.colUsers)
 
         # TODO send confirmation email to admin
         # don't send notification to student?
@@ -2036,7 +2035,10 @@ class ApiGateway(object):
                                 optional=True)
 
         if pageNumber < 0:
-            raise cherrypy.HTTPError(400, "Invalid pageNumber format. Expected nonnegative integer. See: %s" % pageNumber)
+            raise cherrypy.HTTPError(
+                400, "Invalid pageNumber format. "
+                     "Expected nonnegative integer. "
+                     "See: %s" % pageNumber)
 
         pageSize = 10 # TODO stretch goal make this configurable
 
