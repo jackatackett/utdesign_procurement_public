@@ -1797,7 +1797,7 @@ class ApiGateway(object):
 
         self._updateDocument(myID, findQuery, updateQuery, updateRule, collection=self.colUsers)
 
-        # TODO send confirmation email to admin
+        # TODO send confirmation email to admin?
         # don't send notification to student?
 
     @cherrypy.expose
