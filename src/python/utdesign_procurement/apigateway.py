@@ -290,6 +290,32 @@ class ApiGateway(object):
         return listRequests
 
     @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def procurementEditAdmin(self):
+        """
+        This REST endpoint allows an admin to edit a procurement request.
+
+        Expected input::
+            {
+                "vendor": (string),
+                "URL": (string),
+                "items": [
+                    {
+                    "description": (string),
+                    "partNo": (string),
+                    "itemURL": (string),
+                    "quantity": (integer),
+                    "unitCost": (string),
+                    "totalCost": (string)
+                    }
+                ]
+            }
+        """
+
+
+    @cherrypy.expose
     @cherrypy.tools.json_in()
     @authorizedRoles("student")
     def procurementCancel(self):
@@ -633,7 +659,7 @@ class ApiGateway(object):
 
         # TODO check this action is allowed
 
-        myRequest = requestCreate(data, 'pending', False)
+        myRequest = requestCreate(data, status='pending', optional=False)
 
         myID = checkValidID(data)
         findQuery = {
@@ -1334,20 +1360,19 @@ class ApiGateway(object):
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
     @authorizedRoles("admin")
-    def addProject(self):
+    def projectAdd(self):
         """
         This adds a project, and can only be done by an admin.
         If the projectNumber is already in use, an error is thrown
-
 
         {
             “projectNumber”: (int),
             “sponsorName”: (string),
             “projectName”: (string),
             “membersEmails: [(string), …], # list of strings
-            “defaultBudget”: (int),
-            “availableBudget”: (int) optional,
-            “pendingBudget”: (int) optional
+            “defaultBudget”: (string) optional, # TODO not yet optional
+            “availableBudget”: (string) optional, # TODO not yet optional
+            “pendingBudget”: (string) optional # TODO not yet optional
         }
         """
         # TODO default budget from value in database
@@ -1369,7 +1394,9 @@ class ApiGateway(object):
                 myProject[key] = myProjectNumber
 
         for key in ("defaultBudget", "availableBudget", "pendingBudget"):
-            myProject[key] = checkValidData(key, data, int)
+            myProject[key] = checkValidData(key, data, str)
+            myProject[key] = convertToCents(myProject[key])
+
 
         for key in ("sponsorName", "projectName"):
             myProject[key] = checkValidData(key, data, str)
@@ -1388,6 +1415,7 @@ class ApiGateway(object):
         self.colProjects.insert(myProject)
 
         # TODO send confirmation email to admin? maybe not
+        # TODO send notification emails to members of project
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -1473,7 +1501,7 @@ class ApiGateway(object):
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
     @authorizedRoles("admin")
-    def modifyProject(self):
+    def projectEdit(self):
         """
         This changes a project's values. It can only be done by an admin.
         The projectNumber is required, but its value cannot be changed.
@@ -1510,6 +1538,7 @@ class ApiGateway(object):
                     raise cherrypy.HTTPError(400, "invalid %s type, emails must be strings" % key)
             myProject[key] = newEmailList
 
+        # TODO check projectNumber in database?
 
         findQuery = {'projectNumber': myProject['projectNumber']}
         updateRule = {
@@ -1681,7 +1710,7 @@ class ApiGateway(object):
 
             # get from excel
             myUser = {
-                "projectNumbers": [int(e) for e in str(row[0]).split(',')],
+                "projectNumbers": [int(e) for e in str(row[0]).split()],
                 "firstName": row[1],
                 "lastName": row[2],
                 "netID": row[3],
