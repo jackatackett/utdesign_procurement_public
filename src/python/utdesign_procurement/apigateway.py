@@ -900,7 +900,8 @@ class ApiGateway(object):
                 {'status': "manager approved"}
             ]}
         try:
-            totalAmt = int(list(self.colRequests.find(findQuery))[0]["requestTotal"]) + shippingAmt
+            doc = list(self.colRequests.find(findQuery))[0]
+            totalAmt = int(doc["requestTotal"]) + shippingAmt
             #~ print()
             #~ print(totalAmt)
             #~ print()
@@ -924,6 +925,8 @@ class ApiGateway(object):
             }
 
             self._updateDocument(findQuery, updateQuery, updateRule)
+
+            self.calculateBudget(doc["projectNumber"])
 
             # TODO send email
         except:
@@ -1258,6 +1261,37 @@ class ApiGateway(object):
             return results
         raise cherrypy.HTTPError(400, "Unauthorized access")
 
+    def calculateBudget(self, projectNumber):
+        res = list(self.colProjects.find({"projectNumber": projectNumber}))
+        if len(res) <= 0:
+            raise cherrypy.HTTPError(400, "Invalid project number")
+
+        res = res[0]
+        pendingCosts = 0
+        actualCosts = 0
+        requests = self.colRequests.find({"projectNumber": projectNumber})
+        for req in requests:
+            #~ print(req)
+            if req["status"] in ["admin approved", "ordered", "ready for pickup", "complete"]:
+                actualCosts += req["requestTotal"]
+            pendingCosts += req["requestTotal"]
+        #~ print(pendingCosts, actualCosts)
+
+        miscCosts = 0
+        addCosts = self.colCosts.find({"projectNumber": projectNumber})
+        for co in addCosts:
+            if co["type"] == "refund":
+                miscCosts -= co["amount"]
+            elif co["type"] == "reimbursement":
+                miscCosts += co["amount"]
+
+        res["availableBudget"] = res["defaultBudget"] - actualCosts - miscCosts
+        res["pendingBudget"] = res["defaultBudget"] - pendingCosts - miscCosts
+
+        self.colProjects.update_one({"projectNumber": projectNumber}, {"$set": {"availableBudget": res["availableBudget"], "pendingBudget": res["pendingBudget"]}})
+
+        return res
+
     @cherrypy.expose
     #~ @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
@@ -1267,7 +1301,7 @@ class ApiGateway(object):
         This adds a cost (refund, reimbursement, funding, or cut) to a project, and can only be done by the admin
         {
             projectNumber: (int),
-            type: (string: refund, reimbursement, funding, cut),
+            type: (string: refund, reimbursement, new budget),
             amount: (string, dollar amount),
             comment: (string),
             actor: (string, email of admin)
@@ -1284,7 +1318,7 @@ class ApiGateway(object):
 
         cost["projectNumber"] = checkValidData("projectNumber", data, int)
         for key in ("type", "amount", "comment", "actor"):
-            if key == "type" and data[key] not in ["refund", "reimbursement", "funding", "cut"]:
+            if key == "type" and data[key] not in ["refund", "reimbursement", "new budget"]:
                 print(data[key])
                 raise cherrypy.HTTPError(400, "Bad cost type")
             cost[key] = checkValidData(key, data, str)
@@ -1295,12 +1329,16 @@ class ApiGateway(object):
         self.colCosts.insert(cost)
 
         #update the project budget if type == funding or cut
-        if cost["type"] == "funding":
-            newBudget = list(self.colProjects.find({"projectNumber": cost["projectNumber"]}))[0]["defaultBudget"] + cost["amount"]
-            self.colProjects.update_one({"projectNumber": cost["projectNumber"]}, {"$set": {"defaultBudget": newBudget}})
-        elif cost["type"] == "cut":
-            newBudget = list(self.colProjects.find({"projectNumber": cost["projectNumber"]}))[0]["defaultBudget"] - cost["amount"]
-            self.colProjects.update_one({"projectNumber": cost["projectNumber"]}, {"$set": {"defaultBudget": newBudget}})
+        #~ if cost["type"] == "funding":
+            #~ newBudget = list(self.colProjects.find({"projectNumber": cost["projectNumber"]}))[0]["defaultBudget"] + cost["amount"]
+            #~ self.colProjects.update_one({"projectNumber": cost["projectNumber"]}, {"$set": {"defaultBudget": newBudget}})
+        #~ elif cost["type"] == "cut":
+            #~ newBudget = list(self.colProjects.find({"projectNumber": cost["projectNumber"]}))[0]["defaultBudget"] - cost["amount"]
+            #~ self.colProjects.update_one({"projectNumber": cost["projectNumber"]}, {"$set": {"defaultBudget": newBudget}})
+        if cost["type"] == "new budget":
+            self.colProjects.update_one({"projectNumber": cost["projectNumber"]}, {"$set": {"defaultBudget": cost["amount"]}})
+
+        self.calculateBudget(cost["projectNumber"])
 
         # TODO send confirmation email to admin
         # TODO send notification emails to students
@@ -1467,7 +1505,7 @@ class ApiGateway(object):
                     res['_id'] = str(res['_id'])
                     result.append(res)
                 #~ return result
-
+        '''
         #~ print()
         #~ print("calculating budget")
         #calculate the budget
@@ -1495,6 +1533,10 @@ class ApiGateway(object):
             res["pendingBudget"] = res["defaultBudget"] - pendingCosts - miscCosts
             #~ print(res)
         #~ print()
+        '''
+
+        for res in result:
+            res = self.calculateBudget(res["projectNumber"])
         return result
 
     @cherrypy.expose
