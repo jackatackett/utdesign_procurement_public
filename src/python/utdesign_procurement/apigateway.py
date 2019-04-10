@@ -1978,6 +1978,34 @@ class ApiGateway(object):
         else:
             raise cherrypy.HTTPError(403, 'Invalid email or password.')
 
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    def projectValidate(self):
+        """
+        Returns true if the project number(s) exist in the database
+
+        Returns ::
+            {
+                "valid": boolean
+            }
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myData = dict()
+
+        myData["projectNums"] = checkProjectNumbers(data)
+
+        for p in myData["projectNums"]:
+            if not bool(self.colProjects.find_one({'projectNumber': p})):
+                return 'false'
+        return 'true'
+
+
+
     # TODO should this be a rest endpoint?
     @cherrypy.expose
     @cherrypy.tools.json_out()
