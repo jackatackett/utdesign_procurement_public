@@ -1,3 +1,11 @@
+.table thead tr {
+    background-color: #D5D2CA !important;
+}
+
+.table thead tr:first-child {
+    background-color: #69BE28 !important;
+}
+
 .cleanInputCell input {
     border: 0;
     height: 100%;

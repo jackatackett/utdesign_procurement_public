@@ -1,6 +1,5 @@
 app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout', '$interval', function($scope, $location, $http, $timeout, $interval) {
     function convertCosts(value) {
-//        console.log(value);
         if (typeof value === "undefined") {
             return "$0.00";
         }
@@ -22,25 +21,23 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
                 result[d]["items"][item]["unitCost"] = convertCosts(data[d]["items"][item]["unitCost"]);
                 result[d]["items"][item]["totalCost"] = convertCosts(data[d]["items"][item]["totalCost"]);
             }
+            result[d]["requestTotal"] = convertCosts(data[d]["requestTotal"]);
+            result[d]["shippingCost"] = convertCosts(data[d]["shippingCost"]);
         }
         return result;
     };
 
-    $scope.fieldKeys = ["requestNumber", "projectNumber", "status", "vendor", "URL", "justification", "additionalInfo"];
-    $scope.fields = ["Request Number", "Project Number", "Status", "Vendor", "URL", "Justification", "Additional Info"];
+    $scope.fieldKeys = ["requestNumber", "projectNumber", "status", "vendor", "URL", "requestTotal", "shippingCost"];
+    $scope.fields = ["Request Number", "Project Number", "Status", "Vendor", "URL", "Total Cost", "Shipping Cost"];
     $scope.grid = [];
     $scope.itemFieldKeys = ["description", 'itemURL', "partNo", "quantity", "unitCost", "totalCost"];
     $scope.itemFields = ["Description", 'Item URL', "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
     $scope.teams = ["Procurement", "Clock-It", "Smart Glasses"];
-//~ <<<<<<< HEAD
-    //~ $scope.statuses = ["Pending", "Accepted", "Rejected", "Shipped", "Canceled"];
     $scope.filters = ["Project Number", "Vendor"];
     $scope.historyFields = ["Timestamp", "Source", "Comment", "Old State", "New State"];
     $scope.historyFieldKeys = ["timestamp", "actor", "comment", "oldState", "newState"];
-//~ =======
     $scope.statuses = ["Pending", "Saved", "Manager Approved", "Admin Approved", "Rejected", "Updates for Manager", "Updates for Admin", "Cancelled", "Ordered", "Ready for Pickup", "Complete"];
     $scope.statusesKeys = ["pending", "saved", "manager approved", "admin approved", "rejected", "updates for manager", "updates for admin", "cancelled", "ordered", "ready for pickup", "complete"];
-//~ >>>>>>> dd34bbafb14100851e50535618cc3e625721348e
 
     $scope.filters = ["Project Number", "Vendor"];
     $scope.filterKeys = ["projectNumbers", "vendor"];
@@ -97,7 +94,7 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
         $scope.tableFilters = filters;
 
         $http.post('/procurementStatuses', $scope.tableFilters).then(function(resp) {
-            $scope.data = resp.data;
+            $scope.data = cleanData(resp.data);
         }, function(err) {
             console.error("Error", err.data)
         });
@@ -245,13 +242,10 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
 
     $scope.viewHistory = function(e, rowIdx) {
         console.log("history");
-        //~ console.log($scope.data[rowIdx]);
-        //~ console.log($scope.data[rowIdx]["history"]);
         $("#historyBody").empty();
         var historyHTML = "";
         for (var hist in $scope.data[rowIdx]["history"]) {
             historyHTML += '<tr style="border-bottom: 1.5px solid black">';
-                //~ console.log($scope.data[rowIdx]["history"][hist]);
             for (var ele in $scope.historyFieldKeys) {
                 historyHTML += '<td scope="col" style="background-color: #eee;">' + $scope.data[rowIdx]["history"][hist][$scope.historyFieldKeys[ele]] + '</td>';
             }

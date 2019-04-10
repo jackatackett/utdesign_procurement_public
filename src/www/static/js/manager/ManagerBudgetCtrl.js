@@ -91,7 +91,7 @@ app.controller('ManagerBudgetCtrl', ['$scope', '$location', '$http', '$window', 
         for (var req in procurementData) {
             procurementData[req]["requestSubtotal"] = "$" + convertCosts(procurementData[req]["requestSubtotal"]);
             procurementData[req]["shippingCost"] = "$" + convertCosts(procurementData[req]["shippingCost"]);
-            procurementData[req]["requestTotal"] = "-$" + convertCosts(procurementData[req]["requestTotal"]);
+            procurementData[req]["requestTotal"] = "+$" + convertCosts(procurementData[req]["requestTotal"]);
             //~ if (procurementData[req]["projectNumber"] == $scope.projects[currentProj]["number"]) {
                 //~ $scope.curRequestData.push(procurementData[req]);
             //~ }
@@ -102,11 +102,14 @@ app.controller('ManagerBudgetCtrl', ['$scope', '$location', '$http', '$window', 
     function filterCosts() {
         $scope.curCostData = [];
         for (var co in costData) {
-            if (costData[co]["type"] == "refund" || costData[co]["type"] == "funding") {
+            if (costData[co]["type"] == "refund") {
+                costData[co]["amount"] = "-$" + convertCosts(costData[co]["amount"]);
+            }
+            else if (costData[co]["type"] == "reimbursement") {
                 costData[co]["amount"] = "+$" + convertCosts(costData[co]["amount"]);
             }
             else {
-                costData[co]["amount"] = "-$" + convertCosts(costData[co]["amount"]);
+                costData[co]["amount"] = "$" + convertCosts(costData[co]["amount"]);
             }
             //~ if (costData[co]["projectNumber"] == $scope.projects[currentProj]["number"]) {
                 //~ $scope.curCostData.push(costData[co]);

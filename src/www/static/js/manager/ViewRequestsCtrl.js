@@ -22,12 +22,14 @@ app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '
                 result[d]["items"][item]["unitCost"] = convertCosts(data[d]["items"][item]["unitCost"]);
                 result[d]["items"][item]["totalCost"] = convertCosts(data[d]["items"][item]["totalCost"]);
             }
+            result[d]["requestTotal"] = convertCosts(data[d]["requestTotal"]);
+            result[d]["shippingCost"] = convertCosts(data[d]["shippingCost"]);
         }
         return result;
     };
 
-    $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "justification", "additionalInfo"];
-    $scope.fields = ["Project Number", "Status", "Vendor", "URL", "Justification", "Additional Info"];
+    $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "requestTotal", "shippingCost"];
+    $scope.fields = ["Project Number", "Status", "Vendor", "URL", "Total Cost", "Shipping Cost"];
     $scope.grid = [];
     $scope.itemFieldKeys = ["description", "partNo", "quantity", "unitCost", "totalCost"];
     $scope.itemFields = ["Description", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
@@ -40,46 +42,7 @@ app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '
     var projectData = [];
     var curProject = 0;
 
-    $scope.data = [ {
-                        projectNumber: 123,
-                        status: "pending",
-                        vendor: "Home Depot",
-                        URL: "homedepot.com",
-                        justification: "Because he told me toooooo",
-                        additionalInfo: "He is Plankton",
-                        items: [ {
-                                description: "A big thing",
-                                partNo: "9001",
-                                quantity: "25",
-                                unitCost: "1000000000",
-                                total: "25000000000"
-                            },
-                            {
-                                description: "A small thing",
-                                partNo: "9002",
-                                quantity: "250",
-                                unitCost: "10",
-                                total: "2500"
-                            }
-                        ]
-                    },
-                    {
-                        projectNumber: 124,
-                        status: "approved",
-                        vendor: "The Plastic Store",
-                        URL: "gmail.com",
-                        justification: "O Captain, My Captain",
-                        additionalInfo: "He is dead, Jim",
-                        items: [ {
-                                description: "A hunk of plastic",
-                                partNo: "9003",
-                                quantity: "1",
-                                unitCost: "10",
-                                total: "10"
-                            }
-                        ]
-                    }
-                  ]
+    $scope.data = []
 
     $scope.lightboxRow = 0;
 
@@ -89,8 +52,6 @@ app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '
     };
 
     $scope.regenerateTable = function(e) {
-        //~ var target = e.currentTarget;
-        //~ console.log("change table");
         var targ = e.target.id.substring(6, e.target.id.length);
         curProject = targ;
         console.log("current proj: ", curProject);
@@ -174,11 +135,8 @@ app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '
     };
 
     $scope.refreshStatuses = function() {
-        console.log("status number", curProject);
         var filterData = {"projectNumbers": $scope.projects[curProject]["number"]};
-        console.log("Filtering:", filterData);
         $http.post('/procurementStatuses', filterData).then(function(resp) {
-            console.log("Success", resp)
             $scope.data = cleanData(resp.data);
         }, function(err) {
             console.error("Error", err.data)
@@ -194,13 +152,10 @@ app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '
 
     $scope.viewHistory = function(e, rowIdx) {
         console.log("history");
-        //~ console.log($scope.data[rowIdx]);
-        //~ console.log($scope.data[rowIdx]["history"]);
         $("#historyBody").empty();
         var historyHTML = "";
         for (var hist in $scope.data[rowIdx]["history"]) {
             historyHTML += '<tr style="border-bottom: 1.5px solid black">';
-                //~ console.log($scope.data[rowIdx]["history"][hist]);
             for (var ele in $scope.historyFieldKeys) {
                 historyHTML += '<td scope="col" style="background-color: #eee;">' + $scope.data[rowIdx]["history"][hist][$scope.historyFieldKeys[ele]] + '</td>';
             }

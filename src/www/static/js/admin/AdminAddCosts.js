@@ -23,7 +23,8 @@ app.controller('AdminAddCosts', ['$scope', '$location', '$http', '$window', func
         console.log("Error", err.data);
     });
 
-    $scope.types = ["refund", "reimbursement", "funding", "cut"];
+    //~ $scope.types = ["refund", "reimbursement", "funding", "cut"];
+    $scope.types = ["refund", "reimbursement", "new budget"];
 
     //~ var selectHTML = '<select id="newCosttype">';
     //~ for (var val in $scope.types) {
