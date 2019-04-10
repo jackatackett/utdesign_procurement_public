@@ -87,6 +87,7 @@ class ApiGateway(object):
 
         myRequest = requestCreate(data, status, optional)
         myRequest['requestNumber'] = myRequestNumber
+        myRequest['oic'] = 0
 
         query = {"requestNumber": myRequestNumber}
 
@@ -400,7 +401,22 @@ class ApiGateway(object):
             'action': 'cancelled'
         })
 
-        # TODO send notification email to manager/admin?
+        # if need to send email to manager
+        if myRequest['oic'] >= 1:
+            self.email_handler.notifyCancelled(**{
+                'email': myRequest['manager'],
+                'requestNumber': myRequest['requestNumber'],
+                'projectNumber': myRequest['projectNumber'],
+            })
+
+        # if need to send email to admin
+        if myRequest['oic'] == 2:
+            adminEmails = self.getAdminEmails()
+            self.email_handler.notifyCancelled(**{
+                'email': adminEmails,
+                'requestNumber': myRequest['requestNumber'],
+                'projectNumber': myRequest['projectNumber'],
+            })
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -453,6 +469,9 @@ class ApiGateway(object):
         if myRequest is None:
             cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
             return
+
+        if myRequest['oic'] = 0:
+            myRequest['oic'] = 1
 
         # send confirmation email to manager
         self.email_handler.confirmRequestManagerAdmin(**{
@@ -536,6 +555,9 @@ class ApiGateway(object):
             cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
             return
 
+        if myRequest['oic'] = 0:
+            myRequest['oic'] = 1
+
         # send confirmation email to manager
         self.email_handler.confirmRequestManagerAdmin(**{
             'email': cherrypy.session['email'],
@@ -612,6 +634,9 @@ class ApiGateway(object):
         if myRequest is None:
             cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
             return
+
+        if myRequest['oic'] = 1:
+            myRequest['oic'] = 2
 
         # send confirmation email to admin
         self.email_handler.confirmRequestManagerAdmin(**{
@@ -870,6 +895,9 @@ class ApiGateway(object):
             cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
             return
 
+        if myRequest['oic'] = 1:
+            myRequest['oic'] = 2
+
         # send confirmation email to admin
         self.email_handler.confirmRequestManagerAdmin(**{
             'email': cherrypy.session['email'],
@@ -947,7 +975,6 @@ class ApiGateway(object):
 
             self.calculateBudget(doc["projectNumber"])
 
-            # TODO send email
         except:
             raise cherrypy.HTTPError(400, "Error updating shipping")
         
@@ -2202,3 +2229,4 @@ class ApiGateway(object):
         for user in self.colUsers.find({'role': 'admin'}):
             adminEmails.append(user['email'])
         return adminEmails
+
