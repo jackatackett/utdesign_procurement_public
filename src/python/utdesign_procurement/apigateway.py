@@ -470,7 +470,7 @@ class ApiGateway(object):
             cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
             return
 
-        if myRequest['oic'] = 0:
+        if myRequest['oic'] == 0:
             myRequest['oic'] = 1
 
         # send confirmation email to manager
@@ -555,7 +555,7 @@ class ApiGateway(object):
             cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
             return
 
-        if myRequest['oic'] = 0:
+        if myRequest['oic'] == 0:
             myRequest['oic'] = 1
 
         # send confirmation email to manager
@@ -635,7 +635,7 @@ class ApiGateway(object):
             cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
             return
 
-        if myRequest['oic'] = 1:
+        if myRequest['oic'] == 1:
             myRequest['oic'] = 2
 
         # send confirmation email to admin
@@ -895,7 +895,7 @@ class ApiGateway(object):
             cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
             return
 
-        if myRequest['oic'] = 1:
+        if myRequest['oic'] == 1:
             myRequest['oic'] = 2
 
         # send confirmation email to admin
