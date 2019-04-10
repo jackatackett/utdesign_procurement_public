@@ -215,7 +215,7 @@ class EmailHandler(object):
         subject = "You have been edited!"
         template = self.templateLookup.get_template('notifyUserEdit.html')
         body = template.render(**renderArgs)
-        self.send(adminEmails, subject, body)
+        self.send(email, subject, body)
 
 class Emailer(object):
     """
