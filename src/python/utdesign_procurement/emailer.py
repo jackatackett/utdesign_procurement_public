@@ -191,6 +191,17 @@ class EmailHandler(object):
         body = template.render(**renderArgs)
         self.send(email, subject, body)
 
+    def notifyRejectedAdmin(self, adminEmails, projectNumber, requestNumber, manager):
+        renderArgs = {
+            'domain': self.domain,
+            'requestNumber': requestNumber,
+            'projectNumber': projectNumber,
+            'manager': manager
+        }
+        subject = "Request %s has been rejected" % (requestNumber)
+        template = self.templateLookup.get_template('notifyRejectedAdmin.html')
+        body = template.render(**renderArgs)
+        self.send(adminEmails, subject, body)
 
 class Emailer(object):
     """
