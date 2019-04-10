@@ -1888,7 +1888,19 @@ class ApiGateway(object):
         updateRule = {'$set': myData}
         self._updateDocument(updateQuery, updateQuery, updateRule, collection=self.colUsers)
 
-        # TODO send notification email to student
+        myUser = self.colUsers.find_one({'_id': ObjectId(myID)})
+
+
+        # TODO what if user doesn't have netID or course?
+        self.email_handler.notifyUserEdit(**{
+            'email': myUser['email'],
+            'projectNumbers': myUser['projectNumbers'],
+            'firstName': myUser['firstName],
+            'lastName': myUser['lastName'],
+            'netID': myUser['netID'],
+            'course': myUser['course']
+
+        })
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
