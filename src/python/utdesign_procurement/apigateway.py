@@ -284,7 +284,7 @@ class ApiGateway(object):
             if 'history' in request:
                 for hist in range(len(request['history'])):
                     if 'timestamp' in request['history'][hist]:
-                        request['history'][hist]['timestamp'] = request['history'][hist]['timestamp'].isoformat()
+                        request['history'][hist]['timestamp'] = request['history'][hist]['timestamp'].isoformat(' ')[0:16]
             listRequests.append(request)
 
         return listRequests
