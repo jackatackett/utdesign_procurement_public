@@ -1662,9 +1662,11 @@ class ApiGateway(object):
 
         myUser['projectNumbers'] = checkProjectNumbers(data)
 
-        for key in ("firstName", "lastName", "netID", "email", "course"):
+        for key in ("firstName", "lastName", "email", "course"):
             myUser[key] = checkValidData(key, data, str)
 
+        if "netID" in myUser:
+            myUser['netID'] = checkValidData('netID', data, str)
 
         # TODO: do something
         emailExisting = self.colUsers.find_one({'email': myUser['email']})
