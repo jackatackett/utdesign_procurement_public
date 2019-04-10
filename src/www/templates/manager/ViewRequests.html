@@ -53,7 +53,7 @@
                             <td colspan = "6" style="text-align:center">
                                 <button type="button" class="btn btn-primary col-md-2" ng-click="viewHistory($event, dictIdx)">View History</button>
                                 <button type="button" class="btn btn-success col-md-2" ng-if="canApprove(dict.status)" ng-click="approveRequest($event, dictIdx)" style="width:44%">Approve</button>
-                                <button type="button" class="btn btn-danger col-md-2s" ng-if="canApprove(dict.status)" ng-click="rejectRequest($event, dictIdx)" style="width:44%">Reject</button>
+                                <button type="button" class="btn btn-danger col-md-2" ng-if="canApprove(dict.status)" ng-click="rejectRequest($event, dictIdx)" style="width:44%">Reject</button>
                             </td>
                         </tr>
                     </table>
@@ -87,7 +87,7 @@
 
     <div id="historyModal" class="modal">
         <div class="modal-content" style="width:75%">
-            <table>
+            <table class="table table-bordered history-table">
                 <thead>
                     <tr>
                         <th ng-repeat="field in historyFields">{{field}}</th>

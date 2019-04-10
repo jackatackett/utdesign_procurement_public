@@ -285,7 +285,7 @@ class ApiGateway(object):
             if 'history' in request:
                 for hist in range(len(request['history'])):
                     if 'timestamp' in request['history'][hist]:
-                        request['history'][hist]['timestamp'] = request['history'][hist]['timestamp'].isoformat()
+                        request['history'][hist]['timestamp'] = request['history'][hist]['timestamp'].isoformat(' ')[0:16]
             listRequests.append(request)
 
         return listRequests
@@ -1689,9 +1689,11 @@ class ApiGateway(object):
 
         myUser['projectNumbers'] = checkProjectNumbers(data)
 
-        for key in ("firstName", "lastName", "netID", "email", "course"):
+        for key in ("firstName", "lastName", "email", "course"):
             myUser[key] = checkValidData(key, data, str)
 
+        if "netID" in myUser:
+            myUser['netID'] = checkValidData('netID', data, str)
 
         # TODO: do something
         emailExisting = self.colUsers.find_one({'email': myUser['email']})
@@ -2002,6 +2004,34 @@ class ApiGateway(object):
             return "<strong> You logged in! </strong>"
         else:
             raise cherrypy.HTTPError(403, 'Invalid email or password.')
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    def projectValidate(self):
+        """
+        Returns true if the project number(s) exist in the database
+
+        Returns ::
+            {
+                "valid": boolean
+            }
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myData = dict()
+
+        myData["projectNums"] = checkProjectNumbers(data)
+
+        for p in myData["projectNums"]:
+            if not bool(self.colProjects.find_one({'projectNumber': p})):
+                return 'false'
+        return 'true'
+
+
 
     # TODO should this be a rest endpoint?
     @cherrypy.expose
