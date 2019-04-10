@@ -97,13 +97,13 @@ class ApiGateway(object):
         if oldRequest is not None and 'history' in oldRequest:
             oldHistory = oldRequest['history']
         else:
-            oldHistory = []
+            oldHistory = [] #initialize history
 
-        # find old state
+        # find old state if oldHistory has an old state
         if len(oldHistory) and 'newState' in oldHistory[-1]:
             oldState = oldHistory[-1]['newState']
         else:
-            oldState = 'saved'
+            oldState = 'saved' # old state is "saved" if there isn't an old state in the database?
 
         if status == "pending":
             oldHistory.append({
@@ -299,21 +299,38 @@ class ApiGateway(object):
 
         Expected input::
             {
-                "vendor": (string),
-                "URL": (string),
+                "vendor": (string) optional,
+                "URL": (string) optional,
                 "items": [
                     {
-                    "description": (string),
-                    "partNo": (string),
-                    "itemURL": (string),
-                    "quantity": (integer),
-                    "unitCost": (string),
-                    "totalCost": (string)
+                    "description": (string) optional,
+                    "partNo": (string) optional,
+                    "itemURL": (string) optional,
+                    "quantity": (integer) optional,
+                    "unitCost": (string)optional ,
+                    "totalCost": (string) optional
                     }
                 ]
             }
         """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            data = dict()
 
+        requestChanges = dict()
+
+        for key in ("vendor", "URL"):
+            if data[key]:
+                requestChanges[key] = checkValidData(key, data, str)
+
+
+
+        # TODO validate inputs
+        # TODO add history
+        # TODO send confirmation email to admin
+        # TODO send notification emails to students
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -563,9 +580,11 @@ class ApiGateway(object):
             raise cherrypy.HTTPError(400, 'No data was given')
 
         myID = checkValidID(data)
+
         myComment = checkValidData("comment", data, str)
         if myComment == "":
             myComment = "No comment"
+
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
@@ -670,7 +689,7 @@ class ApiGateway(object):
         updateQuery = {'_id': ObjectId(myID)}
 
         # find old history and append to myRequest
-        oldHistory = list(self.colRequests.find(findQuery))[0]["history"]   #will have history
+        oldHistory = self.colRequests.find_one(findQuery)["history"]   #will have history
         oldHistory.append({
             "actor": cherrypy.session["email"],
             "timestamp": datetime.now(),
