@@ -1217,6 +1217,15 @@ class ApiGateway(object):
             'role': 'manager'
         })
 
+        if myRequest['oic'] == 2:
+            adminEmails = self.getAdminEmails()
+            self.email_handler.notifyRejectedAdmin(**{
+                'adminEmails': adminEmails,
+                'requestNumber': myRequest['requestNumber'],
+                'projectNumber': myRequest['projectNumber'],
+                'manager': myRequest['manager']
+            })
+
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
