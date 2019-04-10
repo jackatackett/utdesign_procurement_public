@@ -20,7 +20,7 @@ app.controller('StudentNavCtrl', ['$scope', '$location', '$window', '$http', fun
             $("#requestSummaryCtrlDiv").hide();
             $("#studentHelpDiv").hide();
             $("#viewBudgetDiv").show();
-        } else if (hash == 'create') {
+        } else if (hash == 'help') {
             //show help
             $scope.activeTab = 'help';
             $("#createRequestCtrlDiv").hide();
