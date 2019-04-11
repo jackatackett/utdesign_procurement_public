@@ -83,6 +83,7 @@
 
                         <tr>
                             <td colspan = "7" style="text-align:center">
+                                <button type="button" class="btn btn-primary col-md-2" ng-click="editRequest($event, dictIdx)">Edit Request</button>
                                 <button type="button" class="btn btn-primary col-md-2" ng-click="viewHistory($event, dictIdx)">View History</button>
                                 <button type="button" class="btn btn-success col-md-2" ng-click="orderRequest($event, dictIdx)" ng-if="canOrder(dict.status)" style="width:44%">Mark as Ordered</button>
                                 <button type="button" class="btn btn-danger col-md-2" ng-click="rejectRequest($event, dictIdx)" ng-if="canOrder(dict.status)" style="width:44%">Reject</button>
@@ -154,6 +155,31 @@
                     <button type="button" class="btn btn-primary" ng-click="cancelShippingBox($event)" style="float:left; width:100%;">Cancel</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content" style="width:90%;">
+            
+<!--
+            <table class="table" id="addUserTable" style="width: 50%; display:table;">
+                <tr ng-repeat="info in fields track by $index">
+                    <td>
+                        {{info}}
+                    </td>
+                    <td>
+                        <input type="text" ng-model="userInfo[fieldKeys[$index]]" style="width:100%">
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <button type="button" class="btn btn-success" ng-click="saveEdit($event, rowIdx)" >Save</button>
+                        <button type="button" class="btn btn-primary" ng-click="closeEditBox($event)">Cancel</button>
+                    </td>
+                </tr>
+            </table>
+-->
+            <%include file="EditRequestCtrl.html"/>
         </div>
     </div>
 

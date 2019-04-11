@@ -8,6 +8,8 @@ from email.mime.text import MIMEText
 from mako.lookup import TemplateLookup
 from multiprocessing import Process, Queue
 
+from utdesign_procurement.utils import convertToDollarStr
+
 def email_listen(emailer, queue):
     function_lut = {
         'send': emailer.emailSend,
@@ -112,6 +114,26 @@ class EmailHandler(object):
 
         subject = 'New Request For Project %s' % request['projectNumber']
         template = self.templateLookup.get_template('procurementSaveStudent.html')
+        body = template.render(**renderArgs)
+        self.send(teamEmails, subject, body)
+        self.send(request['manager'], subject, body)
+
+    def procurementEditAdmin(self, teamEmails=None, request=None):
+        renderArgs = {
+            'domain': self.domain,
+            'requestNumber': request['requestNumber'],
+            'projectNumber': request['projectNumber'],
+            'managerEmail': request['manager'],
+            'vendor': request['vendor'],
+            'vendorURL': request['URL'],
+            'justification': request['justification'],
+            'additionalInfo': request['additionalInfo'],
+            'itemCount': len(request['items']),
+            'shippingCost': convertToDollarStr(request['shippingCost'])
+        }
+
+        subject = 'Request Updated For Project %s' % request['projectNumber']
+        template = self.templateLookup.get_template('procurementUpdated.html')
         body = template.render(**renderArgs)
         self.send(teamEmails, subject, body)
         self.send(request['manager'], subject, body)

@@ -1,0 +1,121 @@
+<div id="createRequestCtrlDiv" ng-controller="EditRequestCtrl as $ctrl">
+<div class="errbar" ng-show="errorText">
+    <p class="errtext" ng-bind="errorText"></p>
+</div>
+
+<div class="interfaceDiv">
+    <form name="requestForm">
+
+        <h2> General Information: </h2>
+
+        <div ng-show="request.requestNumber">
+            <h3> Currently Editing Request Number: {{request.requestNumber}} </h3>
+        </div>
+
+
+
+        <table style="width: 100%;">
+
+            <tr>
+                <td style="width: 15em">Project Number: </td>
+                <td>
+                    <input ng-model="request.projectNumber" style="width:30%" readonly disabled>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="width: 15em">Manager Email: </td>
+                <td>
+                    <input ng-model="request.manager" style="width:30%" readonly disabled>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="width: 15em">Vendor: </td>
+                <td>
+                    <input ng-model="request.vendor" style="width:30%">
+                </td>
+            </tr>
+
+            <tr>
+                <td>Vendor URL: </td>
+                <td>
+                    <input ng-model="request.URL" style="width:30%">
+                </td>
+            </tr>
+
+            <tr>
+                <td>Shipping Cost: </td>
+                <td>
+                    <input ng-model="request.shippingCost" style="width:30%">
+                </td>
+            </tr>
+
+        </table>
+
+        <h2> Items: </h2>
+        <table class="table table-bordered" style="margin-bottom: 0px;">
+
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col" ng-repeat="field in fields" ng-bind="field"></th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr ng-repeat="row in request.items track by $index" ng-init="rowIdx = $index">
+
+                    <th scope="row" ng-bind="rowIdx + 1"></th>
+
+                    <td class="cleanInputCell" ng-repeat="field in fieldKeys track by $index" ng-init="fieldIdx = $index" style="padding: 0px; vertical-align: middle;">
+                        <div ng-if="field == totalCost" style="height: 100%" >
+                            <input type="text" style="height: 100%" ng-model="request.items[rowIdx][field]" ng-change="updateCost(rowIdx)" readonly>
+                        </div>
+                        <div ng-if="field != totalCost" style="height: 100%" >
+                            <input type="text" style="height: 100%" ng-model="request.items[rowIdx][field]" ng-change="updateCost(rowIdx)">
+                        </div>
+                    </td>
+
+                    <td style="height: inherit; padding: 0px; vertical-align: middle;">
+                        <button type="button" class="btn btn-secondary" ng-click="deleteRow(rowIdx)" tabIndex="-1">
+                            &#x2796;
+                        </button>
+                    </td>
+
+                </tr>
+            </tbody>
+
+        </table>
+
+        <button type="button" class="btn btn-secondary" ng-click="addRow()">
+            &#x2795;
+        </button>
+
+        <table style="width: 100%; margin-top: 15px; margin-bottom: 15px;">
+
+            <tr>
+                <td style="width: 50%">
+                    <p>Justification (optional): </p>
+                    <textarea ng-model="request.justification" style="width: 100%; height: 10em"></textarea>
+                </td>
+
+                <td style="width: 50%">
+                    <p>Additional Info (optional): </p>
+                    <textarea ng-model="request.additionalInfo" style="width: 100%; height: 10em"></textarea>
+                </td>
+            </tr>
+
+        </table>
+
+    <button type="button" class="btn btn-secondary btn-success" ng-click="saveRequest(true)">
+        Save Request
+    </button>
+
+    <button type="button" class="btn btn-danger" ng-click="closeEditBox($event)">
+        Cancel
+    </button>
+
+
+</div>
+</div>

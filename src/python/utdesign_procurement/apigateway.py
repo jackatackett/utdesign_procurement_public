@@ -35,7 +35,7 @@ class ApiGateway(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
-    @authorizedRoles("student")
+    @authorizedRoles("student", "admin")
     def procurementSave(self):
         """
         This REST endpoint takes data as an input as uses the data to create
@@ -45,7 +45,9 @@ class ApiGateway(object):
         Expected input::
 
             {
-                "submit": (Boolean),
+                "submit": (Boolean) optional (not optional if submitted by student),
+                "adminEdit": (Boolean) optional (not optional if admin performs an edit),
+                "status": (string) optional (not optional if admin performs an edit),
                 "requestNumber": (int) optional,
                 "manager": (string), //email of manager who can approve this
                 "vendor": (string),
@@ -71,9 +73,24 @@ class ApiGateway(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
-        mySubmit = checkValidData("submit", data, bool)
+        if "adminEdit" in data:
+            if "status" not in data:
+                raise cherrypy.HTTPError(400, "Bad data given")
+            myAdminEdit = checkValidData("adminEdit", data, bool)
+            if not myAdminEdit:
+                raise cherrypy.HTTPError(400, "Bad data given")
+            myStatus = checkValidData("status", data, str)
+        elif "submit" in data:
+            mySubmit = checkValidData("submit", data, bool)
+            myAdminEdit = False
 
-        if mySubmit:
+        if myAdminEdit is None and mySubmit is None:
+            raise cherrypy.HTTPError(400, "Bad submission info provided")
+
+        if myAdminEdit:
+            status = myStatus
+            optional = False
+        elif mySubmit:
             status = "pending"
             optional = False
         else:
@@ -105,7 +122,15 @@ class ApiGateway(object):
         else:
             oldState = 'saved' # old state is "saved" if there isn't an old state in the database?
 
-        if status == "pending":
+        if myAdminEdit:
+            oldHistory.append({
+                "actor": cherrypy.session["email"],
+                "timestamp": datetime.now(),
+                "comment": "edited by " + cherrypy.session["email"],
+                "oldState": oldState,
+                "newState": oldState
+            })
+        elif status == "pending":
             oldHistory.append({
                 "actor": cherrypy.session["email"],
                 "timestamp": datetime.now(),
@@ -132,6 +157,13 @@ class ApiGateway(object):
                 'email': myRequest['manager'],
                 'requestNumber': myRequest['requestNumber'],
                 'projectNumber': myRequest['projectNumber']
+            })
+        elif myAdminEdit:
+            #notify students and manager that admin has updated the request
+            teamEmails = self.getTeamEmails(myRequest["projectNumber"])
+            self.email_handler.procurementEditAdmin(**{
+                'teamEmails': teamEmails,
+                'request': myRequest,
             })
 
     def sequence(self):

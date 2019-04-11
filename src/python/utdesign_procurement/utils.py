@@ -4,6 +4,7 @@ import cherrypy
 import hashlib
 import os
 import re
+import math
 
 from bson.objectid import ObjectId
 
@@ -179,6 +180,11 @@ def checkValidID(data):
     else:
         raise cherrypy.HTTPError(400, 'data needs object id')
 
+def convertToDollarStr(cents):
+    dollar = math.floor(cents / 100)
+    cts = cents - (dollar * 100)
+    return "$" + str(dollar) + "." + "{:02d}".format(cts)
+
 def convertToCents(dollarAmt):
     """
     Converts a string dollar amount to an int cents amount
@@ -274,8 +280,13 @@ def requestCreate(data, status, optional=False):
     myRequest["items"] = myItems
     myRequest["requestSubtotal"] = requestSubtotal
 
-    #since this is creating a request, the shipping cost will be 0 (not set yet) and the requestTotal will be the same as requestSubtotal
-    myRequest["requestTotal"] = requestSubtotal
+    #~ #since this is creating a request, the shipping cost will be 0 (not set yet) and the requestTotal will be the same as requestSubtotal
+    # set shipping cost to 0 if not present
+    if "shippingCost" in data:
+        myRequest["shippingCost"] = convertToCents(checkValidData("shippingCost", data, str))
+    else:
+        myRequest["shippingCost"] = 0
+    myRequest["requestTotal"] = requestSubtotal + myRequest["shippingCost"]
 
     return myRequest
 
