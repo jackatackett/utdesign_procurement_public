@@ -1927,7 +1927,7 @@ class ApiGateway(object):
         self.email_handler.notifyUserEdit(**{
             'email': myUser['email'],
             'projectNumbers': myUser['projectNumbers'],
-            'firstName': myUser['firstName],
+            'firstName': myUser['firstName'],
             'lastName': myUser['lastName'],
             'netID': myUser['netID'],
             'course': myUser['course']
