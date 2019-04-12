@@ -1718,6 +1718,7 @@ class ApiGateway(object):
         myUser['status'] = 'current'
 
         myRole = checkValidData("role", data, str)
+        myRole = myRole.lower().strip()
         if myRole in ("student", "manager", "admin"):
             myUser['role'] = myRole
         else:
@@ -1817,12 +1818,7 @@ class ApiGateway(object):
     # @cherrypy.tools.json_out()
     # @cherrypy.tools.json_in()
     @authorizedRoles("admin")
-    def userAddBulk(self, sheet):
-        """
-
-        :param sheet:
-        :return:
-        """
+    def userSpreadsheetUpload(self, sheet):
 
         # get the whole file
         xlsx = bytearray()
@@ -1837,8 +1833,8 @@ class ApiGateway(object):
         df = pd.read_excel(BytesIO(bytes(xlsx)))
 
         # add each user
+        ret = []
         for index, row in df.iterrows():
-
             # get from excel
             myUser = {
                 "projectNumbers": [int(e) for e in str(row[0]).split()],
@@ -1847,16 +1843,45 @@ class ApiGateway(object):
                 "netID": row[3],
                 "email": row[4],
                 "course": row[5],
-                "role": 'student'
+                "role": row[6]
             }
+            myUser = self.validateUser(myUser, comment=True)
+            # myUser['comment'] = comment
+            ret.append(myUser)
 
-            # add to database
-            invite = self.colUsers.find({'email': myUser['email']}).count() == 0
+        cherrypy.session['bulkData'] = ret
 
-            self.colUsers.update({'email': myUser['email']}, {'$set': myUser}, upsert=True)
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    # @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def userSpreadsheetAdd(self):
 
-            # send invitation
-            if invite:
+        # check that we actually have json
+        if 'bulkData' in cherrypy.session:
+            data = cherrypy.session['bulkData']
+        else:
+            raise cherrypy.HTTPError(400, 'No bulk data to add. Must call userSpreadsheetUpload first.')
+
+        if 'users' not in data:
+            raise cherrypy.HTTPError(400, 'Data is missing "users" field')
+
+        for userDict in data['users']:
+
+            #validate input
+            myUser = self.validateUser(userDict)
+            if myUser is None:
+                cherrypy.log('userAddBulk skipping user: %s' % userDict)
+                continue
+
+            oldUser = self.colUsers.find_one({'email': myUser['email']})
+
+            # append to user if already exists
+            if oldUser is not None:
+                myUser['projectNumbers'] = list(set(oldUser['projectNumbers']) | set(myUser['projectNumbers']))
+
+            # and if not, invite them
+            else:
                 myInvitation = {
                     'uuid': str(uuid4()),
                     'expiration': None,
@@ -1870,6 +1895,109 @@ class ApiGateway(object):
                     'email': myInvitation['email'],
                     'uuid': myInvitation['uuid'],
                 })
+
+            # either way, upsert them into the database
+            self.colUsers.update({
+                'email': myUser['email']
+            }, {
+                '$set': myUser
+            }, upsert=True)
+
+
+    @cherrypy.expose
+    # @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    @authorizedRoles("admin")
+    def userSpreadsheetPages(self):
+        """
+        Returns an int: the number of pages it would take to
+        display all current users if 10 users are displayed
+        per page. At present time, the page size (number of
+        users per page) cannot be configured.
+
+        {
+            "projectNumbers": (int or list of ints, optional),
+            "firstName": (string, optional),
+            "lastName": (string, optional),
+            "netID": (string, optional),
+            "email": (string, optional),
+            "course": (string, optional),
+            "role": (string, optional)
+        }
+
+        """
+
+        # check that we actually have json
+        if 'bulkData' in cherrypy.session:
+            bulkData = cherrypy.session['bulkData']
+        else:
+            raise cherrypy.HTTPError(400, 'No bulk data to add. Must call userSpreadsheetUpload first.')
+
+        pageSize = 10 # TODO stretch goal make this configurable
+
+        div, remainder = divmod(len(bulkData), pageSize)
+        if remainder:
+            return div + 1
+        else:
+            return div
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    @authorizedRoles("admin")
+    def userSpreadsheetData(self):
+        """
+        This REST endpoint returns a list of 10 users from the database. The users may be
+        sorted by a key and ordered by ascending or descending, and the pageNumber
+        decides which 10 users are returned. pageNumber must be a non-negative integer.
+
+        Incoming ::
+        {
+            'pageNumber': (int)
+                (Optional. Default: 0)
+        }
+
+        Outgoing ::
+        [
+            {
+                “projectNumbers”: (list of ints),
+                "firstName": (string),
+                "lastName": (string),
+                "netID": (string),
+                "email": (string),
+                "course": (string),
+                “role”: “student”,
+                “status”: (string), //”current” or “removed”
+            }
+        ]
+
+        """
+
+        # check that we actually have json
+        if 'bulkData' in cherrypy.session:
+            bulkData = cherrypy.session['bulkData']
+        else:
+            raise cherrypy.HTTPError(400, 'No bulk data to add. Must call userSpreadsheetUpload first.')
+
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        pageNumber = checkValidData('pageNumber', data, int, default=0,
+                                optional=True)
+
+        if pageNumber < 0:
+            raise cherrypy.HTTPError(
+                400, "Invalid pageNumber format. "
+                     "Expected nonnegative integer. "
+                     "See: %s" % pageNumber)
+
+        pageSize = 10 # TODO stretch goal make this configurable
+
+        cherrypy.log(str(bulkData[pageSize*pageNumber: pageSize*(pageNumber+1)]))
+        return bulkData[pageSize*pageNumber: pageSize*(pageNumber+1)]
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -2313,3 +2441,86 @@ class ApiGateway(object):
             adminEmails.append(user['email'])
         return adminEmails
 
+    def validateUser(self, data, comment=False):
+        """
+        Validates a user to check for a role, firstName, lastName, email,
+        and optional netID. Non-admin users are also checked for valid
+        project numbers and courses.
+
+        A sanitized version of the user dict is returned, or None if anything
+        was wrong with the dict.
+
+        If comment is True, then a human readable string is returned instead.
+
+        :param data: dict. The user to be validated.
+        :param comment: bool. As described above.
+        :return:
+        """
+
+        missing = []
+        extra = []
+        myUser = dict()
+
+        # set default value of value in dict
+        myUser['status'] = 'current'
+
+        # get the user's role
+        try:
+            myRole = checkValidData("role", data, str)
+        except cherrypy.HTTPError:
+            if comment:
+                missing.append("role")
+                myRole = ''
+            else:
+                return None
+
+        # check the user's role
+        myRole = myRole.lower().strip()
+        if myRole in ("student", "manager", "admin"):
+            myUser['role'] = myRole
+        else:
+            if comment:
+                extra.append('Invalid role. Must be "student", "manager", or "admin".')
+            else:
+                return None
+
+        # check the user's project number and course
+        if myRole != 'admin':
+            try:
+                myUser['projectNumbers'] = checkProjectNumbers(data)
+            except cherrypy.HTTPError:
+                if comment:
+                    missing.append("project numbers")
+                else:
+                    return None
+
+            try:
+                myUser['course'] = checkValidData('course', data, str)
+            except cherrypy.HTTPError:
+                if comment:
+                    missing.append('course')
+                else:
+                    return None
+
+        # check the users other keys
+        for key in ("firstName", "lastName", "email"):
+            try:
+                myUser[key] = checkValidData(key, data, str)
+            except cherrypy.HTTPError:
+                if comment:
+                    missing.append(key)
+                else:
+                    return None
+
+        # get the netID if any
+        if "netID" in data:
+            myUser['netID'] = str(data['netID'])
+
+        if comment:
+            if missing:
+                ret = 'Missing or invalid keys: %s. ' % (', '.join(missing))
+            else:
+                ret = ''
+            ret += ' '.join(extra)
+            myUser['comment'] = ret
+        return myUser
