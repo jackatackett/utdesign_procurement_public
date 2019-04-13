@@ -1,0 +1,80 @@
+<div id="editProjectsCtrlDiv" ng-controller="EditProjectsCtrl as $ctrl" style="margin: 2%; box-sizing: border-box;">
+
+    <div>
+        <ul class="pagination">
+          <li class="page-item" ng-click="firstPage()"><a class="page-link" href="">First</a></li>
+          <li class="page-item" ng-click="prevPage()"><a class="page-link" href="">Previous</a></li>
+          <li ng-repeat="pageNum in pageNumberArray" class="page-item" ng-click="changePage(pageNum)" ng-class="{active: pageNumber == pageNum}"><a class="page-link" href="">{{pageNum}}</a></li>
+          <li class="page-item" ng-click="nextPage()"><a class="page-link" href="">Next</a></li>
+          <li class="page-item" ng-click="lastPage()"><a class="page-link" href="">Last ({{numberOfPages}})</a></li>
+        </ul>
+    </div>
+
+    <table class="table table-bordered" id="editProjectTable" style="border:0px;">
+        <thead>
+            <tr>
+                <th ng-repeat="col in columns track by $index"
+                    ng-click="toggleSort(fieldKeys[$index])"
+                    ng-class="{ascending: fieldKeys[$index] == sortTableBy && orderTableBy == 'ascending',
+                               descending: fieldKeys[$index] == sortTableBy && orderTableBy == 'descending'}">{{col}}</th>
+            </tr>
+            <tr>
+                <td ng-repeat="col in fields track by $index" ng-init="fieldKey = fieldKeys[$index]">
+                    <input ng-if="col != 'Role'"
+                           placeholder="{{col}}"
+                           ng-model="keywordSearch[fieldKey]"
+                           ng-model-options='{ debounce: 500 }'
+                           ng-change='requery()'
+                           style="width: inherit !important;">
+
+                    <select ng-if="fieldKey == 'role'"
+                            placeholder="{{col}}"
+                            ng-model="keywordSearch[fieldKey]"
+                            ng-model-options='{ debounce: 500 }'
+                            ng-change='requery()'
+                            style="width: inherit !important;">
+                        <!--<option value= "" selected>Role</option>-->
+                        <!--<option>admin</option>-->
+                        <!--<option>manager</option>-->
+                        <!--<option>student</option>-->
+                    </select>
+                </td>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            <tr ng-repeat="proj in projects | filter : editFilter" ng-init="rowIdx = $index">
+                <td ng-repeat="fieldK in fieldKeys" ng-bind="proj[fieldK]"></td>
+                <td style="border: 0px;">
+                    <button type="button" class="btn btn-primary" ng-click="editProject($event, rowIdx)">Edit</button>
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+
+    <div id="editProjectModal" class="modal">
+        <div class="modal-content">
+            <table class="table" id="editLightBoxTable" style="margin: 0; width: 100%; display:table;">
+
+                <tr ng-repeat="info in editableFields track by $index" ng-init="rowIdx = $index">
+                    <td>
+                        {{info}}
+                    </td>
+                    <td>
+                        <input type="text" ng-model="selectedUser[editableKeys[rowIdx]]">
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <button type="button" class="btn btn-primary" ng-click="closeEditBox()">Close</button>
+                        <button type="button" class="btn btn-primary" ng-click="saveProjectEdit($event)">Save</button>
+                        <button type="button" class="btn btn-primary" ng-click="deleteProject($event)">Remove</button>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+    </div>
+</div>

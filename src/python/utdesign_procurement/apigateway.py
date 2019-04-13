@@ -2046,6 +2046,41 @@ class ApiGateway(object):
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
     @authorizedRoles("admin")
+    def projectPages(self):
+        """
+        Returns an int: the number of pages it would take to
+        display all current projects if 10 projects are displayed
+        per page. At present time, the page size (number of
+        projects per page) cannot be configured.
+
+        {
+            "projectNumber": (int),
+            "sponsorName": (string, optional),
+            "projectName": (string, optional),
+            "membersEmails": (string, optional),
+            "defaultBudget": (string, optional)
+        }
+
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            myFilter = getKeywords(cherrypy.request.json)
+        else:
+            myFilter = dict()
+        #myFilter['status'] = 'current'
+
+        pageSize = 10 # TODO stretch goal make this configurable
+
+        div, remainder = divmod(self.colProjects.find(myFilter).count(), pageSize)
+        if remainder:
+            return div + 1
+        else:
+            return div
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    @authorizedRoles("admin")
     def userPages(self):
         """
         Returns an int: the number of pages it would take to
@@ -2078,6 +2113,109 @@ class ApiGateway(object):
             return div + 1
         else:
             return div
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    @authorizedRoles("admin")
+    def projectData(self):
+        """
+        This REST endpoint returns a list of 10 projects from the database. The projects may be
+        sorted by a key and ordered by ascending or descending, and the pageNumber
+        decides which 10 projects are returned. pageNumber must be a non-negative integer.
+
+        Incoming ::
+        {
+            'sortBy': (string in projectNumber, sponsorName, projectName, membersEmails,
+                defaultBudget)
+                (Optional. Default "projectNumber")
+            'order': (string in 'ascending', 'descending')
+                (Optional. Default: "ascending")
+            'pageNumber': (int)
+                (Optional. Default: 0)
+            'keywordSearch': (dict)
+                {
+                    "projectNumber": (int, optional),
+                    "sponsorName": (string, optional),
+                    "projectName": (string, optional),
+                    "membersEmails": (string, optional),
+                    "defaultBudget": (string, optional)
+                }
+        }
+
+        Outgoing ::
+        [
+            {
+                “projectNumber”: (int),
+                "sponsorName": (string),
+                "projectName": (string),
+                "membersEmails": (string),
+                "defaultBudget": (string)
+            }
+        ]
+
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        # prepare the sort, order, and page number
+        sortBy = checkValidData('sortBy', data, str, default='projectNumber',
+                                optional=True)
+
+        if sortBy not in ('projectNumber', 'sponsorName', 'projectName', 'membersEmails', 'defaultBudget'):
+            raise cherrypy.HTTPError(
+                400, 'sortBy must be any of projectNumber, sponsorName, projectName, membersEmails, defaultBudget. Not %s'
+                     % sortBy)
+
+        order = checkValidData('order', data, str, default='ascending',
+                                optional=True)
+
+        if order not in ('ascending', 'descending'):
+            raise cherrypy.HTTPError(
+                400, 'order must be ascending or descending. Not %s.' % order)
+
+        direction = pm.ASCENDING if order == 'ascending' else pm.DESCENDING
+
+        pageNumber = checkValidData('pageNumber', data, int, default=0,
+                                optional=True)
+
+        if pageNumber < 0:
+            raise cherrypy.HTTPError(
+                400, "Invalid pageNumber format. "
+                     "Expected nonnegative integer. "
+                     "See: %s" % pageNumber)
+
+        pageSize = 10 # TODO stretch goal make this configurable
+
+        if 'keywordSearch' in data:
+            myFilter = getKeywords(data['keywordSearch'])
+        else:
+            myFilter = dict()
+        #myFilter['status'] = 'current'
+
+        # finds users who are current only
+        projectCursor = self.colProjects.find(myFilter).sort(sortBy, direction)
+
+        retProjects = []
+        for proj in projectCursor[pageSize*pageNumber: pageSize*(pageNumber+1)]:
+            myProj = dict()
+            myProj['_id'] = str(proj['_id'])
+            for key in ('sponsorName', 'projectName', 'memmbersEmails', 'defaultBudget'):
+                myProj[key] = proj.get(key, '')
+
+            myProj['projectNumber'] = proj.get('projectNumber', '')
+
+            # if myUser['role'] != 'admin':
+            #     for key in ('projectNumbers', 'course'):
+            #         myUser[key] = user[key]
+
+            retProjects.append(myProj)
+
+
+        return retProjects
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
