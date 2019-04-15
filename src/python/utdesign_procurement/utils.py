@@ -197,9 +197,9 @@ def convertToCents(dollarAmt):
         if re.match("^[0-9]*\.[0-9]{2}?$", dollarAmt):
             return int(dollarAmt.replace(".", ""))
         else:
-            raise cherrypy.HTTPError(400, "Bad currency value")
+            raise cherrypy.HTTPError(400, "Bad currency value: %s" % dollarAmt)
     except:
-        raise cherrypy.HTTPError(400, "Bad currency value")
+        raise cherrypy.HTTPError(400, "Bad currency value: %s" % dollarAmt)
 
 def lenientConvertToCents(dollarAmt):
     """
@@ -282,10 +282,6 @@ def requestCreate(data, status, optional=False):
         for key in ("quantity",):
             myDict[key] = checkValidData(key, theirDict, int, optional)
         myDict['totalCost'] = checkValidData("totalCost", theirDict, str, optional)
-
-        # convert cost strings to ints of cents
-        myDict['unitCost'] = convertToCents(myDict['unitCost'])
-        myDict['totalCost'] = convertToCents(myDict['totalCost'])
 
         #convert unitCost and totalCost to cents, and calculate the subTotal
         for key in ("unitCost", "totalCost"):

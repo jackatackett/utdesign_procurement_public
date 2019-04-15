@@ -48,7 +48,6 @@ app.controller('EditRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher', 
         }, function(err) {
             $scope.errorText = "Infrastructure error. Please refresh page. Contact staff if problem persists.";
             console.error(err);
-            $scope.closeEditBox();
         });
     };
 

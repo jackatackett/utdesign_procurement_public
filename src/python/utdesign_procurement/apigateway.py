@@ -87,9 +87,9 @@ class ApiGateway(object):
         if not self.colProjects.find_one(findQuery):
             raise cherrypy.HTTPError(400, "projectNumber inactive")  # TODO better message
 
-        # TODO does this check interfere with admin edit powers?
-
-        mySubmit = checkValidData("submit", data, bool)
+        # check if admin is editing, or student submitting/saving
+        mySubmit = None
+        myAdminEdit = None
 
         if "adminEdit" in data:
             if "status" not in data:
@@ -100,11 +100,12 @@ class ApiGateway(object):
             myStatus = checkValidData("status", data, str)
         elif "submit" in data:
             mySubmit = checkValidData("submit", data, bool)
-            myAdminEdit = False
 
         if myAdminEdit is None and mySubmit is None:
             raise cherrypy.HTTPError(400, "Bad submission info provided")
 
+        # if a student is saving, fields are optional, otherwise all are required
+        # admin edit doesn't change status. Submit goes to "pending", save goes to "saved"
         if myAdminEdit:
             status = myStatus
             optional = False
@@ -115,11 +116,13 @@ class ApiGateway(object):
             status = "saved"
             optional = True
 
+        # get the request number if any. Generate one if not.
         if "requestNumber" in data:
             myRequestNumber = data["requestNumber"]
         else:
             myRequestNumber = self.sequence()
 
+        # sanitize the input
         myRequest = requestCreate(data, status, optional)
         myRequest['requestNumber'] = myRequestNumber
         myRequest['oic'] = 0

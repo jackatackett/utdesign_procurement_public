@@ -81,13 +81,13 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
         $http.post('/procurementRejectAdmin', {'_id':$scope.data[currentRow]._id, "comment": $scope.adminComment}).then(function(resp) {
             alert("Success!");
             $scope.adminComment = "";
-            $scope.refreshStatuses();
+            $scope.requery();
             $scope.closeRejectBox();
         }, function(err) {
             console.error("Error", err.data);
             alert("Error");
             $scope.adminComment = "";
-            $scope.refreshStatuses();
+            $scope.requery();
             $scope.closeRejectBox();
         });
     };
@@ -96,13 +96,13 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
         $http.post('/procurementUpdateAdmin', {'_id':$scope.data[currentRow]._id, "comment": $scope.adminComment}).then(function(resp) {
             alert("Success!");
             $scope.adminComment = "";
-            $scope.refreshStatuses();
+            $scope.requery();
             $scope.closeRejectBox();
         }, function(err) {
             console.error("Error", err.data);
             alert("Error");
             $scope.adminComment = "";
-            $scope.refreshStatuses();
+            $scope.requery();
             $scope.closeRejectBox();
         });
     };
@@ -111,13 +111,13 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
         $http.post('/procurementUpdateManagerAdmin', {'_id':$scope.data[currentRow]._id, "comment": $scope.adminComment}).then(function(resp) {
             alert("Success!");
             $scope.adminComment = "";
-            $scope.refreshStatuses();
+            $scope.requery();
             $scope.closeRejectBox();
         }, function(err) {
             console.error("Error", err.data);
             alert("Error");
             $scope.adminComment = "";
-            $scope.refreshStatuses();
+            $scope.requery();
             $scope.closeRejectBox();
         });
     };
@@ -130,12 +130,12 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
     $scope.setShipping = function(e) {
         $http.post('/procurementOrder', {'_id':$scope.data[shippingRow]._id, "amount":$("#shippingAmt").val()}).then(function(resp) {
             alert("Success!");
-            $scope.refreshStatuses();
+            $scope.requery();
             $scope.cancelShippingBox();
         }, function(err) {
             console.error("Error", err.data);
             alert("Error");
-            $scope.refreshStatuses();
+            $scope.requery();
             $scope.cancelShippingBox();
         });
     }
@@ -153,22 +153,22 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
     $scope.readyRequest = function(e, rowIdx) {
         $http.post('/procurementReady', {'_id':$scope.data[rowIdx]._id}).then(function(resp) {
             alert("Success!");
-            $scope.refreshStatuses();
+            $scope.requery();
         }, function(err) {
             console.error("Error", err.data)
             alert("Error");
-            $scope.refreshStatuses();
+            $scope.requery();
         });
     };
 
     $scope.completeRequest = function(e, rowIdx) {
         $http.post('/procurementComplete', {'_id':$scope.data[rowIdx]._id}).then(function(resp) {
             alert("Success!");
-            $scope.refreshStatuses();
+            $scope.requery();
         }, function(err) {
             console.error("Error", err.data);
             alert("Error");
-            $scope.refreshStatuses();
+            $scope.requery();
         });
     };
 
@@ -221,7 +221,7 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
             'primaryFilter': $scope.primaryFilter,
             'secondaryFilter': $scope.secondaryFilter
         }).then(function(resp) {
-            $scope.data = resp.data;
+            $scope.data = cleanData(resp.data);
             $scope.pageNumber = pageNumber;
             $scope.updatePageNumberArray();
         }, function(err) {
