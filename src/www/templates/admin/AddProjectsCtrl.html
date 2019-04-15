@@ -1,0 +1,37 @@
+<div id="addProjectsCtrlDiv" ng-controller="AddProjectsCtrl as $ctrl">
+    <div class="errbar" ng-show="errorText">
+        <p class="errtext" ng-bind="errorText"></p>
+    </div>
+
+    <div class="interfaceDiv">
+        <div>
+            <table class="table" id="addProjectTable" style="width: 50%; display:table;">
+
+                <tr ng-repeat="info in fields track by $index">
+                    <td>
+                        {{info}}
+                    </td>
+                    <td>
+                        <input type="text" ng-model="projectInfo[fieldKeys[$index]]" style="width:100%">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Budget
+                    </td>
+                    <td>
+                        <input type="text" ng-model="projectInfo['defaultBudget']" style="width:100%">
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <button type="button" class="btn btn-primary" ng-click="addProject($event)" >Add</button>
+                        <button type="button" class="btn btn-primary" ng-click="selectSpreadsheet($event)" >Upload Spreadsheet</button>
+                        <a href="/resources/userAddTemplate.xlsx" download="userAddTemplate.xlsx" class="btn btn-primary" >Download Template</button>
+                        <input type="file" style="display: none" id="spreadsheetField" name="file" onchange="angular.element(this).scope().submitSpreadsheet(this.files)"/>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>

@@ -11,7 +11,7 @@ from uuid import uuid4
 from utdesign_procurement.utils import (authorizedRoles, generateSalt,
     hashPassword, checkProjectNumbers, checkValidData, checkValidID,
     checkValidNumber, verifyPassword, requestCreate, convertToCents,
-    getKeywords)
+    getKeywords, getProjectKeywords)
 
 from datetime import datetime, timedelta
 
@@ -72,6 +72,20 @@ class ApiGateway(object):
             data = cherrypy.request.json
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
+
+        # check if projectNumber belongs to active project; if not, don't allow request to be saved
+        myProjectNumber = checkValidData("projectNumber", data, int)
+        findQuery = {
+            "$and":
+                {
+                    "projectNumber": myProjectNumber,
+                    "status:": active
+                }
+        }
+        if not self.colProjects.find_one(findQuery):
+            raise cherrypy.HTTPError(400, "projectNumber inactive")  # TODO better message
+
+        mySubmit = checkValidData("submit", data, bool)
 
         if "adminEdit" in data:
             if "status" not in data:
@@ -1490,6 +1504,7 @@ class ApiGateway(object):
         This adds a project, and can only be done by an admin.
         If the projectNumber is already in use, an error is thrown
 
+        Expected input:
         {
             “projectNumber”: (int),
             “sponsorName”: (string),
@@ -1509,6 +1524,8 @@ class ApiGateway(object):
             raise cherrypy.HTTPError(400, 'No data was given')
 
         myProject = dict()
+
+        myProject['status'] = 'active'
 
         for key in ("projectNumber",):
             myProjectNumber = checkValidData(key, data, int)
@@ -1541,6 +1558,38 @@ class ApiGateway(object):
 
         # TODO send confirmation email to admin? maybe not
         # TODO send notification emails to members of project
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def projectInactivate(self):
+        """
+
+        Expected input:
+        {
+            "_id": (string)
+        }
+        :return:
+        """
+
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            data = dict()
+
+        myID = checkValidID(data)
+        findQuery = {'_id': ObjectId(myID)}
+        updateRule = {
+            "$set":
+                {'status': "inactive"}
+        }
+
+        self._updateDocument(findQuery, findQuery, updateRule, collection=self.colProjects)
+
+        # TODO send confirmation to admin who did this
+        # TODO send notification to project's members
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -1651,8 +1700,8 @@ class ApiGateway(object):
 
         myProject = dict()
 
-        for key in ("projectNumber"):
-            myProject['projectNumber'] = checkValidData(key, data, int)
+        for key in ("projectNumber",):
+            myProject[key] = checkValidData(key, data, int)
 
         for key in ("projectName", "sponsorName"):
             myProject[key] = checkValidData(key, data, str)
@@ -2350,6 +2399,41 @@ class ApiGateway(object):
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
     @authorizedRoles("admin")
+    def projectPages(self):
+        """
+        Returns an int: the number of pages it would take to
+        display all current projects if 10 projects are displayed
+        per page. At present time, the page size (number of
+        projects per page) cannot be configured.
+
+        {
+            "projectNumber": (int),
+            "sponsorName": (string, optional),
+            "projectName": (string, optional),
+            "membersEmails": (string, optional),
+            "defaultBudget": (string, optional)
+        }
+
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            myFilter = getProjectKeywords(cherrypy.request.json)
+        else:
+            myFilter = getProjectKeywords()
+        #myFilter['status'] = 'current'
+
+        pageSize = 10 # TODO stretch goal make this configurable
+
+        div, remainder = divmod(self.colProjects.find(myFilter).count(), pageSize)
+        if remainder:
+            return div + 1
+        else:
+            return div
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    @authorizedRoles("admin")
     def userPages(self):
         """
         Returns an int: the number of pages it would take to
@@ -2387,6 +2471,97 @@ class ApiGateway(object):
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
     @authorizedRoles("admin")
+    def projectData(self):
+        """
+        This REST endpoint returns a list of 10 projects from the database. The projects may be
+        sorted by a key and ordered by ascending or descending, and the pageNumber
+        decides which 10 projects are returned. pageNumber must be a non-negative integer.
+
+        Incoming ::
+        {
+            'sortBy': (string in projectNumber, sponsorName, projectName, membersEmails,
+                defaultBudget)
+                (Optional. Default "projectNumber")
+            'order': (string in 'ascending', 'descending')
+                (Optional. Default: "ascending")
+            'pageNumber': (int)
+                (Optional. Default: 0)
+            'keywordSearch': (dict)
+                {
+                    "projectNumber": (int, optional),
+                    "sponsorName": (string, optional),
+                    "projectName": (string, optional),
+                    "membersEmails": (string, optional),
+                    "defaultBudget": (string, optional)
+                }
+        }
+
+        Outgoing ::
+        [
+            {
+                “projectNumber”: (int),
+                "sponsorName": (string),
+                "projectName": (string),
+                "membersEmails": (string),
+                "defaultBudget": (string)
+            }
+        ]
+
+        """
+
+        # prepare the sort, order, and page number
+        sortBy = checkValidData('sortBy', data, str, default='projectNumber',
+                                optional=True)
+
+        if sortBy not in ('projectNumber', 'sponsorName', 'projectName', 'membersEmails', 'defaultBudget'):
+            raise cherrypy.HTTPError(
+                400, 'sortBy must be any of projectNumber, sponsorName, projectName, membersEmails, defaultBudget. Not %s'
+                     % sortBy)
+
+        order = checkValidData('order', data, str, default='ascending',
+                                optional=True)
+
+        if order not in ('ascending', 'descending'):
+            raise cherrypy.HTTPError(
+                400, 'order must be ascending or descending. Not %s.' % order)
+
+        direction = pm.ASCENDING if order == 'ascending' else pm.DESCENDING
+
+        pageNumber = checkValidData('pageNumber', data, int, default=0,
+                                optional=True)
+
+        if pageNumber < 0:
+            raise cherrypy.HTTPError(
+                400, "Invalid pageNumber format. "
+                     "Expected nonnegative integer. "
+                     "See: %s" % pageNumber)
+
+        pageSize = 10 # TODO stretch goal make this configurable
+
+        myFilter = getProjectKeywords(data.get('keywordSearch', {}))
+        #myFilter['status'] = 'current'
+
+        # finds projects who are current only
+        projectCursor = self.colProjects.find(myFilter).sort(sortBy, direction)
+
+        retProjects = []
+        for proj in projectCursor[pageSize*pageNumber: pageSize*(pageNumber+1)]:
+            myProj = dict()
+            myProj['_id'] = str(proj['_id'])
+            for key in ('sponsorName', 'projectName', 'membersEmails', 'defaultBudget'):
+                myProj[key] = proj.get(key, '')
+
+            myProj['projectNumber'] = proj.get('projectNumber', '')
+
+            # if myUser['role'] != 'admin':
+            #     for key in ('projectNumbers', 'course'):
+            #         myUser[key] = user[key]
+
+            retProjects.append(myProj)
+
+
+        return retProjects
+
     def userSingleData(self):
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):

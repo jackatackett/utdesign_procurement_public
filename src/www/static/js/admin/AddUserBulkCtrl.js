@@ -147,7 +147,7 @@ app.controller('AddUserBulkCtrl', ['$scope', 'dispatcher', '$location', '$http',
     }
 
     $scope.isBadCell = function(user, fieldK) {
-        return (
+        return !user || (
             (fieldK == 'projectNumbers' && user.comment.missingProjects.length) ||
             (fieldK == 'role' && user.comment.invalidRole) ||
             (user.comment.missingAttributes.indexOf(fieldK) >= 0) ||
