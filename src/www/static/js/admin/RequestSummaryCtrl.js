@@ -29,20 +29,16 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
 
     $scope.fieldKeys = ["requestNumber", "projectNumber", "status", "vendor", "URL", "requestTotal", "shippingCost"];
     $scope.fields = ["Request Number", "Project Number", "Status", "Vendor", "URL", "Total Cost", "Shipping Cost"];
-    $scope.grid = [];
     $scope.itemFieldKeys = ["description", 'itemURL', "partNo", "quantity", "unitCost", "totalCost"];
     $scope.itemFields = ["Description", 'Item URL', "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
-    $scope.teams = ["Procurement", "Clock-It", "Smart Glasses"];
-    $scope.filters = ["Project Number", "Vendor"];
     $scope.historyFields = ["Timestamp", "Source", "Comment", "Old State", "New State"];
     $scope.historyFieldKeys = ["timestamp", "actor", "comment", "oldState", "newState"];
     $scope.statuses = ["Pending", "Saved", "Manager Approved", "Admin Approved", "Rejected", "Updates for Manager", "Updates for Admin", "Cancelled", "Ordered", "Ready for Pickup", "Complete"];
     $scope.statusesKeys = ["pending", "saved", "manager approved", "admin approved", "rejected", "updates for manager", "updates for admin", "cancelled", "ordered", "ready for pickup", "complete"];
 
-    $scope.filters = ["Project Number", "Vendor"];
-    $scope.filterKeys = ["projectNumbers", "vendor"];
-    $scope.filterValues = {};
-    $scope.tableFilters = {};
+    $scope.pageNumberArray = [];
+    $scope.primaryFilter = {};
+    $scope.secondaryFilter = {};
 
     $scope.data = [];
 
@@ -73,31 +69,6 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
     $scope.toggleCollapse = function(e) {
         var target = e.currentTarget;
         $(target.nextElementSibling).toggle();
-    };
-
-    $scope.regenerateTable = function(e) {
-
-        var filters = {};
-        for (var f in $scope.filterKeys) {
-            if ($scope.filterValues[$scope.filterKeys[f]] && $scope.filterValues[$scope.filterKeys[f]].length > 0) {
-                if ($scope.filterKeys[f] == "projectNumbers") {
-                    filters[$scope.filterKeys[f]] = Number($scope.filterValues[$scope.filterKeys[f]]);
-                } else {
-                    filters[$scope.filterKeys[f]] = $scope.filterValues[$scope.filterKeys[f]];
-                }
-            }
-        }
-        if ($scope.selectedStatuses.length > 0) {
-            filters.statuses = $scope.selectedStatuses;
-        }
-
-        $scope.tableFilters = filters;
-
-        $http.post('/procurementStatuses', $scope.tableFilters).then(function(resp) {
-            $scope.data = cleanData(resp.data);
-        }, function(err) {
-            console.error("Error", err.data)
-        });
     };
 
     $scope.rejectRequest = function(e, rowIdx) {
@@ -225,23 +196,6 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
         return status == "ready for pickup";
     };
 
-    $scope.refreshStatuses = function() {
-        if ($scope.tableFilters.statuses && $scope.tableFilters.statuses.length < 1) {
-            delete $scope.tableFilters.statuses;
-        }
-
-        $http.post('/procurementStatuses', $scope.tableFilters).then(function(resp) {
-            $scope.data = cleanData(resp.data);
-        }, function(err) {
-            console.error("Error", err.data)
-        });
-    };
-
-    dispatcher.on("refreshStatuses", $scope.refreshStatuses);
-
-    $timeout($scope.refreshStatuses, 0);
-    $interval($scope.refreshStatuses, 5000);
-
     $scope.viewHistory = function(e, rowIdx) {
         console.log("history");
         $("#historyBody").empty();
@@ -273,5 +227,148 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
         $("#requestEditModal").show();
     };
 
+    // ALL PAGE RELATED FUNCTIONS BELOW HERE
+
+    $scope.changePage = function(pageNumber) {
+        $http.post('/requestData', {
+            'sortBy': $scope.sortTableBy,
+            'order':$scope.orderTableBy,
+            'pageNumber': pageNumber-1,
+            'primaryFilter': $scope.primaryFilter,
+            'secondaryFilter': $scope.secondaryFilter
+        }).then(function(resp) {
+            $scope.data = resp.data;
+            $scope.pageNumber = pageNumber;
+            $scope.updatePageNumberArray();
+            console.log("changepage", $scope.data)
+        }, function(err) {
+            console.error("Error", err.data);
+        });
+    };
+
+    $scope.prevPage = function() {
+        if ($scope.pageNumber > 1) {
+            $scope.changePage($scope.pageNumber-1)
+        }
+    }
+
+    $scope.nextPage = function() {
+        if ($scope.pageNumber < $scope.numberOfPages) {
+            $scope.changePage($scope.pageNumber+1)
+        }
+    }
+
+    $scope.firstPage = function() {
+        $scope.changePage(1);
+    }
+
+    $scope.lastPage = function() {
+        $scope.changePage($scope.numberOfPages);
+    }
+
+    $scope.requery = function() {
+        $scope.repage();
+        $scope.changePage($scope.pageNumber);
+    }
+
+    $scope.updatePageNumberArray = function() {
+        var low = Math.max(1, $scope.pageNumber - 5);
+        var high = Math.min(low + 9, $scope.numberOfPages);
+        low = Math.min(low, Math.max(1, high - 10));
+
+        $scope.pageNumberArray.length = 0;
+        for (var x = low; x <= high; x++) {
+            $scope.pageNumberArray.push(x);
+        }
+    }
+
+    $scope.repage = function() {
+        $http.post('/requestPages', {
+            primaryFilter: $scope.primaryFilter,
+            secondaryFilter: $scope.secondaryFilter
+        }).then(function(resp) {
+            $scope.numberOfPages = resp.data;
+            $scope.updatePageNumberArray();
+        }, function(err) {
+            console.error("Error", err.data);
+        });
+    }
+
+    $scope.toggleSort = function(keyword) {
+        console.log(keyword);
+        if (keyword == $scope.sortTableBy) {
+            if($scope.orderTableBy == 'ascending') {
+                $scope.orderTableBy = 'descending';
+            } else {
+                $scope.orderTableBy = 'ascending';
+            }
+        } else {
+            $scope.sortTableBy = keyword;
+            $scope.orderTableBy = 'ascending';
+        }
+        $scope.requery();
+    }
+
+    $scope.repage();
+    $scope.changePage(1);
+    dispatcher.on("refreshStatuses", $scope.requery);
+
+
+    // ALL GENERATING REPORTS CODE BELOW
+
+    // set up the datepickers
+
+    $('#reportStart').datepicker({
+        weekStart: 1,
+        daysOfWeekHighlighted: "6,0",
+        autoclose: true,
+        todayHighlight: true,
+    });
+    $('#reportStart').datepicker("setDate", new Date());
+
+    $('#reportEnd').datepicker({
+        weekStart: 1,
+        daysOfWeekHighlighted: "6,0",
+        autoclose: true,
+        todayHighlight: true,
+    });
+    $('#reportEnd').datepicker("setDate", new Date());
+
+    $scope.showGenerateReportsModal = function() {
+        $("#generateReportsModal").show();
+    }
+
+    $scope.generateReport = function() {
+        $http.post('/reportGenerate', {
+            'sortBy': $scope.sortTableBy,
+            'order':$scope.orderTableBy,
+            'primaryFilter': $scope.primaryFilter,
+            'secondaryFilter': $scope.secondaryFilter
+        }).then(function(resp) {
+            $scope.data = resp.data;
+            console.log("generateReport", resp.data);
+
+            $('<form></form>')
+                 .attr('action', 'reportDownload/' + resp.data)
+                 .appendTo('body').submit().remove();
+
+        }, function(err) {
+            console.error("Error", err.data);
+        });
+    }
+
+    $scope.cancelReport = function() {
+        $("#generateReportsModal").hide();
+    }
+
+    $scope.isEmpty = function(obj) {
+        for (var x in obj) {
+            if (obj.hasOwnProperty(x) && obj[x]) {
+                return false;
+            }
+        }
+        return true;
+    }
 
 }]);
+

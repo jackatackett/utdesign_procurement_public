@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
 import cherrypy
+import os
 import pymongo as pm
 import pandas as pd
+import xlsxwriter
 
 from bson.objectid import ObjectId
 from io import BytesIO
@@ -11,9 +13,11 @@ from uuid import uuid4
 from utdesign_procurement.utils import (authorizedRoles, generateSalt,
     hashPassword, checkProjectNumbers, checkValidData, checkValidID,
     checkValidNumber, verifyPassword, requestCreate, convertToCents,
-    getKeywords, getProjectKeywords)
+    getKeywords, getProjectKeywords, getRequestKeywords)
 
 from datetime import datetime, timedelta
+
+absDir = os.getcwd()
 
 class ApiGateway(object):
 
@@ -30,6 +34,7 @@ class ApiGateway(object):
         self.colProjects = db['projects']
 
         self.colSequence = db['sequence']
+        self.reportUUIDs = []
 
     # API Functions go below. DO EXPOSE THESE
 
@@ -2504,6 +2509,120 @@ class ApiGateway(object):
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
     @authorizedRoles("admin")
+    def requestPages(self):
+        """
+
+        {
+            primaryFilter: {
+            },
+            secondaryFilter: {
+            }
+        }
+
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            myFilter = getRequestKeywords(cherrypy.request.json)
+        else:
+            myFilter = dict()
+
+        pageSize = 10 # TODO stretch goal make this configurable
+
+        div, remainder = divmod(self.colRequests.find(myFilter).count(), pageSize)
+        if remainder:
+            return div + 1
+        else:
+            return div
+
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    @authorizedRoles("admin")
+    def requestData(self):
+        """
+        This REST endpoint returns a list of 10 users from the database. The users may be
+        sorted by a key and ordered by ascending or descending, and the pageNumber
+        decides which 10 users are returned. pageNumber must be a non-negative integer.
+
+        Incoming ::
+        {
+            'sortBy': (string in projectNumbers, firstName, lastName, netID,
+                email, course, role, status)
+                (Optional. Default "email")
+            'order': (string in 'ascending', 'descending')
+                (Optional. Default: "ascending")
+            'pageNumber': (int)
+                (Optional. Default: 0)
+            'keywordSearch': (dict)
+                {
+                    primaryFilter: {
+                    },
+                    secondaryFilter: {
+                    }
+                }
+        }
+
+        Outgoing ::
+
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        # prepare the sort, order, and page number
+        sortBy = checkValidData('sortBy', data, str, default='email',
+                                optional=True)
+
+        if sortBy not in ('projectNumbers', 'firstName', 'lastName', 'netID',
+                'email', 'course', 'role', 'status'):
+            raise cherrypy.HTTPError(
+                400, 'sortBy must be any of projectNumbers, firstName, '
+                     'lastName, netID, email, course, role, status. Not %s'
+                     % sortBy)
+
+        order = checkValidData('order', data, str, default='ascending',
+                                optional=True)
+
+        if order not in ('ascending', 'descending'):
+            raise cherrypy.HTTPError(
+                400, 'order must be ascending or descending. Not %s.' % order)
+
+        direction = pm.ASCENDING if order == 'ascending' else pm.DESCENDING
+
+        pageNumber = checkValidData('pageNumber', data, int, default=0,
+                                optional=True)
+
+        if pageNumber < 0:
+            raise cherrypy.HTTPError(
+                400, "Invalid pageNumber format. "
+                     "Expected nonnegative integer. "
+                     "See: %s" % pageNumber)
+
+        pageSize = 10 # TODO stretch goal make this configurable
+
+        myFilter = getRequestKeywords(data)
+
+        # finds users who are current only
+        cursor = self.colRequests.find(myFilter).sort(sortBy, direction)
+
+        retUsers = []
+        for request in cursor[pageSize*pageNumber: pageSize*(pageNumber+1)]:
+            request['_id'] = str(request['_id'])
+            if 'history' in request:
+                for hist in range(len(request['history'])):
+                    if 'timestamp' in request['history'][hist]:
+                        request['history'][hist]['timestamp'] = request['history'][hist]['timestamp'].isoformat(' ')[0:16]
+            retUsers.append(request)
+
+        return retUsers
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    @authorizedRoles("admin")
     def projectData(self):
         """
         This REST endpoint returns a list of 10 projects from the database. The projects may be
@@ -2541,6 +2660,12 @@ class ApiGateway(object):
         ]
 
         """
+
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
 
         # prepare the sort, order, and page number
         sortBy = checkValidData('sortBy', data, str, default='projectNumber',
@@ -2595,6 +2720,10 @@ class ApiGateway(object):
 
         return retProjects
 
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    @authorizedRoles("admin")
     def userSingleData(self):
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -2728,6 +2857,89 @@ class ApiGateway(object):
         Logs out a user by expiring their session.
         """
         cherrypy.lib.sessions.expire()
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    @authorizedRoles("admin")
+    def reportGenerate(self):
+
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        # prepare the sort, order, and page number
+        sortBy = checkValidData('sortBy', data, str, default='email',
+                                optional=True)
+
+        if sortBy not in ('projectNumbers', 'firstName', 'lastName', 'netID',
+                'email', 'course', 'role', 'status'):
+            raise cherrypy.HTTPError(
+                400, 'sortBy must be any of projectNumbers, firstName, '
+                     'lastName, netID, email, course, role, status. Not %s'
+                     % sortBy)
+
+        order = checkValidData('order', data, str, default='ascending',
+                                optional=True)
+
+        if order not in ('ascending', 'descending'):
+            raise cherrypy.HTTPError(
+                400, 'order must be ascending or descending. Not %s.' % order)
+
+        direction = pm.ASCENDING if order == 'ascending' else pm.DESCENDING
+
+        myFilter = getRequestKeywords(data)
+
+        cursor = self.colRequests.find(myFilter).sort(sortBy, direction)
+
+        # generate the report
+        fieldKeys = ["requestNumber", "projectNumber", "status", "vendor", "URL", "requestTotal", "shippingCost"]
+        fields = ["Request Number", "Project Number", "Status", "Vendor", "URL", "Total Cost", "Shipping Cost"]
+        itemFieldKeys = ["description", 'itemURL', "partNo", "quantity", "unitCost", "totalCost"]
+        itemFields = ["Description", 'Item URL', "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"]
+
+        uuid = str(uuid4())
+        filename = uuid + '.xlsx'
+        workbook = xlsxwriter.Workbook(filename)
+        for request in cursor:
+            # every report has its own sheet
+            worksheet = workbook.add_worksheet()
+
+            # headers
+            for colIdx, field in enumerate(fields):
+                coordinate = chr(ord('A') + colIdx)
+                worksheet.write(coordinate + '1', field)
+                worksheet.write(coordinate + '2', request.get(fieldKeys[colIdx]), '')
+
+            for colIdx, itemField in enumerate(itemFields):
+                coordinate = chr(ord('A') + colIdx)
+                worksheet.write(coordinate + '4', itemField)
+
+            # items
+            for rowIdx, item in enumerate(request['items']):
+                for colIdx, itemField in enumerate(itemFields):
+                    coordinate = chr(ord('A') + colIdx)
+                    worksheet.write('%s%d' % (coordinate, rowIdx+5), item.get(itemFieldKeys[colIdx], ''))
+
+        workbook.close()
+
+        self.reportUUIDs.append(uuid)
+
+        return uuid
+
+    @cherrypy.expose
+    # @authorizedRoles("admin")
+    def reportDownload(self, uuid):
+        # check that we actually have json
+        if uuid in self.reportUUIDs:
+            filename = uuid + '.xlsx'
+            path = os.path.join(absDir, filename)
+            return cherrypy.lib.static.serve_file(path, 'application/x-download',
+                                           'attachment', os.path.basename(path))
+        else:
+            raise cherrypy.HTTPError(404, "No such file.")
 
     # helper function, do not expose!
     def _updateDocument(self, findQuery, updateQuery, updateRule, collection=None):
