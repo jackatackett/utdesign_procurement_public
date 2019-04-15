@@ -71,6 +71,18 @@ class ApiGateway(object):
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
 
+        # check if projectNumber belongs to active project; if not, don't allow request to be saved
+        myProjectNumber = checkValidData("projectNumber", data, int)
+        findQuery = {
+            "$and":
+                {
+                    "projectNumber": myProjectNumber,
+                    "status:": active
+                }
+        }
+        if not self.colProjects.find_one(findQuery):
+            raise cherrypy.HTTPError(400, "projectNumber inactive")  # TODO better message
+
         mySubmit = checkValidData("submit", data, bool)
 
         if mySubmit:
@@ -1619,7 +1631,7 @@ class ApiGateway(object):
         myProject = dict()
 
         for key in ("projectNumber",):
-            myProject['projectNumber'] = checkValidData(key, data, int)
+            myProject[key] = checkValidData(key, data, int)
 
         for key in ("projectName", "sponsorName"):
             myProject[key] = checkValidData(key, data, str)
