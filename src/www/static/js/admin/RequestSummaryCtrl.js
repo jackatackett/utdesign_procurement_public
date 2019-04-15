@@ -270,7 +270,7 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
         console.log("selected request");
         console.log($scope.selectedRequestInfo);
         dispatcher.emit("editRequest");
-        $("#editModal").show();
+        $("#requestEditModal").show();
     };
 
 
