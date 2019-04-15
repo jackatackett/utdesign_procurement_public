@@ -250,6 +250,17 @@ class EmailHandler(object):
         body = template.render(**renderArgs)
         self.send(email, subject, body)
 
+    def notifyUserRemove(self, email, firstName, lastName):
+        renderArgs = {
+            'email': email,
+            'firstName': firstName,
+            'lastName': lastName
+        }
+        subject = "Your GettIt account has been deactivated"
+        template = self.templateLookup.get_template('notifyUserRemove.html')
+        body = template.render(**renderArgs)
+        self.send(email, subject, body)
+
 class Emailer(object):
     """
     Manages email connections and sends HTML emails in MIMEMultipart messages

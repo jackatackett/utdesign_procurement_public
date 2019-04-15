@@ -1978,8 +1978,15 @@ class ApiGateway(object):
 
         self._updateDocument(findQuery, updateQuery, updateRule, collection=self.colUsers)
 
+        myUser = self.colUsers.find_one(findQuery)
+
         # TODO send confirmation email to admin?
-        # TODO don't send notification to student?
+
+        self.email_handler.notifyUserRemove(**{
+            'email': myUser['email'],
+            'firstName': myUser['firstName'],
+            'lastName': myUser['lastName']
+        })
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
