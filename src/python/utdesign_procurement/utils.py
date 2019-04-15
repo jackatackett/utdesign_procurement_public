@@ -375,3 +375,74 @@ def getProjectKeywords(keywords):
         cherrypy.log('sadness a')
 
     return myFilter
+
+"""
+{
+    "requestNumber": (int) optional,
+    "projectNumber": (int),
+    "status": (string) optional (not optional if admin performs an edit),
+    "vendor": (string),
+    "URL": (string),
+}
+
+{
+    "description": (string),
+    "itemURL": (string),
+    "partNo": (string),
+    "quantity": (integer),
+    "unitCost": (string),
+    "totalCost": (string)
+}
+"""
+
+def getRequestKeywords(data):
+    myFilter = {'$and': [{'status': {'$ne': 'saved'}}, {'status': {'$ne': 'cancelled'}}]}
+
+    if 'primaryFilter' in data:
+        # get request number
+        if 'requestNumber' in data['primaryFilter']:
+            try:
+                myFilter['requestNumber'] = int(data['primaryFilter']['requestNumber'])
+            except:
+                cherrypy.log("Invalid request number: %s" % data['primaryFilter']['requestNumber'])
+
+        # get basic fields
+        for kw in ('projectNumber', 'vendor', 'URL'):
+            if kw in data['primaryFilter']:
+                s = checkValidData(kw, data['primaryFilter'], str).strip()
+                if s:
+                    myFilter[kw] = {
+                        '$regex': re.compile('.*' + re.escape(s) + '.*', re.IGNORECASE)
+                    }
+
+        # parse out proper project numbers
+        if 'projectNumber' in myFilter:
+            try:
+                myFilter['projectNumber'] = {'$in': list(
+                    map(int, data['primaryFilter']['projectNumber'].split()))}
+            except ValueError:
+                raise cherrypy.HTTPError(400, 'Invalid projectNumber format')
+
+        # TODO filter statuses and other things
+
+    if 'secondaryFilter' in data:
+        # get basic fields
+        for kw in ("description", 'itemURL', "partNo"):
+            if kw in data['secondaryFilter']:
+                s = checkValidData(kw, data['secondaryFilter'], str).strip()
+                if s:
+                    myFilter['items.' + kw] = {
+                        '$regex': re.compile('.*' + re.escape(s) + '.*', re.IGNORECASE)
+                    }
+
+        # get quantity
+        if 'quantity' in data['secondaryFilter']:
+            try:
+                myFilter['items.quantity'] = int(data['secondaryFilter']['quantity'])
+            except:
+                cherrypy.log("Invalid request number: %s" % data['secondaryFilter']['quantity'])
+
+    cherrypy.log("getRequestKeywords1 %s" % data)
+    cherrypy.log("getRequestKeywords2 %s" % myFilter)
+
+    return myFilter

@@ -3,43 +3,71 @@
     <table class="table" style="float: left; width: 10%;">
         <tr>
             <td>
-                <input type="text" ng-model="summaryFilter" placeholder="search">
+                <h3>Item Filter</h3>
             </td>
         </tr>
-        <tr ng-repeat="filter in filters track by $index">
+        <tr ng-repeat="filter in itemFields track by $index" ng-init="filterKey = itemFieldKeys[$index]">
             <td>
                 {{filter}}
-                <input type="text" ng-model="filterValues[filterKeys[$index]]">
-            </td>
-        </tr>
-        <tr>
-            <td>Status
-                <form>
-                  <div class="multiselect">
-                    <div class="selectBox" ng-click="showCheckboxes()">
-                      <select></select>
-                      <div class="overSelect"></div>
-                    </div>
-                    <div id="checkboxes">
-                        <label ng-repeat="status in statuses track by $index">
-                            <input type="checkbox" checklist-value="status" ng-click="addToSelectedStatuses(statusesKeys[$index])"> {{status}}
-                        </label>
-                    </div>
-                  </div>
-                </form>
+                <input type="text"
+                       ng-model="secondaryFilter[filterKey]"
+                       ng-model-options='{ debounce: 500 }'
+                       ng-change='requery()'>
             </td>
         </tr>
         <tr>
             <td>
-                <button type="button" class="btn btn-primary" ng-click="regenerateTable($event)" style="width:100%;">Refresh</button>
+                <button type="button" class="btn btn-primary" style="width:100%;">Generate Report</button>
             </td>
         </tr>
     </table>
 
-    <table class="table table-bordered" style="width: 80%; float: left;">
+    <div style="width: 90%; float: left;">
+
+    <div>
+        <ul class="pagination">
+          <li class="page-item" ng-click="firstPage()"><a class="page-link" href="">First</a></li>
+          <li class="page-item" ng-click="prevPage()"><a class="page-link" href="">Previous</a></li>
+          <li ng-repeat="pageNum in pageNumberArray" class="page-item" ng-click="changePage(pageNum)" ng-class="{active: pageNumber == pageNum}"><a class="page-link" href="">{{pageNum}}</a></li>
+          <li class="page-item" ng-click="nextPage()"><a class="page-link" href="">Next</a></li>
+          <li class="page-item" ng-click="lastPage()"><a class="page-link" href="">Last ({{numberOfPages}})</a></li>
+        </ul>
+    </div>
+
+
+    <table class="table table-bordered" style="width: 100%">
         <thead>
             <tr>
-                <th ng-repeat="field in fields">{{field}}</th>
+                <th ng-repeat="col in fields track by $index"
+                    ng-click="toggleSort(fieldKeys[$index])"
+                    ng-class="{ascending: fieldKeys[$index] == sortTableBy && orderTableBy == 'ascending',
+                               descending: fieldKeys[$index] == sortTableBy && orderTableBy == 'descending'}">{{col}}</th>
+            </tr>
+            <tr>
+                <td ng-repeat="col in fields track by $index" ng-init="fieldKey = fieldKeys[$index]">
+                    <input ng-if="fieldKey != 'status'"
+                           placeholder="{{col}}"
+                           ng-model="primaryFilter[fieldKey]"
+                           ng-model-options='{ debounce: 500 }'
+                           ng-change='requery()'
+                           style="width: 100% !important;">
+
+                    <form ng-if="fieldKey == 'status'">
+                      <div class="multiselect">
+                        <div class="selectBox" ng-click="showCheckboxes()" style="width: 190px">
+                          <select></select>
+                          <div class="overSelect"></div>
+                        </div>
+                        <div id="checkboxes">
+                            <label ng-repeat="status in statuses track by $index">
+                                <input type="checkbox" checklist-value="status" ng-click="addToSelectedStatuses(statusesKeys[$index])"> {{status}}
+                            </label>
+                        </div>
+                      </div>
+                    </form>
+
+                    </select>
+                </td>
             </tr>
         </thead>
 
@@ -99,6 +127,7 @@
         </tbody>
 
     </table>
+    </div>
 
     <div id="historyModal" class="modal">
         <div class="modal-content" style="width:75%">
