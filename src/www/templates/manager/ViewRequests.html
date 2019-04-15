@@ -14,7 +14,7 @@
         <tbody>
 
             <tr ng-repeat-start="dict in data track by $index" ng-init="dictIdx=$index" ng-click="toggleCollapse($event)">
-                <td ng-repeat="fieldK in fieldKeys">{{dict[fieldK]}}</td>
+                <td ng-repeat="fieldK in fieldKeys">{{fieldK == 'status' ? statusLut[dict[fieldK]]  : dict[fieldK]}}</td>
             </tr>
 
             <tr ng-repeat-end  style="background-color: #999; display: none;">

@@ -1,4 +1,7 @@
-app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout', '$interval', 'dispatcher', function($scope, $location, $http, $timeout, $interval, dispatcher) {
+app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout', '$interval', 'dispatcher', 'statusLut', function($scope, $location, $http, $timeout, $interval, dispatcher, statusLut) {
+
+    $scope.statusLut = statusLut;
+
     function convertCosts(value) {
         if (typeof value === "undefined") {
             return "$0.00";
