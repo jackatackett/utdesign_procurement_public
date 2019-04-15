@@ -2607,7 +2607,7 @@ class ApiGateway(object):
         myFilter = getRequestKeywords(data)
 
         # finds users who are current only
-        cursor = self.colRequests.find(myFilter).sort(sortBy, direction)
+        cursor = self.colRequests.find(myFilter).collation({ 'locale': 'en' }).sort(sortBy, direction)
 
         retUsers = []
         for request in cursor[pageSize*pageNumber: pageSize*(pageNumber+1)]:
@@ -2701,7 +2701,7 @@ class ApiGateway(object):
         #myFilter['status'] = 'current'
 
         # finds projects who are current only
-        projectCursor = self.colProjects.find(myFilter).sort(sortBy, direction)
+        projectCursor = self.colProjects.find(myFilter).collation({ 'locale': 'en' }).sort(sortBy, direction)
 
         retProjects = []
         for proj in projectCursor[pageSize*pageNumber: pageSize*(pageNumber+1)]:
@@ -2832,7 +2832,7 @@ class ApiGateway(object):
         myFilter['status'] = 'current'
 
         # finds users who are current only
-        userCursor = self.colUsers.find(myFilter).sort(sortBy, direction)
+        userCursor = self.colUsers.find(myFilter).collation({ 'locale': 'en' }).sort(sortBy, direction)
 
         retUsers = []
         for user in userCursor[pageSize*pageNumber: pageSize*(pageNumber+1)]:
