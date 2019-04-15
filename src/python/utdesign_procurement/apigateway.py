@@ -79,7 +79,7 @@ class ApiGateway(object):
             "$and":
                 {
                     "projectNumber": myProjectNumber,
-                    "status:": active
+                    "status:": 'active'
                 }
         }
         if not self.colProjects.find_one(findQuery):
@@ -2508,6 +2508,12 @@ class ApiGateway(object):
         ]
 
         """
+
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
 
         # prepare the sort, order, and page number
         sortBy = checkValidData('sortBy', data, str, default='projectNumber',
