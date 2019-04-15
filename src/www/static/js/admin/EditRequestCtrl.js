@@ -226,17 +226,29 @@ app.controller('EditRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher', 
         console.log($scope.selectedRequestInfo);
         //deep copy the request
         $scope.request = JSON.parse(JSON.stringify($scope.selectedRequestInfo));
+
         //remove the dollar signs on unit and total cost
-        $scope.request["shippingCost"] = $scope.request["shippingCost"].replace("$", "");
-        for (var x in $scope.request["items"]) {
-            $scope.request["items"][x]["unitCost"] = $scope.request["items"][x]["unitCost"].replace("$", "");
-            $scope.request["items"][x]["totalCost"] = $scope.request["items"][x]["totalCost"].replace("$", "");
+        // TODO Find out if this is actually necessary
+        if ($scope.request['shippingCost']) {
+            if ($scope.request['shippingCost'].replace) {
+                $scope.request["shippingCost"] = $scope.request["shippingCost"].replace("$", "");
+            }
+
+            for (var x in $scope.request["items"]) {
+                if ($scope.request["items"][x]["unitCost"].replace) {
+                    $scope.request["items"][x]["unitCost"] = $scope.request["items"][x]["unitCost"].replace("$", "");
+                }
+
+                if ($scope.request["items"][x]["totalCost"].replace) {
+                    $scope.request["items"][x]["totalCost"] = $scope.request["items"][x]["totalCost"].replace("$", "");
+                }
+            }
         }
         //~ $scope.refreshManagers();
     });
 
     $scope.closeEditBox = function(e) {
-        $("#editModal").hide();
+        $("#requestEditModal").hide();
     };
 
     //~ dispatcher.on('cloneRequest', function(request) {
