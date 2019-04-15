@@ -22,7 +22,7 @@
         </tr>
     </table>
 
-    <div style="width: 80%; float: left;">
+    <div style="width: 90%; float: left;">
 
     <div>
         <ul class="pagination">
@@ -35,7 +35,7 @@
     </div>
 
 
-    <table class="table table-bordered">
+    <table class="table table-bordered" style="width: 100%">
         <thead>
             <tr>
                 <th ng-repeat="col in fields track by $index"
@@ -50,7 +50,7 @@
                            ng-model="primaryFilter[fieldKey]"
                            ng-model-options='{ debounce: 500 }'
                            ng-change='requery()'
-                           style="width: inherit !important;">
+                           style="width: 100% !important;">
 
                     <form ng-if="fieldKey == 'status'">
                       <div class="multiselect">
