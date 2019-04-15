@@ -17,6 +17,7 @@ app.controller('AdminNavCtrl', ['$scope', '$location', '$window', '$http', funct
             $("#adminHelpDiv").hide();
             $("#adminAddCostsDiv").hide();
             $("#adminEditCostsDiv").hide();
+            $("#addUserBulkCtrlDiv").hide();
         } else if (hash == 'editUsers') {
             //show edit users
             $scope.activeTab = 'editUsers';
@@ -26,6 +27,7 @@ app.controller('AdminNavCtrl', ['$scope', '$location', '$window', '$http', funct
             $("#adminHelpDiv").hide();
             $("#adminAddCostsDiv").hide();
             $("#adminEditCostsDiv").hide();
+            $("#addUserBulkCtrlDiv").hide();
         } else if (hash == 'addCosts') {
             //show add costs
             $scope.activeTab = 'addCosts';
@@ -35,6 +37,7 @@ app.controller('AdminNavCtrl', ['$scope', '$location', '$window', '$http', funct
             $("#adminHelpDiv").hide();
             $("#adminAddCostsDiv").show();
             $("#adminEditCostsDiv").hide();
+            $("#addUserBulkCtrlDiv").hide();
         } else if (hash == 'viewCosts') {
             //show edit costs
             $scope.activeTab = 'viewCosts';
@@ -44,6 +47,17 @@ app.controller('AdminNavCtrl', ['$scope', '$location', '$window', '$http', funct
             $("#adminHelpDiv").hide();
             $("#adminAddCostsDiv").hide();
             $("#adminEditCostsDiv").show();
+            $("#addUserBulkCtrlDiv").hide();
+        } else if (hash == 'addUserBulk') {
+            //show edit costs
+            $scope.activeTab = 'addUserBulk';
+            $("#addUsersCtrlDiv").hide();
+            $("#editUsersCtrlDiv").hide();
+            $("#requestSummaryCtrlDiv").hide();
+            $("#adminHelpDiv").hide();
+            $("#adminAddCostsDiv").hide();
+            $("#adminEditCostsDiv").hide();
+            $("#addUserBulkCtrlDiv").show();
         } else if (hash == 'help') {
             //show help
             $scope.activeTab = 'help';
@@ -53,6 +67,7 @@ app.controller('AdminNavCtrl', ['$scope', '$location', '$window', '$http', funct
             $("#adminHelpDiv").show();
             $("#adminAddCostsDiv").hide();
             $("#adminEditCostsDiv").hide();
+            $("#addUserBulkCtrlDiv").hide();
         } else {
             //show summary
             $scope.activeTab = 'requestDashboard';
@@ -62,6 +77,7 @@ app.controller('AdminNavCtrl', ['$scope', '$location', '$window', '$http', funct
             $("#adminHelpDiv").hide();
             $("#adminAddCostsDiv").hide();
             $("#adminEditCostsDiv").hide();
+            $("#addUserBulkCtrlDiv").hide();
         }
 
         console.log("admin stuff", $location.hash());

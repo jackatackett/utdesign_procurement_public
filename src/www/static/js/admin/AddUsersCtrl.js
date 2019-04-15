@@ -1,4 +1,4 @@
-app.controller('AddUsersCtrl', ['$scope', '$location', '$http', '$window', function($scope, $location, $http, $window) {
+app.controller('AddUsersCtrl', ['$scope', 'dispatcher', '$location', '$http', '$window', function($scope, dispatcher, $location, $http, $window) {
 
     $scope.errorText = "";
     $scope.fieldKeys = ["projectNumbers", "firstName", "lastName", "netID", "email", "course"];
@@ -60,6 +60,7 @@ app.controller('AddUsersCtrl', ['$scope', '$location', '$http', '$window', funct
         }).then(function(resp) {
             $scope.bulkData = resp.data;
             $scope.showBulk();
+            dispatcher.emit('bulkRefresh')
         }, function(err) {
             alert("Error!", err);
         });
@@ -81,87 +82,10 @@ app.controller('AddUsersCtrl', ['$scope', '$location', '$http', '$window', funct
     };
 
     $scope.showBulk = function() {
-        $("#bulkModal").show();
-        $scope.repage(true);
+        $location.hash("addUserBulk");
     };
 
-    $scope.submitBulk = function() {
-        $http.post('/userSpreadsheetAdd', $scope.bulkData).then(function(resp) {
-            alert('Success!');
-            $scope.hideBulk();
-        }, function(err) {
-            alert('Error!');
-            $scope.hideBulk();
-        });
-    }
-
-    $scope.hideBulk = function() {
-        $("#bulkModal").hide();
-    };
-
-    $scope.changePage = function(pageNumber) {
-        $http.post('/userSpreadsheetData', {
-            'sortBy': $scope.sortTableBy,
-            'order':$scope.orderTableBy,
-            'pageNumber': pageNumber-1,
-        }).then(function(resp) {
-            $scope.users = resp.data;
-            $scope.pageNumber = pageNumber;
-            $scope.updatePageNumberArray();
-        }, function(err) {
-            console.error("Error", err.data);
-        });
-    };
-
-    $scope.prevPage = function() {
-        if ($scope.pageNumber > 1) {
-            $scope.changePage($scope.pageNumber-1)
-        }
-    }
-
-    $scope.nextPage = function() {
-        if ($scope.pageNumber < $scope.numberOfPages) {
-            $scope.changePage($scope.pageNumber+1)
-        }
-    }
-
-    $scope.firstPage = function() {
-        $scope.changePage(1);
-    }
-
-    $scope.lastPage = function() {
-        $scope.changePage($scope.numberOfPages);
-    }
-
-    $scope.requery = function() {
-        $scope.repage();
-        $scope.changePage($scope.pageNumber);
-    }
-
-    $scope.updatePageNumberArray = function() {
-        var low = Math.max(1, $scope.pageNumber - 5);
-        var high = Math.min(low + 9, $scope.numberOfPages);
-        low = Math.min(low, Math.max(1, high - 10));
-
-        $scope.pageNumberArray.length = 0;
-        for (var x = low; x <= high; x++) {
-            $scope.pageNumberArray.push(x);
-        }
-    }
-
-    $scope.repage = function(toFirst) {
-        $http.post('/userSpreadsheetPages').then(function(resp) {
-            $scope.numberOfPages = resp.data;
-            $scope.updatePageNumberArray();
-            if (toFirst) {
-                $scope.firstPage();
-            }
-        }, function(err) {
-            console.error("Error", err.data);
-        });
-    }
-
-    function validateRequest(){
+    function validateRequest() {
         var valid = false;
 
         $http.post('/projectValidate', {'projectNumbers': $scope.projectNumArray}).then(function(resp) {
