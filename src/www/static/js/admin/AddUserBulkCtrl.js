@@ -96,6 +96,19 @@ app.controller('AddUserBulkCtrl', ['$scope', 'dispatcher', '$location', '$http',
         });
     }
 
+    $scope.revalidateUser = function(rowIdx) {
+        $http.post('/userSpreadsheetRevalidate', {
+            'bulkStatus': $scope.filterStatus,
+            'index': rowIdx,
+            'user': $scope.users[rowIdx]
+        }).then(function(resp) {
+            $scope.users[rowIdx] = resp.data;
+        }, function(err) {
+            alert("Error during revalidation.");
+            console.log(err);
+        });
+    }
+
     dispatcher.on('bulkRefresh', function() {
        $scope.repage(true);
        $scope.metadataQuery();

@@ -26,8 +26,18 @@
         </thead>
 
         <tbody>
+
             <tr ng-repeat="user in users track by $index" ng-init="rowIdx = $index" class="badRow">
-                <td ng-repeat="fieldK in bulkKeys" ng-bind="user[fieldK]" ng-class="{badCell: fieldK=='comment' && (user.comment.invalidRole || user.comment.missingProjects.length || user.comment.missingAttributes.length || user.comment.conflictingAttributes)}"></td>
+                <td class="cleanInputCell" ng-repeat="fieldK in bulkKeys" ng-class="{badCell: (
+                    (fieldK == 'projectNumbers' && user.comment.missingProjects.length) ||
+                    (fieldK == 'role' && user.comment.invalidRole) ||
+                    (user.comment.missingAttributes.indexOf(fieldK) >= 0) ||
+                    (user.comment.conflictingAttributes.indexOf(fieldK) >= 0)
+                )}">
+
+                    <input type="text" style="height: 100%" ng-model="users[rowIdx][fieldK]" ng-blur="revalidateUser(rowIdx)">
+
+                </td>
             </tr>
         </tbody>
     </table>

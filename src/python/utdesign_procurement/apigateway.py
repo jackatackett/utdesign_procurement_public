@@ -2033,6 +2033,37 @@ class ApiGateway(object):
         return bulkData[data.get('bulkStatus', 'valid')][pageSize*pageNumber: pageSize*(pageNumber+1)]
 
     @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def userSpreadsheetRevalidate(self):
+
+        # check that we actually have json
+        if 'bulkData' in cherrypy.session:
+            bulkData = cherrypy.session['bulkData']
+        else:
+            raise cherrypy.HTTPError(400, 'No bulk data to add. Must call userSpreadsheetUpload first.')
+
+        # check that we actually have bulk data
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myUser = self.validateUser(data.get('user', {}), comment=True)
+
+        myStatus = checkValidData('bulkStatus', data, str)
+        if myStatus not in bulkData:
+            raise cherrypy.HTTPError(400, "Invalid bulkStatus type: %s" % myStatus)
+
+        myIndex = checkValidData('index', data, int)
+        if myIndex < 0 or myIndex >= len(bulkData[myStatus]):
+            raise cherrypy.HTTPError(400, "Index %s out of bounds for status: %s" % (myIndex, myStatus))
+
+        bulkData[myStatus][myIndex] = myUser
+        return myUser
+
+    @cherrypy.expose
     @cherrypy.tools.json_in()
     @authorizedRoles("admin")
     def userEdit(self):
