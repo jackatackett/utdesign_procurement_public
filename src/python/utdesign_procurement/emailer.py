@@ -239,6 +239,17 @@ class EmailHandler(object):
         body = template.render(**renderArgs)
         self.send(email, subject, body)
 
+    def notifyUpdateManager(self, email, projectNumber, requestNumber):
+        renderArgs = {
+            'domain': self.domain,
+            'projectNumber': projectNumber,
+            'requestNumber': requestNumber
+        }
+        subject = "Request % has been sent for updates!" % (requestNumber)
+        template = self.templateLookup.get_template('notifyUpdateManager.html')
+        body = template.render(**renderArgs)
+        self.send(email, subject, body)
+
 class Emailer(object):
     """
     Manages email connections and sends HTML emails in MIMEMultipart messages

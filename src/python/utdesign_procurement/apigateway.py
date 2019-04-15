@@ -689,7 +689,13 @@ class ApiGateway(object):
             'role': 'admin'
         })
 
-        # TODO send notification to manager who will receive it?
+        # send notification email to manager
+        managerEmail = myRequest['manager']
+        self.email_handler.notifyUpdateManager(**{
+            'email': managerEmail,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber']
+        })
 
 
     @cherrypy.expose
@@ -781,7 +787,7 @@ class ApiGateway(object):
             'projectNumber': myRequest['projectNumber']
         })
 
-        # TODO send email to admin?
+        # TODO send email to admin? I don't think so
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -1637,6 +1643,7 @@ class ApiGateway(object):
         projectNumber is used to specify which project will be edited,
         while the other values are what the values in the database will be set to.
         {
+            # TODO take ID?
             projectNumber: (int),
             sponsorName: (string, optional),
             projectName: (string, optional),
@@ -1924,6 +1931,7 @@ class ApiGateway(object):
 
 
         # TODO what if user doesn't have netID or course?
+        # TODO separate templates for notifying students or managers or admin?
         self.email_handler.notifyUserEdit(**{
             'email': myUser['email'],
             'projectNumbers': myUser['projectNumbers'],
@@ -1971,7 +1979,7 @@ class ApiGateway(object):
         self._updateDocument(findQuery, updateQuery, updateRule, collection=self.colUsers)
 
         # TODO send confirmation email to admin?
-        # don't send notification to student?
+        # TODO don't send notification to student?
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
