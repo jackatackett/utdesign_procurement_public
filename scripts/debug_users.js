@@ -143,7 +143,8 @@ db.projects.insert({
     "membersEmails": ["manager@utdallas.edu", "jack@utdallas.edu", "xander@utdallas.edu", "monica@utdallas.edu", "marcus@utdallas.edu"],
     "defaultBudget": 200000,
     "availableBudget": 199100,
-    "pendingBudget": 197384
+    "pendingBudget": 197384,
+    "status": "active"
 })
 
 db.projects.insert({
@@ -153,7 +154,8 @@ db.projects.insert({
     "membersEmails": ["manager2@utdallas.edu", "student1@utdallas.edu", "student2@utdallas.edu", "student3@utdallas.edu"],
     "defaultBudget": 150050,
     "availableBudget": 150050,
-    "pendingBudget": 150050
+    "pendingBudget": 150050,
+    "status": "active"
 })
 
 db.projects.insert({
@@ -163,7 +165,8 @@ db.projects.insert({
     "membersEmails": ["manager2@utdallas.edu", "student3@utdallas.edu"],
     "defaultBudget": 100000,
     "availableBudget": 100000,
-    "pendingBudget": 100000
+    "pendingBudget": 100000,
+    "status": "active"
 })
 
 db.requests.insert({

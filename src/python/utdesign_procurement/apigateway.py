@@ -81,11 +81,8 @@ class ApiGateway(object):
         # check if projectNumber belongs to active project; if not, don't allow request to be saved
         myProjectNumber = checkValidData("projectNumber", data, int)
         findQuery = {
-            "$and":
-                {
-                    "projectNumber": myProjectNumber,
-                    "status:": 'active'
-                }
+            "projectNumber": myProjectNumber,
+            "status": 'active'
         }
         if not self.colProjects.find_one(findQuery):
             raise cherrypy.HTTPError(400, "projectNumber inactive")  # TODO better message
