@@ -1,6 +1,11 @@
-app.controller('AdminNavCtrl', ['$scope', '$location', '$window', '$http', function($scope, $location, $window, $http) {
+app.controller('AdminNavCtrl', ['$scope', 'dispatcher', '$timeout', '$location', '$window', '$http', function($scope, dispatcher, $timeout, $location, $window, $http) {
 
     $scope.activeTab = "";
+    $scope.showBulkAdd = false;
+
+    dispatcher.on('bulkRefresh', function() {
+        $timeout(function() {$scope.showBulkAdd = true;}, 0);
+    });
 
     //add a listener for the nav bar
     $scope.$on('$locationChangeSuccess', function() {

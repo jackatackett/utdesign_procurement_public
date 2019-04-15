@@ -1,7 +1,7 @@
-<div id="addUserBulkCtrlDiv" ng-controller="AddUserBulkCtrl as $ctrl">
-    <div class="container" style="width: 100% !important; margin-left: 0px; margin-right: 0px; max-width: none">
-    <div class="row" style="width: 100% !important; margin-left: 0px; margin-right: 0px">
-        <ul class="pagination col-md-8">
+<div id="addUserBulkCtrlDiv" ng-controller="AddUserBulkCtrl as $ctrl" class="interfaceDiv">
+
+    <div style="width: 100%;">
+        <ul class="pagination" style="position: relative; float: left;">
           <li class="page-item" ng-click="firstPage()"><a class="page-link" href="">First</a></li>
           <li class="page-item" ng-click="prevPage()"><a class="page-link" href="">Previous</a></li>
           <li ng-repeat="pageNum in pageNumberArray" class="page-item" ng-click="changePage(pageNum)" ng-class="{active: pageNumber == pageNum}"><a class="page-link" href="">{{pageNum}}</a></li>
@@ -9,10 +9,9 @@
           <li class="page-item" ng-click="lastPage()"><a class="page-link" href="">Last ({{numberOfPages}})</a></li>
         </ul>
 
-        <div class="col-md-2 ml-auto" style="padding-right: 0">
+        <div style="position: relative; float: right;">
             <button type="button" class="btn btn-success ml-auto" style="float: right;" ng-click="bulkSubmit()">Submit All</button>
         </div>
-    </div>
     </div>
 
     <table class="table table-bordered" id="editUserTable" style="border:0px;">

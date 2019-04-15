@@ -18,8 +18,8 @@
         <li class="nav-item">
             <a class="nav-link" href="#viewCosts" ng-class="{active: activeTab == 'viewCosts'}">View Costs</a>
         </li>
-        <li class="nav-item">
-            <a class="nav-link" href="#addUserBulk" ng-class="{active: activeTab == 'addUserBulk'}">Bulk User Add</a>
+        <li class="nav-item" ng-show="showBulkAdd">
+            <a class="nav-link" href="#addUserBulk" ng-class="{active: activeTab == 'addUserBulk'}" style="background-color: #a312c7 !important">Bulk User Add</a>
         </li>
         <li class="nav-item">
             <a class="nav-link" href="#help" ng-class="{active: activeTab == 'help'}">About/Help</a>
