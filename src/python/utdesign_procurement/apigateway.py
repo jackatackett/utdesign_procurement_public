@@ -1422,6 +1422,7 @@ class ApiGateway(object):
         This adds a project, and can only be done by an admin.
         If the projectNumber is already in use, an error is thrown
 
+        Expected input:
         {
             “projectNumber”: (int),
             “sponsorName”: (string),
@@ -1441,6 +1442,8 @@ class ApiGateway(object):
             raise cherrypy.HTTPError(400, 'No data was given')
 
         myProject = dict()
+
+        myProject['status'] = 'active'
 
         for key in ("projectNumber",):
             myProjectNumber = checkValidData(key, data, int)
@@ -1473,6 +1476,43 @@ class ApiGateway(object):
 
         # TODO send confirmation email to admin? maybe not
         # TODO send notification emails to members of project
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def projectInactivate(self):
+        """
+
+        Expected input:
+        {
+            "_id": (string)
+        }
+        :return:
+        """
+
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            data = dict()
+
+        myID = checkValidID(data)
+        findQuery = {
+            '$and': [
+                {'_id': ObjectId(myID)},
+                {'status': "active"}
+            ]}
+        updateQuery = {'_id': ObjectId(myID)}
+        updateRule = {
+            "$set":
+                {'status': "inactive"}
+        }
+
+        self._updateDocument(findQuery, updateQuery, updateRule, collection=self.colProjects)
+
+        # TODO send confirmation to admin who did this
+        # TODO send notification to project's members
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
