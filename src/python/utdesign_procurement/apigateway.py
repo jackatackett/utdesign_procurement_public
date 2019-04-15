@@ -1380,11 +1380,9 @@ class ApiGateway(object):
         actualCosts = 0
         requests = self.colRequests.find({"projectNumber": projectNumber})
         for req in requests:
-            #~ print(req)
             if req["status"] in ["admin approved", "ordered", "ready for pickup", "complete"]:
-                actualCosts += req["requestTotal"]
-            pendingCosts += req["requestTotal"]
-        #~ print(pendingCosts, actualCosts)
+                actualCosts += req.get("requestTotal", 0)
+            pendingCosts += req.get("requestTotal", 0)
 
         miscCosts = 0
         addCosts = self.colCosts.find({"projectNumber": projectNumber})
