@@ -1623,7 +1623,7 @@ class ApiGateway(object):
 
         myProject = dict()
 
-        for key in ("projectNumber"):
+        for key in ("projectNumber",):
             myProject['projectNumber'] = checkValidData(key, data, int)
 
         for key in ("projectName", "sponsorName"):
