@@ -178,3 +178,20 @@
     overflow-x: auto;
     width: 100%;
 }
+
+#editProjectTable thead th:hover {
+  background-color: #1e90ff;
+}
+
+#editProjectTable th.ascending::after {
+  content: "\2B06";
+}
+
+#editProjectTable th.descending::after {
+  content: "\2B07";
+}
+
+#editProjectTable {
+    overflow-x: auto;
+    width: 100%;
+}
