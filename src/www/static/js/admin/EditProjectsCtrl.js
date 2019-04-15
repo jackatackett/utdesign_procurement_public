@@ -5,8 +5,6 @@ app.controller('EditProjectsCtrl', ['$scope', '$location', '$http', function($sc
     $scope.editableKeys = ["sponsorName", "projectName", "membersEmails", "defaultBudget"];
     $scope.editableFields = ["Sponsor Name", "Project Name", "Members Emails", "Budget"];
     $scope.grid = [];
-    $scope.itemFieldKeys = ["description", "partNo", "quantity", "unitCost", "total"];
-    $scope.itemFields = ["Description", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
     $scope.columns = ["Project Number", "Sponsor Name", "Project Name", "Members Emails", "Budget"];
     $scope.sortTableBy = 'projectNumber';
     $scope.orderTableBy = 'ascending';
@@ -18,6 +16,29 @@ app.controller('EditProjectsCtrl', ['$scope', '$location', '$http', function($sc
 
     $scope.projects = [];
     $scope.selectedProject = {};
+
+    function convertCosts(value) {
+        if (typeof value === "undefined") {
+            return "$0.00";
+        }
+        value = String(value);
+        if (value !== "undefined") {
+            while (value.length < 3) {
+                value = "0" + value;
+            }
+            return "$" + value.slice(0, -2) + "." + value.slice(value.length-2);
+        }
+        return "$0.00"
+    };
+
+    function cleanData(data) {
+        var result = [];
+        for (var d in data) {
+            result[d] = data[d];
+            result[d]["defaultBudget"] = convertCosts(data[d]["defaultBudget"]);
+        }
+        return result;
+    };
 
     $scope.editProject = function(e, rowIdx) {
         $("#editProjectModal").show();
@@ -36,11 +57,10 @@ app.controller('EditProjectsCtrl', ['$scope', '$location', '$http', function($sc
     };
 
     $scope.saveProjectEdit = function() {
-        //need to validate input
-//        $http.post('/userEdit', {'_id': $scope.selectedUser._id, 'projectNumbers': $scope.selectedUser.projectNumbers, 'firstName':$scope.selectedUser.firstName, 'lastName':$scope.selectedUser.lastName, 'netID':$scope.selectedUser.netID, 'course':$scope.selectedUser.course}).then(function(resp) {
-//        }, function(err) {
-//            console.error("Error", err.data);
-//        });
+        $http.post('/projectEdit', {'projectNumber': Number($scope.selectedProject.projectNumber), 'sponsorName':$scope.selectedProject.sponsorName, 'projectName':$scope.selectedProject.projectName, 'membersEmails':$scope.membersEmails}).then(function(resp) {
+        }, function(err) {
+            console.error("Error", err.data);
+        });
 
         $scope.requery();
         $scope.closeEditBox();
@@ -58,19 +78,13 @@ app.controller('EditProjectsCtrl', ['$scope', '$location', '$http', function($sc
     };
 
     $scope.changePage = function(pageNumber) {
-        if (!($scope.keywordSearch.role == 'student' ||
-              $scope.keywordSearch.role == 'manager' ||
-              $scope.keywordSearch.role == 'admin')) {
-            $scope.keywordSearch.role = undefined;
-        }
-
         $http.post('/projectData', {
             'sortBy': $scope.sortTableBy,
             'order':$scope.orderTableBy,
             'pageNumber': pageNumber-1,
             'keywordSearch': $scope.keywordSearch
         }).then(function(resp) {
-            $scope.projects = resp.data;
+            $scope.projects = cleanData(resp.data);
             $scope.pageNumber = pageNumber;
             $scope.updatePageNumberArray();
         }, function(err) {
@@ -115,12 +129,6 @@ app.controller('EditProjectsCtrl', ['$scope', '$location', '$http', function($sc
     }
 
     $scope.repage = function() {
-//        if (!($scope.keywordSearch.role == 'student' ||
-//              $scope.keywordSearch.role == 'manager' ||
-//              $scope.keywordSearch.role == 'admin')) {
-            $scope.keywordSearch.role = undefined;
-        //}
-
         $http.post('/projectPages', $scope.keywordSearch).then(function(resp) {
             $scope.numberOfPages = resp.data;
             $scope.updatePageNumberArray();

@@ -2196,14 +2196,14 @@ class ApiGateway(object):
             myFilter = dict()
         #myFilter['status'] = 'current'
 
-        # finds users who are current only
+        # finds projects who are current only
         projectCursor = self.colProjects.find(myFilter).sort(sortBy, direction)
 
         retProjects = []
         for proj in projectCursor[pageSize*pageNumber: pageSize*(pageNumber+1)]:
             myProj = dict()
             myProj['_id'] = str(proj['_id'])
-            for key in ('sponsorName', 'projectName', 'memmbersEmails', 'defaultBudget'):
+            for key in ('sponsorName', 'projectName', 'membersEmails', 'defaultBudget'):
                 myProj[key] = proj.get(key, '')
 
             myProj['projectNumber'] = proj.get('projectNumber', '')
