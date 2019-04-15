@@ -41,7 +41,6 @@ app.controller('EditRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher', 
         }
         formatRequest();
 
-        console.log($scope.request);
         $http.post("/procurementSave", $scope.request).then(function(resp) {
             alert("Success!");
             dispatcher.emit("refreshStatuses");
@@ -51,46 +50,12 @@ app.controller('EditRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher', 
             console.error(err);
             $scope.closeEditBox();
         });
-
-        //~ // set the submit flag true or false
-        //~ $scope.request.submit = submit;
-
-        //~ // send the request to the REST endpoint
-
-        //~ console.log("status", $scope.request.status);
-        //~ console.log($scope.request);
-        //~ var endpoint = "/procurementSave";
-
-        //~ if (submit) {
-            //~ if ($scope.request.status == "updates for manager") {
-                //~ endpoint = "/procurementResubmitToManager";
-            //~ } else if ($scope.request.status == "updates for admin") {
-                //~ endpoint = "/procurementResubmitToAdmin";
-            //~ }
-        //~ }
-
-        //~ $http.post(endpoint, $scope.request).then(function(resp) {
-            //~ console.log("Success", resp);
-            //~ alert("Success!");
-            //~ dispatcher.emit("refreshStatuses");
-            //~ $scope.newRequest();        //replace with close
-        //~ }, function(err) {
-            //~ $scope.errorText = "Infrastructure error. Please refresh page. Contact staff if problem persists.";
-            //~ console.error(err);
-            //~ dispatcher.emit("refreshStatuses");
-            //~ $scope.newRequest();
-        //~ });
     };
 
     /**
         Verifies that $scope.request is valid but does not mutate it
     */
     function validateRequest() {
-
-        //~ if ($scope.projectNumbers.indexOf($scope.request.projectNumber) < 0) {
-            //~ $scope.errorText = "Invalid Project Number";
-            //~ return false;
-        //~ }
 
         if ($scope.request.vendor.trim().length <= 0) {
             $scope.errorText = "Vendor must not be empty";
@@ -188,29 +153,6 @@ app.controller('EditRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher', 
     //add a row when the thing loads
     $timeout($scope.addRow, 0);
 
-    //get the project numbers associated with this user
-    //~ $http.post('/userProjects').then(function(resp) {
-        //~ $scope.projectNumbers = resp.data;
-        //~ if ($scope.projectNumbers.length > 0) {
-            //~ $scope.selectedProject = $scope.projectNumbers[0];
-        //~ }
-    //~ }, function(err) {
-        //~ console.error(err);
-    //~ });
-
-    //~ $scope.refreshManagers = function() {
-        //~ var projectNumber = $scope.request.projectNumber;
-        //~ if (projectNumber && projectNumber != -1) {
-            //~ $http.post('/managerList', {projectNumber: projectNumber}).then(function(resp) {
-                //~ $scope.projectManagers = resp.data;
-                //~ $scope.errorText = "";
-            //~ }, function(err) {
-                //~ console.error(err);
-                //~ $scope.errorText = "Unable to find managers for project number " + projectNumber;
-            //~ });
-        //~ }
-    //~ }
-
     $scope.newRequest = function() {
         $scope.request = {
             vendor: '',
@@ -222,8 +164,6 @@ app.controller('EditRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher', 
     };
 
     dispatcher.on('editRequest', function() {
-        console.log("inside edit request");
-        console.log($scope.selectedRequestInfo);
         //deep copy the request
         $scope.request = JSON.parse(JSON.stringify($scope.selectedRequestInfo));
 
@@ -250,21 +190,5 @@ app.controller('EditRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher', 
     $scope.closeEditBox = function(e) {
         $("#requestEditModal").hide();
     };
-
-    //~ dispatcher.on('cloneRequest', function(request) {
-        //~ //deep copy the request
-        //~ request = JSON.parse(JSON.stringify(request));
-        //~ delete request.requestNumber;
-        //~ delete request.status;
-        //~ delete request.history;
-        //~ console.log('cloneRequest', request)
-        //~ $scope.request = request;
-        //~ //remove the dollar signs on unit and total cost
-        //~ for (var x in $scope.request["items"]) {
-            //~ $scope.request["items"][x]["unitCost"] = $scope.request["items"][x]["unitCost"].replace("$", "");
-            //~ $scope.request["items"][x]["totalCost"] = $scope.request["items"][x]["totalCost"].replace("$", "");
-        //~ }
-        //~ $scope.refreshManagers();
-    //~ })
 
 }]);

@@ -124,7 +124,6 @@ app.controller('AddUserBulkCtrl', ['$scope', 'dispatcher', '$location', '$http',
 
         }, function(err) {
             alert("Error during revalidation.");
-            console.log(err);
         });
     }
 

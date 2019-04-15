@@ -26,28 +26,22 @@ app.controller('AddProjectsCtrl', ['$scope', '$location', '$http', '$window', fu
             }
         }
 
-        if(!validateRequest()) {
-            console.log("request was invalid");
-        } else {
+        if(validateRequest()) {
             $http.post('/projectAdd', {'projectNumber':Number($scope.projectInfo.projectNumber), 'sponsorName':$scope.projectInfo.sponsorName, 'projectName':$scope.projectInfo.projectName, 'membersEmails':$scope.membersEmails, 'defaultBudget':$scope.projectInfo.defaultBudget, 'availableBudget':$scope.projectInfo.defaultBudget, 'pendingBudget':$scope.projectInfo.defaultBudget}).then(function(resp) {
                 alert("Success");
-                console.log("Success", resp);
             }, function(err) {
                 console.error("Error", err.data);
-                alert("Error")
+                alert("Error");
             });
         }
     };
 
     $scope.selectSpreadsheet = function(e) {
-          console.log("selectSpreadsheet");
 //        var target = e.currentTarget;
 //        $("#spreadsheetField").click();
     };
 
     $scope.submitSpreadsheet = function(files) {
-          console.log("submitSpreadsheet");
-//
 //        var fd = new FormData();
 //        //Take the first selected file
 //        fd.append("sheet", files[0]);
@@ -57,7 +51,6 @@ app.controller('AddProjectsCtrl', ['$scope', '$location', '$http', '$window', fu
 //            headers: {'Content-Type': undefined },
 //            transformRequest: angular.identity
 //        }).then(function(resp) {
-//            console.log("userAddBulk success", resp)
 //        }, function(err) {
 //            console.error("userAddBulk fail", err)
 //        });

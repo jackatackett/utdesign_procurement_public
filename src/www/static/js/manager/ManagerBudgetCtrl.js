@@ -1,8 +1,6 @@
 app.controller('ManagerBudgetCtrl', ['$scope', '$location', '$http', '$window', '$timeout', '$interval', function($scope, $location, $http, $window, $timeout, $interval) {
-    console.log("budget");
 
     function convertCosts(value) {
-        console.log(value);
         if (typeof value === "undefined") {
             return "0.00";
         }
@@ -18,7 +16,6 @@ app.controller('ManagerBudgetCtrl', ['$scope', '$location', '$http', '$window', 
 
     var numProjects = -1;   //TODO: what happens if this is 0 or -1?
     
-    //~ var currentProj = projectData[0]["projectNumber"]    //used to select which tab is shown
     var currentProj = 0   //used to select which tab is shown
 
     $scope.requestKeys = ["status", "vendor", "requestSubtotal", "shippingCost", "requestTotal"];
@@ -40,11 +37,9 @@ app.controller('ManagerBudgetCtrl', ['$scope', '$location', '$http', '$window', 
 
     $scope.getTeams = function() {
         $http.post('/findProject', {}).then(function(resp) {
-            console.log("Project Success", resp);
             projectData = resp.data;
 
             numProjects = projectData.length;
-            console.log("number projects: " + numProjects);
 
             $scope.projects = [];
 
@@ -53,7 +48,6 @@ app.controller('ManagerBudgetCtrl', ['$scope', '$location', '$http', '$window', 
                 tempData["number"] = projectData[pr]["projectNumber"];
                 tempData["name"] = projectData[pr]["projectName"];
                 $scope.projects.push(tempData);
-                //~ $scope.projects.push({"number": pr["projectNumber"], "name": pr["projectName"]});
             }
         }, function(err) {
             console.error("Error", err.data);
@@ -63,16 +57,12 @@ app.controller('ManagerBudgetCtrl', ['$scope', '$location', '$http', '$window', 
     $scope.getData = function() {
         var filterData = {"projectNumbers": [$scope.projects[curProject]["number"]]};
         $http.post('/procurementStatuses', filterData).then(function(resp) {
-            console.log("Status Success", resp);
             procurementData = resp.data;
             filterRequests();
-            console.log("current requests:");
-            console.log($scope.curRequestData);
         }, function(err) {
             console.error("Status Error", err.data);
         });
         $http.post('/getCosts', filterData).then(function(resp) {
-            console.log("Costs Success", resp);
             costData = resp.data;
             filterCosts();
         }, function(err) {
@@ -80,7 +70,6 @@ app.controller('ManagerBudgetCtrl', ['$scope', '$location', '$http', '$window', 
         });
     };
 
-    //~ $scope.getTeams();
     $timeout($scope.getTeams, 0);
     $interval($scope.getTeams, 5000);
     $timeout($scope.getData, 500);
@@ -92,9 +81,6 @@ app.controller('ManagerBudgetCtrl', ['$scope', '$location', '$http', '$window', 
             procurementData[req]["requestSubtotal"] = "$" + convertCosts(procurementData[req]["requestSubtotal"]);
             procurementData[req]["shippingCost"] = "$" + convertCosts(procurementData[req]["shippingCost"]);
             procurementData[req]["requestTotal"] = "+$" + convertCosts(procurementData[req]["requestTotal"]);
-            //~ if (procurementData[req]["projectNumber"] == $scope.projects[currentProj]["number"]) {
-                //~ $scope.curRequestData.push(procurementData[req]);
-            //~ }
         }
         $scope.curRequestData = procurementData;
     };
@@ -111,15 +97,11 @@ app.controller('ManagerBudgetCtrl', ['$scope', '$location', '$http', '$window', 
             else {
                 costData[co]["amount"] = "$" + convertCosts(costData[co]["amount"]);
             }
-            //~ if (costData[co]["projectNumber"] == $scope.projects[currentProj]["number"]) {
-                //~ $scope.curCostData.push(costData[co]);
-            //~ }
         }
         $scope.curCostData = costData;
     };
     
     $scope.getMaxBudgetStr = function() {
-        //~ console.log(projectData);
         if (numProjects > 0) {
             return "$" + convertCosts(projectData[currentProj]["defaultBudget"]);
         }
@@ -144,21 +126,5 @@ app.controller('ManagerBudgetCtrl', ['$scope', '$location', '$http', '$window', 
         var targ = e.target.id.substring(6, e.target.id.length);
         currentProj = targ;
         $scope.getData();
-        //~ filterRequests();
-        //~ filterCosts();
-        
-        /*if (targ == "All") {        //taken from old manager code; "All" should only be for manager
-            $scope.data = $scope.allData;
-            $("#currentGroupBudget").hide();
-        }
-        else {
-            $("#currentGroupBudget").show();
-            $scope.data = [];
-            for (var i = 0; i < $scope.allData.length; i++) {
-                if ($scope.allData[i]["projectID"] == $scope.teams[targ]) {
-                    $scope.data.push($scope.allData[i]);
-                }
-            }
-        }*/
     };
 }]);

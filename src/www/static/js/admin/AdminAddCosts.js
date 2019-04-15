@@ -8,11 +8,9 @@ app.controller('AdminAddCosts', ['$scope', '$location', '$http', '$window', func
     $scope.userEmail = "";
     $http.post("/userInfo").then(function(resp) {
         $scope.userEmail = resp.data["email"];
-        console.log($scope.userEmail);
         $scope.cost["actor"] = $scope.userEmail;
-        console.log($scope.cost);
     }, function(err) {
-        console.log("Error", err.data);
+        console.error("Error", err.data);
     });
     
 
@@ -20,26 +18,15 @@ app.controller('AdminAddCosts', ['$scope', '$location', '$http', '$window', func
     $http.post("/getAdminList").then(function(resp) {
         $scope.adminEmails = resp.data;
     }, function(err) {
-        console.log("Error", err.data);
+        console.error("Error", err.data);
     });
 
-    //~ $scope.types = ["refund", "reimbursement", "funding", "cut"];
     $scope.types = ["refund", "reimbursement", "new budget"];
-
-    //~ var selectHTML = '<select id="newCosttype">';
-    //~ for (var val in $scope.types) {
-        //~ selectHTML += "<option value=" + $scope.types[val] + ">" + $scope.types[val] + "</option>";
-    //~ }
-    //~ selectHTML += "</select>";
-
-    //~ $("#newCosttype").replaceWith(selectHTML);
 
     function validateInput() {
         for (var inputKey in $scope.fieldKeys) {
             var value = $("#newCost" + $scope.fieldKeys[inputKey]).val();
-            console.log(inputKey, value);
             if (value.trim().length <= 0) {
-                //~ $scope.errorText = "Field " + $("#newCost" + $scope.fieldKeys[inputKey]).parent().prev().html() + " should not be empty";
                 $scope.errorText = $scope.fields[inputKey] + " should not be empty";
                 return false;
             }
@@ -55,7 +42,6 @@ app.controller('AdminAddCosts', ['$scope', '$location', '$http', '$window', func
             }
         }
         //type must be either: refund, reimbursement, funding, cut
-        //~ console.log($scope.cost);
         if ($scope.types.indexOf($scope.cost["type"]) < 0) {
             $scope.errorText = "Type must not be empty";
             return false;
@@ -74,8 +60,6 @@ app.controller('AdminAddCosts', ['$scope', '$location', '$http', '$window', func
 
         //validate input
         if (validateInput()) {
-            console.log($scope.cost);
-            //post
             $http.post("/addCost", {"projectNumber": +Number($scope.cost["projectNumber"]), "type": $scope.cost["type"], "amount": $scope.cost["amount"], "comment": $scope.cost["comment"], "actor": $scope.cost["actor"]}).then(function(resp) {
                 alert("Success");
                 $window.location.reload();
@@ -83,25 +67,10 @@ app.controller('AdminAddCosts', ['$scope', '$location', '$http', '$window', func
                 alert("Failure");
             });
         }
-
-        //~ var prjNumsAry = $scope.userInfo.projectNumbers.replace(' ', '').split(',');
-        //~ for(var n in prjNumsAry) {
-            //~ prjNumsAry[n] = Number(prjNumsAry[n]);
-        //~ }
-
-        //~ $http.post('/userAdd', {'projectNumbers':prjNumsAry, 'firstName':$scope.userInfo.firstName, 'lastName':$scope.userInfo.lastName, 'netID':$scope.userInfo.netID, 'email':$scope.userInfo.email, 'course':$scope.userInfo.course, 'role':'student'}).then(function(resp) {
-            //~ console.log("Success", resp);
-            //~ alert("Success!");
-            //~ $window.location.reload();
-        //~ }, function(err) {
-            //~ console.error("Error", err.data);
-            //~ alert("Error")
-        //~ });
     };
 
     $scope.uploadSpreadsheet = function(e) {
         var target = e.currentTarget;
-        console.log("upload spreadsheet");
         $("#spreadsheetField").click();
     };
 

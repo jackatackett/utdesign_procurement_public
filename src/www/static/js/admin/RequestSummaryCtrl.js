@@ -82,7 +82,6 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
 
     $scope.permanentReject = function(e) {
         $http.post('/procurementRejectAdmin', {'_id':$scope.data[currentRow]._id, "comment": $scope.adminComment}).then(function(resp) {
-            console.log("Success", resp);
             alert("Success!");
             $scope.adminComment = "";
             $scope.refreshStatuses();
@@ -98,7 +97,6 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
 
     $scope.sendForUpdatesAdmin = function(e) {
         $http.post('/procurementUpdateAdmin', {'_id':$scope.data[currentRow]._id, "comment": $scope.adminComment}).then(function(resp) {
-            console.log("Success", resp);
             alert("Success!");
             $scope.adminComment = "";
             $scope.refreshStatuses();
@@ -114,7 +112,6 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
 
     $scope.sendForUpdatesManagerAdmin = function(e) {
         $http.post('/procurementUpdateManagerAdmin', {'_id':$scope.data[currentRow]._id, "comment": $scope.adminComment}).then(function(resp) {
-            console.log("Success", resp);
             alert("Success!");
             $scope.adminComment = "";
             $scope.refreshStatuses();
@@ -135,7 +132,6 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
 
     $scope.setShipping = function(e) {
         $http.post('/procurementOrder', {'_id':$scope.data[shippingRow]._id, "amount":$("#shippingAmt").val()}).then(function(resp) {
-            console.log("Success", resp);
             alert("Success!");
             $scope.refreshStatuses();
             $scope.cancelShippingBox();
@@ -152,18 +148,13 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
     };
 
     $scope.orderRequest = function(e, rowIdx) {
-        console.log($scope.data);
-        console.log(rowIdx);
         shippingRow = rowIdx;
         $("#shippingModal").show();
         
     };
 
     $scope.readyRequest = function(e, rowIdx) {
-        console.log($scope.data);
-        console.log(rowIdx);
         $http.post('/procurementReady', {'_id':$scope.data[rowIdx]._id}).then(function(resp) {
-            console.log("Success", resp);
             alert("Success!");
             $scope.refreshStatuses();
         }, function(err) {
@@ -174,10 +165,7 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
     };
 
     $scope.completeRequest = function(e, rowIdx) {
-        console.log($scope.data);
-        console.log(rowIdx);
         $http.post('/procurementComplete', {'_id':$scope.data[rowIdx]._id}).then(function(resp) {
-            console.log("Success", resp);
             alert("Success!");
             $scope.refreshStatuses();
         }, function(err) {
@@ -200,7 +188,6 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
     };
 
     $scope.viewHistory = function(e, rowIdx) {
-        console.log("history");
         $("#historyBody").empty();
         var historyHTML = "";
         for (var hist in $scope.data[rowIdx]["history"]) {
@@ -214,7 +201,6 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
             historyHTML = "No history";
         }
         $("#historyBody").append(historyHTML);
-        console.log(historyHTML);
         $("#historyModal").show();
     };
 
@@ -224,8 +210,6 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
 
     $scope.editRequest = function(e, rowIdx) {
         $scope.selectedRequestInfo = $scope.data[rowIdx];
-        console.log("selected request");
-        console.log($scope.selectedRequestInfo);
         dispatcher.emit("editRequest");
         $("#requestEditModal").show();
     };
@@ -243,7 +227,6 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
             $scope.data = resp.data;
             $scope.pageNumber = pageNumber;
             $scope.updatePageNumberArray();
-            console.log("changepage", $scope.data)
         }, function(err) {
             console.error("Error", err.data);
         });
@@ -298,7 +281,6 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
     }
 
     $scope.toggleSort = function(keyword) {
-        console.log(keyword);
         if (keyword == $scope.sortTableBy) {
             if($scope.orderTableBy == 'ascending') {
                 $scope.orderTableBy = 'descending';
@@ -349,7 +331,6 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
             'secondaryFilter': $scope.secondaryFilter
         }).then(function(resp) {
             $scope.data = resp.data;
-            console.log("generateReport", resp.data);
 
             $('<form></form>')
                  .attr('action', 'reportDownload/' + resp.data)
