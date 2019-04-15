@@ -102,7 +102,13 @@ app.controller('AddUserBulkCtrl', ['$scope', 'dispatcher', '$location', '$http',
             'index': rowIdx,
             'user': $scope.users[rowIdx]
         }).then(function(resp) {
-            $scope.users[rowIdx] = resp.data;
+            if ($scope.filterStatus != resp.data.status) {
+                $scope.metadata[$scope.filterStatus]--;
+                $scope.metadata[resp.data.status]++;
+                $scope.users[rowIdx] = null;
+            } else {
+                $scope.users[rowIdx] = resp.data.user;
+            }
         }, function(err) {
             alert("Error during revalidation.");
             console.log(err);

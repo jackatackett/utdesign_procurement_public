@@ -1868,6 +1868,7 @@ class ApiGateway(object):
                     bulkData['valid'].append(myUser)
 
         cherrypy.session['bulkData'] = bulkData
+        cherrypy.session['bulkMetadata'] = {status: len(arr) for status, arr in bulkData.items()}
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -1882,7 +1883,7 @@ class ApiGateway(object):
             raise cherrypy.HTTPError(400, 'No bulk data to add. Must call userSpreadsheetUpload first.')
 
         # check that all users have been resolved
-        if 'conflicting' in data or 'invalid' in data:
+        if cherrypy.session['bulkMetadata']['conflicting'] or cherrypy.session['bulkMetadata']['invalid']:
             raise cherrypy.HTTPError(400, 'Not all users have been resolved')
 
         # invite all new users
@@ -1926,11 +1927,9 @@ class ApiGateway(object):
 
         # check that we actually have json
         if 'bulkData' in cherrypy.session:
-            bulkData = cherrypy.session['bulkData']
+            return cherrypy.session['bulkMetadata']
         else:
-            raise cherrypy.HTTPError(400, 'No bulk data to add. Must call userSpreadsheetUpload first.')
-
-        return {status: len(arr) for status, arr in bulkData.items()}
+            raise cherrypy.HTTPError(400, 'No bulk data. Must call userSpreadsheetUpload first.')
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -2060,8 +2059,28 @@ class ApiGateway(object):
         if myIndex < 0 or myIndex >= len(bulkData[myStatus]):
             raise cherrypy.HTTPError(400, "Index %s out of bounds for status: %s" % (myIndex, myStatus))
 
-        bulkData[myStatus][myIndex] = myUser
-        return myUser
+        newStatus = None
+        if (myUser['comment']['invalidRole'] or
+                myUser['comment']['missingProjects'] or
+                myUser['comment']['missingAttributes'] or
+                myUser['comment']['conflictingAttributes']):
+            if myUser['comment']['merge']:
+                newStatus = 'conflicting'
+            else:
+                newStatus = 'invalid'
+        else:
+            if myUser['comment']['merge']:
+                newStatus = 'existing'
+            else:
+                newStatus = 'valid'
+
+        if myStatus != newStatus:
+            bulkData[myStatus][myIndex] = None
+            bulkData[newStatus].append(myUser)
+            cherrypy.session['bulkMetadata'][myStatus] -= 1
+            cherrypy.session['bulkMetadata'][newStatus] += 1
+
+        return {'user': myUser, 'status': newStatus}
 
     @cherrypy.expose
     @cherrypy.tools.json_in()

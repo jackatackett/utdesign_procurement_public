@@ -27,7 +27,7 @@
 
         <tbody>
 
-            <tr ng-repeat="user in users track by $index" ng-init="rowIdx = $index" class="badRow">
+            <tr ng-repeat="user in users track by $index" ng-init="rowIdx = $index" class="badRow" ng-if="user != null">
                 <td class="cleanInputCell" ng-repeat="fieldK in bulkKeys" ng-class="{badCell: (
                     (fieldK == 'projectNumbers' && user.comment.missingProjects.length) ||
                     (fieldK == 'role' && user.comment.invalidRole) ||
@@ -35,7 +35,7 @@
                     (user.comment.conflictingAttributes.indexOf(fieldK) >= 0)
                 )}">
 
-                    <input type="text" style="height: 100%" ng-model="users[rowIdx][fieldK]" ng-blur="revalidateUser(rowIdx)">
+                    <input type="text" style="height: 100%" ng-model="users[rowIdx][fieldK]" ng-change="revalidateUser(rowIdx)" ng-model-options="{updateOn: 'blur'}">
 
                 </td>
             </tr>
