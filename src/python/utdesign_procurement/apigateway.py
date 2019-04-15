@@ -11,7 +11,7 @@ from uuid import uuid4
 from utdesign_procurement.utils import (authorizedRoles, generateSalt,
     hashPassword, checkProjectNumbers, checkValidData, checkValidID,
     checkValidNumber, verifyPassword, requestCreate, convertToCents,
-    getKeywords)
+    getKeywords, getProjectKeywords)
 
 from datetime import datetime, timedelta
 
@@ -72,6 +72,20 @@ class ApiGateway(object):
             data = cherrypy.request.json
         else:
             raise cherrypy.HTTPError(400, 'No data was given')
+
+        # check if projectNumber belongs to active project; if not, don't allow request to be saved
+        myProjectNumber = checkValidData("projectNumber", data, int)
+        findQuery = {
+            "$and":
+                {
+                    "projectNumber": myProjectNumber,
+                    "status:": active
+                }
+        }
+        if not self.colProjects.find_one(findQuery):
+            raise cherrypy.HTTPError(400, "projectNumber inactive")  # TODO better message
+
+        mySubmit = checkValidData("submit", data, bool)
 
         if "adminEdit" in data:
             if "status" not in data:
@@ -1496,6 +1510,7 @@ class ApiGateway(object):
         This adds a project, and can only be done by an admin.
         If the projectNumber is already in use, an error is thrown
 
+        Expected input:
         {
             “projectNumber”: (int),
             “sponsorName”: (string),
@@ -1515,6 +1530,8 @@ class ApiGateway(object):
             raise cherrypy.HTTPError(400, 'No data was given')
 
         myProject = dict()
+
+        myProject['status'] = 'active'
 
         for key in ("projectNumber",):
             myProjectNumber = checkValidData(key, data, int)
@@ -1547,6 +1564,38 @@ class ApiGateway(object):
 
         # TODO send confirmation email to admin? maybe not
         # TODO send notification emails to members of project
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def projectInactivate(self):
+        """
+
+        Expected input:
+        {
+            "_id": (string)
+        }
+        :return:
+        """
+
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            data = dict()
+
+        myID = checkValidID(data)
+        findQuery = {'_id': ObjectId(myID)}
+        updateRule = {
+            "$set":
+                {'status': "inactive"}
+        }
+
+        self._updateDocument(findQuery, findQuery, updateRule, collection=self.colProjects)
+
+        # TODO send confirmation to admin who did this
+        # TODO send notification to project's members
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -1658,8 +1707,8 @@ class ApiGateway(object):
 
         myProject = dict()
 
-        for key in ("projectNumber"):
-            myProject['projectNumber'] = checkValidData(key, data, int)
+        for key in ("projectNumber",):
+            myProject[key] = checkValidData(key, data, int)
 
         for key in ("projectName", "sponsorName"):
             myProject[key] = checkValidData(key, data, str)
@@ -1725,6 +1774,7 @@ class ApiGateway(object):
         myUser['status'] = 'current'
 
         myRole = checkValidData("role", data, str)
+        myRole = myRole.lower().strip()
         if myRole in ("student", "manager", "admin"):
             myUser['role'] = myRole
         else:
@@ -1824,12 +1874,7 @@ class ApiGateway(object):
     # @cherrypy.tools.json_out()
     # @cherrypy.tools.json_in()
     @authorizedRoles("admin")
-    def userAddBulk(self, sheet):
-        """
-
-        :param sheet:
-        :return:
-        """
+    def userSpreadsheetUpload(self, sheet):
 
         # get the whole file
         xlsx = bytearray()
@@ -1844,39 +1889,267 @@ class ApiGateway(object):
         df = pd.read_excel(BytesIO(bytes(xlsx)))
 
         # add each user
+        bulkData = {
+            'valid': [],
+            'invalid': [],
+            'existing': [],
+            'conflicting': [],
+        }
+        emailLut = dict()
         for index, row in df.iterrows():
-
             # get from excel
-            myUser = {
-                "projectNumbers": [int(e) for e in str(row[0]).split()],
-                "firstName": row[1],
-                "lastName": row[2],
-                "netID": row[3],
-                "email": row[4],
-                "course": row[5],
-                "role": 'student'
+            myUser = dict()
+            if row.size:
+                myUser["projectNumbers"] = [int(e) for e in str(row[0]).split()]
+
+            for i, e in enumerate(('firstName', 'lastName', 'netID', 'email', 'course', 'role')):
+                i += 1
+                if i < row.size:
+                    myUser[e] = row[i]
+                else:
+                    break
+
+            myUser = self.validateUser(myUser, comment=True)
+
+            if 'email' in myUser and myUser['email'] in emailLut:
+                # merge this user's project numbers into the old user's project numbers
+                # TODO merge courses too
+                # TODO maybe check for conflicts?
+                prevUser = emailLut[myUser['email']]
+                prevUser['projectNumbers'].extend(myUser['projectNumbers'])
+                continue
+            elif 'email' in myUser:
+                emailLut[myUser['email']] = myUser
+
+            if (myUser['comment']['invalidRole'] or
+                    myUser['comment']['missingProjects'] or
+                    myUser['comment']['missingAttributes'] or
+                    myUser['comment']['conflictingAttributes']):
+                if myUser['comment']['merge']:
+                    bulkData['conflicting'].append(myUser)
+                else:
+                    bulkData['invalid'].append(myUser)
+            else:
+                if myUser['comment']['merge']:
+                    bulkData['existing'].append(myUser)
+                else:
+                    bulkData['valid'].append(myUser)
+
+        cherrypy.session['bulkData'] = bulkData
+        cherrypy.session['bulkMetadata'] = {status: len(arr) for status, arr in bulkData.items()}
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    # @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def userSpreadsheetSubmit(self):
+
+        # check that we actually have bulk data
+        if 'bulkData' in cherrypy.session:
+            data = cherrypy.session['bulkData']
+        else:
+            raise cherrypy.HTTPError(400, 'No bulk data to add. Must call userSpreadsheetUpload first.')
+
+        # check that all users have been resolved
+        if cherrypy.session['bulkMetadata']['conflicting'] or cherrypy.session['bulkMetadata']['invalid']:
+            raise cherrypy.HTTPError(400, 'Not all users have been resolved')
+
+        # invite all new users
+        for myUser in data['valid']:
+            myInvitation = {
+                'uuid': str(uuid4()),
+                'expiration': None,
+                'email': myUser['email']
             }
 
-            # add to database
-            invite = self.colUsers.find({'email': myUser['email']}).count() == 0
+            self.colInvitations.insert(myInvitation)
+            cherrypy.log('Created new user. Setup UUID: %s' % myInvitation['uuid'])
 
-            self.colUsers.update({'email': myUser['email']}, {'$set': myUser}, upsert=True)
+            self.email_handler.userAdd(**{
+                'email': myInvitation['email'],
+                'uuid': myInvitation['uuid'],
+            })
 
-            # send invitation
-            if invite:
-                myInvitation = {
-                    'uuid': str(uuid4()),
-                    'expiration': None,
-                    'email': myUser['email']
+        # insert all new users
+        # TODO once projects can be added, add these users to their projects
+        if data['valid']:
+            self.colUsers.insert_many(data['valid'])
+
+        # update all existing users
+        for myUser in data['existing']:
+            oldUser = self.colUsers.find_one({'email': myUser['email']})
+            pNumbers = oldUser['projectNumbers'] + myUser['projectNumbers']
+            #TODO once course is a list, add courses here too.
+
+            self.colUsers.update_one({
+                'email': myUser['email']
+            }, {
+                '$set': {
+                    'projectNumbers': pNumbers
                 }
+            })
 
-                self.colInvitations.insert(myInvitation)
-                cherrypy.log('Created new user. Setup UUID: %s' % myInvitation['uuid'])
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @authorizedRoles("admin")
+    def userSpreadsheetMetadata(self):
 
-                self.email_handler.userAdd(**{
-                    'email': myInvitation['email'],
-                    'uuid': myInvitation['uuid'],
-                })
+        # check that we actually have json
+        if 'bulkData' in cherrypy.session:
+            return cherrypy.session['bulkMetadata']
+        else:
+            raise cherrypy.HTTPError(400, 'No bulk data. Must call userSpreadsheetUpload first.')
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    @authorizedRoles("admin")
+    def userSpreadsheetPages(self):
+        """
+        Returns an int: the number of pages it would take to
+        display all current users if 10 users are displayed
+        per page. At present time, the page size (number of
+        users per page) cannot be configured.
+
+        {
+            "bulkStatus": (string, Optional, default "valid".
+                Whether these are the "valid", "invalid", "existing", or
+                "conflicting" bulk users)
+        }
+
+        """
+
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        # check that we actually have json
+        if 'bulkData' in cherrypy.session:
+            bulkData = cherrypy.session['bulkData']
+        else:
+            raise cherrypy.HTTPError(400, 'No bulk data to add. Must call userSpreadsheetUpload first.')
+
+        pageSize = 10 # TODO stretch goal make this configurable
+
+        div, remainder = divmod(len(bulkData.get(data.get('bulkStatus', 'valid'))), pageSize)
+        if remainder:
+            return div + 1
+        else:
+            return div
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    @authorizedRoles("admin")
+    def userSpreadsheetData(self):
+        """
+        This REST endpoint returns a list of 10 users from the database. The users may be
+        sorted by a key and ordered by ascending or descending, and the pageNumber
+        decides which 10 users are returned. pageNumber must be a non-negative integer.
+
+        Incoming ::
+        {
+            "bulkStatus": (string, Optional, default "valid".
+                Whether these are the "valid", "invalid", "existing", or
+                "conflicting" bulk users)
+
+            'pageNumber': (int)
+                (Optional. Default: 0)
+        }
+
+        Outgoing ::
+        [
+            {
+                “projectNumbers”: (list of ints),
+                "firstName": (string),
+                "lastName": (string),
+                "netID": (string),
+                "email": (string),
+                "course": (string),
+                “role”: “student”,
+                “status”: (string), //”current” or “removed”
+            }
+        ]
+
+        """
+
+        # check that we actually have json
+        if 'bulkData' in cherrypy.session:
+            bulkData = cherrypy.session['bulkData']
+        else:
+            raise cherrypy.HTTPError(400, 'No bulk data to add. Must call userSpreadsheetUpload first.')
+
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        pageNumber = checkValidData('pageNumber', data, int, default=0,
+                                optional=True)
+
+        if pageNumber < 0:
+            raise cherrypy.HTTPError(
+                400, "Invalid pageNumber format. "
+                     "Expected nonnegative integer. "
+                     "See: %s" % pageNumber)
+
+        pageSize = 10 # TODO stretch goal make this configurable
+
+        return bulkData[data.get('bulkStatus', 'valid')][pageSize*pageNumber: pageSize*(pageNumber+1)]
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def userSpreadsheetRevalidate(self):
+
+        # check that we actually have json
+        if 'bulkData' in cherrypy.session:
+            bulkData = cherrypy.session['bulkData']
+        else:
+            raise cherrypy.HTTPError(400, 'No bulk data to add. Must call userSpreadsheetUpload first.')
+
+        # check that we actually have bulk data
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myUser = self.validateUser(data.get('user', {}), comment=True)
+
+        myStatus = checkValidData('bulkStatus', data, str)
+        if myStatus not in bulkData:
+            raise cherrypy.HTTPError(400, "Invalid bulkStatus type: %s" % myStatus)
+
+        myIndex = checkValidData('index', data, int)
+        if myIndex < 0 or myIndex >= len(bulkData[myStatus]):
+            raise cherrypy.HTTPError(400, "Index %s out of bounds for status: %s" % (myIndex, myStatus))
+
+        newStatus = None
+        if (myUser['comment']['invalidRole'] or
+                myUser['comment']['missingProjects'] or
+                myUser['comment']['missingAttributes'] or
+                myUser['comment']['conflictingAttributes']):
+            if myUser['comment']['merge']:
+                newStatus = 'conflicting'
+            else:
+                newStatus = 'invalid'
+        else:
+            if myUser['comment']['merge']:
+                newStatus = 'existing'
+            else:
+                newStatus = 'valid'
+
+        if myStatus != newStatus:
+            bulkData[myStatus][myIndex] = None
+            bulkData[newStatus].append(myUser)
+            cherrypy.session['bulkMetadata'][myStatus] -= 1
+            cherrypy.session['bulkMetadata'][newStatus] += 1
+
+        return {'user': myUser, 'status': newStatus}
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -2141,6 +2414,41 @@ class ApiGateway(object):
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
     @authorizedRoles("admin")
+    def projectPages(self):
+        """
+        Returns an int: the number of pages it would take to
+        display all current projects if 10 projects are displayed
+        per page. At present time, the page size (number of
+        projects per page) cannot be configured.
+
+        {
+            "projectNumber": (int),
+            "sponsorName": (string, optional),
+            "projectName": (string, optional),
+            "membersEmails": (string, optional),
+            "defaultBudget": (string, optional)
+        }
+
+        """
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            myFilter = getProjectKeywords(cherrypy.request.json)
+        else:
+            myFilter = getProjectKeywords()
+        #myFilter['status'] = 'current'
+
+        pageSize = 10 # TODO stretch goal make this configurable
+
+        div, remainder = divmod(self.colProjects.find(myFilter).count(), pageSize)
+        if remainder:
+            return div + 1
+        else:
+            return div
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    @authorizedRoles("admin")
     def userPages(self):
         """
         Returns an int: the number of pages it would take to
@@ -2173,6 +2481,118 @@ class ApiGateway(object):
             return div + 1
         else:
             return div
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    @authorizedRoles("admin")
+    def projectData(self):
+        """
+        This REST endpoint returns a list of 10 projects from the database. The projects may be
+        sorted by a key and ordered by ascending or descending, and the pageNumber
+        decides which 10 projects are returned. pageNumber must be a non-negative integer.
+
+        Incoming ::
+        {
+            'sortBy': (string in projectNumber, sponsorName, projectName, membersEmails,
+                defaultBudget)
+                (Optional. Default "projectNumber")
+            'order': (string in 'ascending', 'descending')
+                (Optional. Default: "ascending")
+            'pageNumber': (int)
+                (Optional. Default: 0)
+            'keywordSearch': (dict)
+                {
+                    "projectNumber": (int, optional),
+                    "sponsorName": (string, optional),
+                    "projectName": (string, optional),
+                    "membersEmails": (string, optional),
+                    "defaultBudget": (string, optional)
+                }
+        }
+
+        Outgoing ::
+        [
+            {
+                “projectNumber”: (int),
+                "sponsorName": (string),
+                "projectName": (string),
+                "membersEmails": (string),
+                "defaultBudget": (string)
+            }
+        ]
+
+        """
+
+        # prepare the sort, order, and page number
+        sortBy = checkValidData('sortBy', data, str, default='projectNumber',
+                                optional=True)
+
+        if sortBy not in ('projectNumber', 'sponsorName', 'projectName', 'membersEmails', 'defaultBudget'):
+            raise cherrypy.HTTPError(
+                400, 'sortBy must be any of projectNumber, sponsorName, projectName, membersEmails, defaultBudget. Not %s'
+                     % sortBy)
+
+        order = checkValidData('order', data, str, default='ascending',
+                                optional=True)
+
+        if order not in ('ascending', 'descending'):
+            raise cherrypy.HTTPError(
+                400, 'order must be ascending or descending. Not %s.' % order)
+
+        direction = pm.ASCENDING if order == 'ascending' else pm.DESCENDING
+
+        pageNumber = checkValidData('pageNumber', data, int, default=0,
+                                optional=True)
+
+        if pageNumber < 0:
+            raise cherrypy.HTTPError(
+                400, "Invalid pageNumber format. "
+                     "Expected nonnegative integer. "
+                     "See: %s" % pageNumber)
+
+        pageSize = 10 # TODO stretch goal make this configurable
+
+        myFilter = getProjectKeywords(data.get('keywordSearch', {}))
+        #myFilter['status'] = 'current'
+
+        # finds projects who are current only
+        projectCursor = self.colProjects.find(myFilter).sort(sortBy, direction)
+
+        retProjects = []
+        for proj in projectCursor[pageSize*pageNumber: pageSize*(pageNumber+1)]:
+            myProj = dict()
+            myProj['_id'] = str(proj['_id'])
+            for key in ('sponsorName', 'projectName', 'membersEmails', 'defaultBudget'):
+                myProj[key] = proj.get(key, '')
+
+            myProj['projectNumber'] = proj.get('projectNumber', '')
+
+            # if myUser['role'] != 'admin':
+            #     for key in ('projectNumbers', 'course'):
+            #         myUser[key] = user[key]
+
+            retProjects.append(myProj)
+
+
+        return retProjects
+
+    def userSingleData(self):
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myEmail = checkValidData('email', data, str)
+        user = self.colUsers.find_one({'email': myEmail})
+        if user:
+            myUser = dict()
+            for key in ("projectNumbers", "firstName", "lastName", "netID", "course", 'email', 'role'):
+                myUser[key] = user[key]
+            return myUser
+        else:
+            return dict()
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -2328,3 +2748,113 @@ class ApiGateway(object):
             adminEmails.append(user['email'])
         return adminEmails
 
+    #helper function, do not expose
+    def validateUser(self, data, comment=False):
+        """
+        Validates a user to check for a role, firstName, lastName, email,
+        and optional netID. Non-admin users are also checked for valid
+        project numbers and courses.
+
+        A sanitized version of the user dict is returned, or None if anything
+        was wrong with the dict.
+
+        If comment is True, then the user also has a 'comment' attribute ::
+
+            comment: {
+                merge: (boolean, if a user with this email exists),
+                invalidRole: (boolean)
+                missingProjects: (list of ints)
+                missingAttributes: (list of strings)
+                conflictingAttributes: (list of strings),
+            }
+
+        :param data: dict. The user to be validated.
+        :param myComment: bool. As described above.
+        :return:
+        """
+
+        myComment = {
+            'merge': False,
+            'invalidRole': False,
+            'missingProjects': [],
+            'missingAttributes': [],
+            'conflictingAttributes': [],
+        }
+
+        myUser = dict()
+
+        # set default value of value in dict
+        myUser['status'] = 'current'
+
+        # get the user's role
+        try:
+            myRole = checkValidData("role", data, str)
+        except cherrypy.HTTPError:
+            if comment:
+                myComment['missingAttributes'].append("role")
+                myRole = None
+            else:
+                return None
+
+        # check the user's role
+        if myRole is not None:
+            myRole = myRole.lower().strip()
+            if myRole in ("student", "manager", "admin"):
+                myUser['role'] = myRole
+            elif myRole:
+                if comment:
+                    myComment['invalidRole'] = True
+                else:
+                    return None
+
+        # check the user's project number and course
+        if myRole != 'admin':
+            try:
+                myUser['projectNumbers'] = checkProjectNumbers(data)
+            except cherrypy.HTTPError:
+                if comment:
+                    myComment['missingAttributes'].append("projectNumbers")
+                else:
+                    return None
+
+            try:
+                myUser['course'] = checkValidData('course', data, str)
+            except cherrypy.HTTPError:
+                if comment:
+                    myComment['missingAttributes'].append("course")
+                else:
+                    return None
+
+        # check the users other keys
+        for key in ("firstName", "lastName", "email"):
+            try:
+                myUser[key] = checkValidData(key, data, str)
+            except cherrypy.HTTPError:
+                if comment:
+                    myComment['missingAttributes'].append(key)
+                else:
+                    return None
+
+        # get the netID if any
+        if "netID" in data:
+            myUser['netID'] = str(data['netID'])
+
+        if comment:
+            # check for merging and conflicts
+            if 'email' in myUser:
+                oldUser = self.colUsers.find_one({'email': myUser['email']})
+                if oldUser:
+                    myComment['merge'] = True
+                    for key in ('role', 'firstName', 'lastName', 'email', 'netID'):
+                        if myUser.get(key, None) != oldUser[key]:
+                            myComment['conflictingAttributes'].append(key)
+
+            # check for valid project
+            if 'projectNumbers' in myUser:
+                for projectNumber in myUser['projectNumbers']:
+                    if not self.colProjects.find_one({'projectNumber': projectNumber}):
+                        myComment['missingProjects'].append(projectNumber)
+
+        if comment:
+            myUser['comment'] = myComment
+        return myUser

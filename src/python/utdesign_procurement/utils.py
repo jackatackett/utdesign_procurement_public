@@ -201,6 +201,22 @@ def convertToCents(dollarAmt):
     except:
         raise cherrypy.HTTPError(400, "Bad currency value")
 
+def lenientConvertToCents(dollarAmt):
+    """
+    Converts a string dollar amount to an int cents amount
+    :param dollarAmt: the string dollar amount, does not have $ sign
+    :return: cents in int
+    """
+    try:
+        if re.match("^[0-9]*\.[0-9]{2}?$", dollarAmt):
+            return int(dollarAmt.replace(".", ""))
+        elif re.match("^[0-9]+$", dollarAmt):
+            return int(dollarAmt) * 100
+        else:
+            raise cherrypy.HTTPError(400, "Bad currency value")
+    except:
+        raise cherrypy.HTTPError(400, "Bad currency value")
+
 def requestCreate(data, status, optional=False):
     """
     Takes data as an input as uses the data to create
@@ -291,6 +307,7 @@ def requestCreate(data, status, optional=False):
     return myRequest
 
 def getKeywords(keywords):
+    # TODO rename this to be getUserKeywords
     # parse the keyword search
     myFilter = dict()
 
@@ -305,7 +322,7 @@ def getKeywords(keywords):
                 }
 
     # parse out proper project numbers
-    if 'projectNumbers' in keywords:
+    if 'projectNumbers' in myFilter:
         try:
             myFilter['projectNumbers'] = {'$in': list(
                 map(int, keywords['projectNumbers'].split()))}
@@ -319,5 +336,42 @@ def getKeywords(keywords):
             myFilter['role'] = role
         else:
             raise cherrypy.HTTPError(400, 'Invalid role. See: %s' % role)
+
+    return myFilter
+
+
+def getProjectKeywords(keywords):
+    # parse the keyword search
+    myFilter = {'status': 'active'}
+
+    for kw in ('projectNumber', 'projectName', 'sponsorName', 'membersEmails'):
+        if kw in keywords:
+            s = checkValidData(kw, keywords, str).strip()
+            if s:
+                myFilter[kw] = {
+                    '$regex': re.compile('.*' + re.escape(s) + '.*', re.IGNORECASE)
+                }
+
+    # parse out proper project numbers
+    if 'projectNumber' in myFilter:
+        try:
+            myFilter['projectNumber'] = {'$in': list(
+                map(int, keywords['projectNumber'].split()))}
+        except ValueError:
+            raise cherrypy.HTTPError(400, 'Invalid projectNumber format')
+
+    if 'defaultBudget' in keywords:
+        s = keywords['defaultBudget'].strip()
+        if s:
+            try:
+                myFilter['defaultBudget'] = convertToCents(s)
+            except cherrypy.HTTPError:
+                cherrypy.log('sadness c : ::%s::' % s)
+
+        else:
+            cherrypy.log('sadness b : ::%s::' % s)
+
+    else:
+        cherrypy.log('sadness a')
 
     return myFilter

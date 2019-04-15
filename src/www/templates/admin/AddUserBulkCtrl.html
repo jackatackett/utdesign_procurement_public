@@ -1,0 +1,74 @@
+<div id="addUserBulkCtrlDiv" ng-controller="AddUserBulkCtrl as $ctrl" class="interfaceDiv">
+
+    <div style="width: 100%;">
+        <ul class="pagination" style="position: relative; float: left;">
+          <li class="page-item" ng-click="firstPage()"><a class="page-link" href="">First</a></li>
+          <li class="page-item" ng-click="prevPage()"><a class="page-link" href="">Previous</a></li>
+          <li ng-repeat="pageNum in pageNumberArray" class="page-item" ng-click="changePage(pageNum)" ng-class="{active: pageNumber == pageNum}"><a class="page-link" href="">{{pageNum}}</a></li>
+          <li class="page-item" ng-click="nextPage()"><a class="page-link" href="">Next</a></li>
+          <li class="page-item" ng-click="lastPage()"><a class="page-link" href="">Last ({{numberOfPages}})</a></li>
+        </ul>
+
+        <div style="position: relative; float: right;">
+            <button type="button" class="btn btn-success" style="float: right;" ng-click="bulkSubmit()">Submit All</button>
+            <button type="button" class="btn btn-danger" style="float: right;" ng-click="setFilterStatus('conflicting')">Conflicts: {{metadata.conflicting}}</button>
+            <button type="button" class="btn btn-danger" style="float: right;" ng-click="setFilterStatus('invalid')">Invalid: {{metadata.invalid}}</button>
+            <button type="button" class="btn btn-secondary" style="float: right;" ng-click="setFilterStatus('existing')">Existing: {{metadata.existing}}</button>
+            <button type="button" class="btn btn-secondary" style="float: right;" ng-click="setFilterStatus('valid')">Valid: {{metadata.valid}}</button>
+        </div>
+    </div>
+
+    <table class="table table-bordered" id="editUserTable" style="border:0px;">
+        <thead>
+            <tr>
+                <th ng-repeat="col in bulkFields track by $index">{{col}}</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            <tr ng-repeat="user in users track by $index" ng-init="rowIdx = $index" class="badRow" ng-if="user != null">
+                <td class="cleanInputCell" ng-repeat="fieldK in bulkKeys" ng-class="{badCell: isBadCell(user, fieldK)}">
+
+                    <input type="text" style="height: 100%" ng-model="users[rowIdx][fieldK]" ng-change="revalidateUser(rowIdx)" ng-model-options="{updateOn: 'blur'}">
+
+                </td>
+                <td style="border: 0px;" ng-if="filterStatus == 'conflicting' || filterStatus == 'existing'">
+                    <button type="button" class="btn btn-primary" ng-click="showCompare(rowIdx)">Compare</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div id="compareModal" class="modal">
+        <div class="modal-content">
+            <table class="table" id="compareLightBoxTable" style="margin: 0; width: 100%; display:table;">
+                <thead>
+                    <th>Field</th>
+                    <th>Existing User</th>
+                    <th>Spreadsheet</th>
+                </thead>
+
+                <tr ng-repeat="info in editableFields track by $index" ng-init="rowIdx = $index">
+                    <td>
+                        {{info}}
+                    </td>
+                    <td>
+                        <input type="text" ng-model="compareUserOld[editableKeys[rowIdx]]" readonly>
+                    </td>
+                    <td>
+                        <input type="text" ng-model="compareUserNew[editableKeys[rowIdx]]" ng-class="{badCellBorder: isBadCell(compareUserNew, editableKeys[rowIdx])}">
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <button type="button" class="btn btn-primary" ng-click="exitCompare()">Close</button>
+                        <button type="button" class="btn btn-primary" ng-click="revalidateUser(selectedIdx, true)">Validate</button>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+    </div>
+
+</div>

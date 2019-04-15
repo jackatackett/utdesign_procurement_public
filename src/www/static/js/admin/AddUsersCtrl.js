@@ -1,14 +1,19 @@
-app.controller('AddUsersCtrl', ['$scope', '$location', '$http', '$window', function($scope, $location, $http, $window) {
+app.controller('AddUsersCtrl', ['$scope', 'dispatcher', '$location', '$http', '$window', function($scope, dispatcher, $location, $http, $window) {
 
     $scope.errorText = "";
     $scope.fieldKeys = ["projectNumbers", "firstName", "lastName", "netID", "email", "course"];
     $scope.fields = ["Project Number(s)", "First Name", "Last Name", "NetID", "Email", "Course"];
+    $scope.bulkKeys = ["projectNumbers", "firstName", "lastName", "netID", "email", "course", "role", "comment"];
+    $scope.bulkFields = ["Project Number", "First Name", "Last Name", "NetID", "Email", "Course", "Role", "Comment"];
     $scope.grid = [];
     $scope.itemFieldKeys = ["description", "partNo", "quantity", "unitCost", "total"];
     $scope.itemFields = ["Description", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
     $scope.columns = ["Project Number(s)", "First Name", "Last Name", "NetID", "Email", "Course"];
     $scope.userInfo = {};
     $scope.projectNumArray = [];
+    $scope.numberOfPages = 1;
+    $scope.currentPage = 1;
+    $scope.pageNumberArray = [];
 
     $scope.users = []
 
@@ -48,14 +53,16 @@ app.controller('AddUsersCtrl', ['$scope', '$location', '$http', '$window', funct
         //Take the first selected file
         fd.append("sheet", files[0]);
 
-        $http.post('/userAddBulk', fd, {
+        $http.post('/userSpreadsheetUpload', fd, {
             withCredentials: true,
             headers: {'Content-Type': undefined },
             transformRequest: angular.identity
         }).then(function(resp) {
-            console.log("userAddBulk success", resp)
+            $scope.bulkData = resp.data;
+            $scope.showBulk();
+            dispatcher.emit('bulkRefresh')
         }, function(err) {
-            console.error("userAddBulk fail", err)
+            alert("Error!", err);
         });
     }
 
@@ -74,7 +81,11 @@ app.controller('AddUsersCtrl', ['$scope', '$location', '$http', '$window', funct
         }
     };
 
-    function validateRequest(){
+    $scope.showBulk = function() {
+        $location.hash("addUserBulk");
+    };
+
+    function validateRequest() {
         var valid = false;
 
         $http.post('/projectValidate', {'projectNumbers': $scope.projectNumArray}).then(function(resp) {
