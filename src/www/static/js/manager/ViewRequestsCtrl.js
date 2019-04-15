@@ -1,4 +1,7 @@
-app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '$timeout', '$interval', function($scope, $location, $http, $window, $timeout, $interval) {
+app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '$timeout', '$interval', 'statusLut', function($scope, $location, $http, $window, $timeout, $interval, statusLut) {
+
+    $scope.statusLut = statusLut;
+
     function convertCosts(value) {
         if (typeof value === "undefined") {
             return "$0.00";
@@ -27,8 +30,8 @@ app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '
         return result;
     };
 
-    $scope.fieldKeys = ["projectNumber", "status", "vendor", "URL", "requestTotal", "shippingCost"];
-    $scope.fields = ["Project Number", "Status", "Vendor", "URL", "Total Cost", "Shipping Cost"];
+    $scope.fieldKeys = ["requestNumber", "projectNumber", "status", "vendor", "URL", "requestTotal", "shippingCost"];
+    $scope.fields = ["Request Number", "Project Number", "Status", "Vendor", "URL", "Total Cost", "Shipping Cost"];
     $scope.grid = [];
     $scope.itemFieldKeys = ["description", "partNo", "quantity", "unitCost", "totalCost"];
     $scope.itemFields = ["Description", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
