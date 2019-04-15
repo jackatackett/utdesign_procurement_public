@@ -284,8 +284,9 @@ def requestCreate(data, status, optional=False):
             myDict[key] = checkValidData(key, theirDict, int, optional)
         myDict['totalCost'] = checkValidData("totalCost", theirDict, str, optional)
 
-        # TODO check
-        # TODO convert cost strings to ints of cents
+        # convert cost strings to ints of cents
+        myDict['unitCost'] = convertToCents(myDict['unitCost'])
+        myDict['totalCost'] = convertToCents(myDict['totalCost'])
 
         myItems.append(myDict)
 
