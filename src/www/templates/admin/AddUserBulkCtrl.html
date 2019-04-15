@@ -10,7 +10,11 @@
         </ul>
 
         <div style="position: relative; float: right;">
-            <button type="button" class="btn btn-success ml-auto" style="float: right;" ng-click="bulkSubmit()">Submit All</button>
+            <button type="button" class="btn btn-success" style="float: right;" ng-click="bulkSubmit()">Submit All</button>
+            <button type="button" class="btn btn-danger" style="float: right;" ng-click="setFilterStatus('conflicting')">Conflicts: {{metadata.conflicting}}</button>
+            <button type="button" class="btn btn-danger" style="float: right;" ng-click="setFilterStatus('invalid')">Invalid: {{metadata.invalid}}</button>
+            <button type="button" class="btn btn-secondary" style="float: right;" ng-click="setFilterStatus('existing')">Existing: {{metadata.existing}}</button>
+            <button type="button" class="btn btn-secondary" style="float: right;" ng-click="setFilterStatus('valid')">Valid: {{metadata.valid}}</button>
         </div>
     </div>
 
@@ -22,8 +26,8 @@
         </thead>
 
         <tbody>
-            <tr ng-repeat="user in users track by $index" ng-init="rowIdx = $index">
-                <td ng-repeat="fieldK in bulkKeys" ng-bind="user[fieldK]"></td>
+            <tr ng-repeat="user in users track by $index" ng-init="rowIdx = $index" class="badRow">
+                <td ng-repeat="fieldK in bulkKeys" ng-bind="user[fieldK]" ng-class="{badCell: fieldK=='comment' && (user.comment.invalidRole || user.comment.missingProjects.length || user.comment.missingAttributes.length || user.comment.conflictingAttributes)}"></td>
             </tr>
         </tbody>
     </table>

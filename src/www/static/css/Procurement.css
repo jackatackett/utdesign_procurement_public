@@ -178,3 +178,7 @@
     overflow-x: auto;
     width: 100%;
 }
+
+.badCell {
+    box-shadow:inset 0px 0px 0px 3px #be2d28 !important;
+}

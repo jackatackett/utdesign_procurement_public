@@ -7,9 +7,11 @@ app.controller('AddUserBulkCtrl', ['$scope', 'dispatcher', '$location', '$http',
     $scope.currentPage = 1;
     $scope.pageNumberArray = [];
     $scope.users = [];
+    $scope.filterStatus = "valid";
+    $scope.metadata = {};
 
     $scope.submitBulk = function() {
-        $http.post('/userSpreadsheetAdd', $scope.bulkData).then(function(resp) {
+        $http.post('/userSpreadsheetAdd').then(function(resp) {
             alert('Success!');
             $scope.hideBulk();
         }, function(err) {
@@ -23,6 +25,7 @@ app.controller('AddUserBulkCtrl', ['$scope', 'dispatcher', '$location', '$http',
             'sortBy': $scope.sortTableBy,
             'order':$scope.orderTableBy,
             'pageNumber': pageNumber-1,
+            'bulkStatus': $scope.filterStatus
         }).then(function(resp) {
             $scope.users = resp.data;
             $scope.pageNumber = pageNumber;
@@ -69,7 +72,9 @@ app.controller('AddUserBulkCtrl', ['$scope', 'dispatcher', '$location', '$http',
     }
 
     $scope.repage = function(toFirst) {
-        $http.post('/userSpreadsheetPages').then(function(resp) {
+        $http.post('/userSpreadsheetPages', {
+            'bulkStatus': $scope.filterStatus
+        }).then(function(resp) {
             $scope.numberOfPages = resp.data;
             $scope.updatePageNumberArray();
             if (toFirst) {
@@ -80,8 +85,20 @@ app.controller('AddUserBulkCtrl', ['$scope', 'dispatcher', '$location', '$http',
         });
     }
 
+    $scope.setFilterStatus = function(newStatus) {
+        $scope.filterStatus = newStatus;
+        $scope.requery();
+    }
+
+    $scope.metadataQuery = function() {
+        $http.post('/userSpreadsheetMetadata').then(function(resp) {
+            $scope.metadata = resp.data;
+        });
+    }
+
     dispatcher.on('bulkRefresh', function() {
        $scope.repage(true);
+       $scope.metadataQuery();
     });
 
 }]);

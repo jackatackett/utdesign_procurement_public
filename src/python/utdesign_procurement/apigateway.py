@@ -1833,7 +1833,12 @@ class ApiGateway(object):
         df = pd.read_excel(BytesIO(bytes(xlsx)))
 
         # add each user
-        ret = []
+        bulkData = {
+            'valid': [],
+            'invalid': [],
+            'existing': [],
+            'conflicting': [],
+        }
         for index, row in df.iterrows():
             # get from excel
             myUser = dict()
@@ -1848,10 +1853,21 @@ class ApiGateway(object):
                     break
 
             myUser = self.validateUser(myUser, comment=True)
-            # myUser['comment'] = comment
-            ret.append(myUser)
+            if (myUser['comment']['invalidRole'] or
+                    myUser['comment']['missingProjects'] or
+                    myUser['comment']['missingAttributes'] or
+                    myUser['comment']['conflictingAttributes']):
+                if myUser['comment']['merge']:
+                    bulkData['conflicting'].append(myUser)
+                else:
+                    bulkData['invalid'].append(myUser)
+            else:
+                if myUser['comment']['merge']:
+                    bulkData['existing'].append(myUser)
+                else:
+                    bulkData['valid'].append(myUser)
 
-        cherrypy.session['bulkData'] = ret
+        cherrypy.session['bulkData'] = bulkData
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -1859,55 +1875,65 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def userSpreadsheetAdd(self):
 
-        # check that we actually have json
+        # check that we actually have bulk data
         if 'bulkData' in cherrypy.session:
             data = cherrypy.session['bulkData']
         else:
             raise cherrypy.HTTPError(400, 'No bulk data to add. Must call userSpreadsheetUpload first.')
 
-        if 'users' not in data:
-            raise cherrypy.HTTPError(400, 'Data is missing "users" field')
+        # check that all users have been resolved
+        if 'conflicting' in data or 'invalid' in data:
+            raise cherrypy.HTTPError(400, 'Not all users have been resolved')
 
-        for userDict in data['users']:
+        # invite all new users
+        for myUser in data['valid']:
+            myInvitation = {
+                'uuid': str(uuid4()),
+                'expiration': None,
+                'email': myUser['email']
+            }
 
-            #validate input
-            myUser = self.validateUser(userDict)
-            if myUser is None:
-                cherrypy.log('userAddBulk skipping user: %s' % userDict)
-                continue
+            self.colInvitations.insert(myInvitation)
+            cherrypy.log('Created new user. Setup UUID: %s' % myInvitation['uuid'])
 
+            self.email_handler.userAdd(**{
+                'email': myInvitation['email'],
+                'uuid': myInvitation['uuid'],
+            })
+
+        # insert all new users
+        # TODO once projects can be added, add these users to their projects
+        self.colUsers.insert_many(data['valid'])
+
+        # update all existing users
+        for myUser in data['existing']:
             oldUser = self.colUsers.find_one({'email': myUser['email']})
+            pNumbers = oldUser['projectNumbers'] + myUser['projectNumbers']
+            #TODO once course is a list, add courses here too.
 
-            # append to user if already exists
-            if oldUser is not None:
-                myUser['projectNumbers'] = list(set(oldUser['projectNumbers']) | set(myUser['projectNumbers']))
-
-            # and if not, invite them
-            else:
-                myInvitation = {
-                    'uuid': str(uuid4()),
-                    'expiration': None,
-                    'email': myUser['email']
-                }
-
-                self.colInvitations.insert(myInvitation)
-                cherrypy.log('Created new user. Setup UUID: %s' % myInvitation['uuid'])
-
-                self.email_handler.userAdd(**{
-                    'email': myInvitation['email'],
-                    'uuid': myInvitation['uuid'],
-                })
-
-            # either way, upsert them into the database
-            self.colUsers.update({
+            self.colUsers.update_one({
                 'email': myUser['email']
             }, {
-                '$set': myUser
-            }, upsert=True)
-
+                '$set': {
+                    'projectNumbers': pNumbers
+                }
+            })
 
     @cherrypy.expose
-    # @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    @authorizedRoles("admin")
+    def userSpreadsheetMetadata(self):
+
+        # check that we actually have json
+        if 'bulkData' in cherrypy.session:
+            bulkData = cherrypy.session['bulkData']
+        else:
+            raise cherrypy.HTTPError(400, 'No bulk data to add. Must call userSpreadsheetUpload first.')
+
+        return {status: len(arr) for status, arr in bulkData.items()}
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
     @authorizedRoles("admin")
     def userSpreadsheetPages(self):
@@ -1918,16 +1944,18 @@ class ApiGateway(object):
         users per page) cannot be configured.
 
         {
-            "projectNumbers": (int or list of ints, optional),
-            "firstName": (string, optional),
-            "lastName": (string, optional),
-            "netID": (string, optional),
-            "email": (string, optional),
-            "course": (string, optional),
-            "role": (string, optional)
+            "bulkStatus": (string, Optional, default "valid".
+                Whether these are the "valid", "invalid", "existing", or
+                "conflicting" bulk users)
         }
 
         """
+
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
 
         # check that we actually have json
         if 'bulkData' in cherrypy.session:
@@ -1937,7 +1965,7 @@ class ApiGateway(object):
 
         pageSize = 10 # TODO stretch goal make this configurable
 
-        div, remainder = divmod(len(bulkData), pageSize)
+        div, remainder = divmod(len(bulkData.get(data.get('bulkStatus', 'valid'))), pageSize)
         if remainder:
             return div + 1
         else:
@@ -1955,6 +1983,10 @@ class ApiGateway(object):
 
         Incoming ::
         {
+            "bulkStatus": (string, Optional, default "valid".
+                Whether these are the "valid", "invalid", "existing", or
+                "conflicting" bulk users)
+
             'pageNumber': (int)
                 (Optional. Default: 0)
         }
@@ -1998,8 +2030,7 @@ class ApiGateway(object):
 
         pageSize = 10 # TODO stretch goal make this configurable
 
-        cherrypy.log(str(bulkData[pageSize*pageNumber: pageSize*(pageNumber+1)]))
-        return bulkData[pageSize*pageNumber: pageSize*(pageNumber+1)]
+        return bulkData[data.get('bulkStatus', 'valid')][pageSize*pageNumber: pageSize*(pageNumber+1)]
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -2443,6 +2474,7 @@ class ApiGateway(object):
             adminEmails.append(user['email'])
         return adminEmails
 
+    #helper function, do not expose
     def validateUser(self, data, comment=False):
         """
         Validates a user to check for a role, firstName, lastName, email,
@@ -2452,15 +2484,29 @@ class ApiGateway(object):
         A sanitized version of the user dict is returned, or None if anything
         was wrong with the dict.
 
-        If comment is True, then a human readable string is returned instead.
+        If comment is True, then the user also has a 'comment' attribute ::
+
+            comment: {
+                merge: (boolean, if a user with this email exists),
+                invalidRole: (boolean)
+                missingProjects: (list of ints)
+                missingAttributes: (list of strings)
+                conflictingAttributes: (list of strings),
+            }
 
         :param data: dict. The user to be validated.
-        :param comment: bool. As described above.
+        :param myComment: bool. As described above.
         :return:
         """
 
-        missing = []
-        extra = []
+        myComment = {
+            'merge': False,
+            'invalidRole': False,
+            'missingProjects': [],
+            'missingAttributes': [],
+            'conflictingAttributes': [],
+        }
+
         myUser = dict()
 
         # set default value of value in dict
@@ -2471,21 +2517,21 @@ class ApiGateway(object):
             myRole = checkValidData("role", data, str)
         except cherrypy.HTTPError:
             if comment:
-                # missing.append("role")
-                extra.append('Role was not specified; defaulting to "student".')
-                myRole = 'student'
+                myComment['missingAttributes'].append("role")
+                myRole = None
             else:
                 return None
 
         # check the user's role
-        myRole = myRole.lower().strip()
-        if myRole in ("student", "manager", "admin"):
-            myUser['role'] = myRole
-        elif myRole:
-            if comment:
-                extra.append('Invalid role. Must be "student", "manager", or "admin".')
-            else:
-                return None
+        if myRole is not None:
+            myRole = myRole.lower().strip()
+            if myRole in ("student", "manager", "admin"):
+                myUser['role'] = myRole
+            elif myRole:
+                if comment:
+                    myComment['invalidRole'] = True
+                else:
+                    return None
 
         # check the user's project number and course
         if myRole != 'admin':
@@ -2493,7 +2539,7 @@ class ApiGateway(object):
                 myUser['projectNumbers'] = checkProjectNumbers(data)
             except cherrypy.HTTPError:
                 if comment:
-                    missing.append("project numbers")
+                    myComment['missingAttributes'].append("projectNumbers")
                 else:
                     return None
 
@@ -2501,7 +2547,7 @@ class ApiGateway(object):
                 myUser['course'] = checkValidData('course', data, str)
             except cherrypy.HTTPError:
                 if comment:
-                    missing.append('course')
+                    myComment['missingAttributes'].append("course")
                 else:
                     return None
 
@@ -2511,7 +2557,7 @@ class ApiGateway(object):
                 myUser[key] = checkValidData(key, data, str)
             except cherrypy.HTTPError:
                 if comment:
-                    missing.append(key)
+                    myComment['missingAttributes'].append(key)
                 else:
                     return None
 
@@ -2520,10 +2566,21 @@ class ApiGateway(object):
             myUser['netID'] = str(data['netID'])
 
         if comment:
-            if missing:
-                ret = 'Missing or invalid keys: %s. ' % (', '.join(missing))
-            else:
-                ret = ''
-            ret += ' '.join(extra)
-            myUser['comment'] = ret
+            # check for merging and conflicts
+            if 'email' in myUser:
+                oldUser = self.colUsers.find_one({'email': myUser['email']})
+                if oldUser:
+                    myComment['merge'] = True
+                    for key in ('role', 'firstName', 'lastName', 'email', 'netID'):
+                        if myUser.get(key, None) != oldUser[key]:
+                            myComment['conflictingAttributes'].append(key)
+
+            # check for valid project
+            if 'projectNumbers' in myUser:
+                for projectNumber in myUser['projectNumbers']:
+                    if not self.colProjects.find_one({'projectNumber': myUser['projectNumbers']}):
+                        myComment['missingProjects'].append(projectNumber)
+
+        if comment:
+            myUser['comment'] = myComment
         return myUser
