@@ -270,7 +270,18 @@ class EmailHandler(object):
         subject = "You have been added to project %s" % (projectNumber)
         template = self.templateLookup.get_template('notifyUpdateManager.html')
         body = template.render(**renderArgs)
-        self.send(email, subject, body)
+        self.send(teamEmails, subject, body)
+
+    def notifyProjectInactivate(self, teamEmails, projectNumber, projectName):
+        renderArgs = {
+            'domain': self.domain,
+            'projectNumber': projectNumber,
+            'projectName': projectName,
+        }
+        subject = "projectNumber %s has been inactivated" % (projectNumber)
+        template = self.templateLookup.get_template('notifyProjectInactivate.html')
+        body = template.render(**renderArgs)
+        self.send(teamEmails, subject, body)
 
 class Emailer(object):
     """

@@ -1601,8 +1601,15 @@ class ApiGateway(object):
 
         self._updateDocument(findQuery, findQuery, updateRule, collection=self.colProjects)
 
+        myProject = self.colProjects.find_one(findQuery)
+
         # TODO send confirmation to admin who did this
-        # TODO send notification to project's members
+        self.email_handler.notifyProjectInactivate(**{
+            'teamEmails': myProject['membersEmails'],
+            'projectNumber': myProject['projectNumber'],
+            'projectName': myProject['projectName']
+        })
+
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
