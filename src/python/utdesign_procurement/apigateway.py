@@ -1836,15 +1836,17 @@ class ApiGateway(object):
         ret = []
         for index, row in df.iterrows():
             # get from excel
-            myUser = {
-                "projectNumbers": [int(e) for e in str(row[0]).split()],
-                "firstName": row[1],
-                "lastName": row[2],
-                "netID": row[3],
-                "email": row[4],
-                "course": row[5],
-                "role": row[6]
-            }
+            myUser = dict()
+            if row.size:
+                myUser["projectNumbers"] = [int(e) for e in str(row[0]).split()]
+
+            for i, e in enumerate(('firstName', 'lastName', 'netID', 'email', 'course', 'role')):
+                i += 1
+                if i < row.size:
+                    myUser[e] = row[i]
+                else:
+                    break
+
             myUser = self.validateUser(myUser, comment=True)
             # myUser['comment'] = comment
             ret.append(myUser)
@@ -2469,8 +2471,9 @@ class ApiGateway(object):
             myRole = checkValidData("role", data, str)
         except cherrypy.HTTPError:
             if comment:
-                missing.append("role")
-                myRole = ''
+                # missing.append("role")
+                extra.append('Role was not specified; defaulting to "student".')
+                myRole = 'student'
             else:
                 return None
 
@@ -2478,7 +2481,7 @@ class ApiGateway(object):
         myRole = myRole.lower().strip()
         if myRole in ("student", "manager", "admin"):
             myUser['role'] = myRole
-        else:
+        elif myRole:
             if comment:
                 extra.append('Invalid role. Must be "student", "manager", or "admin".')
             else:
