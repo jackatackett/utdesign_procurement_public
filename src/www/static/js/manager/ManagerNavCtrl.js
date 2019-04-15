@@ -28,8 +28,6 @@ app.controller('ManagerNavCtrl', ['$scope', '$location', '$window', '$http', fun
             $("#viewBudgetDiv").hide();
             $("#managerHelpDiv").hide();
         }
-
-        console.log("manager stuff", $location.hash());
     });
 
     $scope.doLogout = function() {

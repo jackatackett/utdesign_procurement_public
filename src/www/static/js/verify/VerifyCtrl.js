@@ -9,7 +9,6 @@ app.controller('VerifyCtrl', ['$scope', '$http', '$location', function($scope, $
             return;
         }
 
-        console.log($scope.credentials, $scope.id);
         $http.post('/userVerify', $scope.credentials).then(function(resp) {
             alert("Success!");
             window.location = '/'

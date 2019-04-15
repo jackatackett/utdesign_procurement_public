@@ -35,8 +35,6 @@ app.controller('StudentNavCtrl', ['$scope', '$location', '$window', '$http', fun
             $("#studentHelpDiv").hide();
             $("#viewBudgetDiv").hide();
         }
-
-        console.log("moo", $location.hash());
     });
 
     $scope.doLogout = function() {

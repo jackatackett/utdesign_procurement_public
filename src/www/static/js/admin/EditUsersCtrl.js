@@ -48,9 +48,7 @@ app.controller('EditUsersCtrl', ['$scope', '$location', '$http', function($scope
     };
 
     $scope.deleteUser = function (e) {
-//        console.log("remove user: " + $scope.selectedUser.firstName + " " + $scope.selectedUser.lastName);
         $http.post('/userRemove', {'_id': $scope.selectedUser._id}).then(function(resp) {
-//            console.log("userData success", resp);
         }, function(err) {
             console.error("Error", err.data);
         });
@@ -132,7 +130,6 @@ app.controller('EditUsersCtrl', ['$scope', '$location', '$http', function($scope
     }
 
     $scope.toggleSort = function(keyword) {
-        console.log(keyword);
         if (keyword == $scope.sortTableBy) {
             if($scope.orderTableBy == 'ascending') {
                 $scope.orderTableBy = 'descending';

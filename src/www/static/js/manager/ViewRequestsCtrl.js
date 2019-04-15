@@ -1,6 +1,5 @@
 app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '$timeout', '$interval', function($scope, $location, $http, $window, $timeout, $interval) {
     function convertCosts(value) {
-        console.log(value);
         if (typeof value === "undefined") {
             return "$0.00";
         }
@@ -54,17 +53,11 @@ app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '
     $scope.regenerateTable = function(e) {
         var targ = e.target.id.substring(6, e.target.id.length);
         curProject = targ;
-        console.log("current proj: ", curProject);
-        console.log("project data:", projectData[curProject]);
-        console.log("project info:", $scope.projects);
         $scope.refreshStatuses();
     };
 
     $scope.approveRequest = function(e, rowIdx) {
-        console.log($scope.data);
-        console.log(rowIdx);
         $http.post('/procurementApproveManager', {'_id':$scope.data[rowIdx]._id}).then(function(resp) {
-            console.log("Success", resp);
             alert("Success!");
             $window.location.reload();
         }, function(err) {
@@ -81,7 +74,6 @@ app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '
 
     $scope.permanentReject = function(e) {
         $http.post('/procurementRejectManager', {'_id':$scope.data[lightboxRow]._id, "comment": $scope.mgrComment}).then(function(resp) {
-            console.log("Success", resp);
             alert("Success!");
             $window.location.reload();
         }, function(err) {
@@ -93,7 +85,6 @@ app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '
 
     $scope.sendForReview = function(e) {
         $http.post('/procurementUpdateManager', {'_id':$scope.data[lightboxRow]._id, "comment": $scope.mgrComment}).then(function(resp) {
-            console.log("Success", resp);
             alert("Success!");
             $window.location.reload();
         }, function(err) {
@@ -114,12 +105,8 @@ app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '
 
     $scope.getTeams = function() {
         $http.post('/findProject', {}).then(function(resp) {
-            console.log("Project Success", resp);
             projectData = resp.data;
-
             numProjects = projectData.length;
-            console.log("number projects: " + numProjects);
-
             $scope.projects = [];
 
             for (var pr in projectData) {
@@ -127,7 +114,6 @@ app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '
                 tempData["number"] = projectData[pr]["projectNumber"];
                 tempData["name"] = projectData[pr]["projectName"];
                 $scope.projects.push(tempData);
-                //~ $scope.projects.push({"number": pr["projectNumber"], "name": pr["projectName"]});
             }
         }, function(err) {
             console.error("Error", err.data);
@@ -151,7 +137,6 @@ app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '
     $scope.historyFieldKeys = ["timestamp", "actor", "comment", "oldState", "newState"];
 
     $scope.viewHistory = function(e, rowIdx) {
-        console.log("history");
         $("#historyBody").empty();
         var historyHTML = "";
         for (var hist in $scope.data[rowIdx]["history"]) {
@@ -165,7 +150,6 @@ app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '
             historyHTML = "No history";
         }
         $("#historyBody").append(historyHTML);
-        console.log(historyHTML);
         $("#historyModal").show();
     };
 

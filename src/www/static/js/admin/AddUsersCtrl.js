@@ -28,11 +28,9 @@ app.controller('AddUsersCtrl', ['$scope', 'dispatcher', '$location', '$http', '$
             $scope.projectNumArray = prjNumsAry;
         }
 
-        if(!validateRequest()) {
-            console.log("request was invalid");
-        } else {
+        if(validateRequest()) {
             $http.post('/userAdd', {'projectNumbers':prjNumsAry, 'firstName':$scope.userInfo.firstName, 'lastName':$scope.userInfo.lastName, 'netID':$scope.userInfo.netID, 'email':$scope.userInfo.email, 'course':$scope.userInfo.course, 'role':'student'}).then(function(resp) {
-                console.log("Success", resp);
+                alert("Success");
             }, function(err) {
                 console.error("Error", err.data);
                 alert("Error")
@@ -41,14 +39,11 @@ app.controller('AddUsersCtrl', ['$scope', 'dispatcher', '$location', '$http', '$
     };
 
     $scope.selectSpreadsheet = function(e) {
-        console.log("selectSpreadsheet");
         var target = e.currentTarget;
         $("#spreadsheetField").click();
     };
 
     $scope.submitSpreadsheet = function(files) {
-        console.log("submitSpreadsheet");
-
         var fd = new FormData();
         //Take the first selected file
         fd.append("sheet", files[0]);

@@ -68,7 +68,7 @@ app.controller('EditProjectsCtrl', ['$scope', '$location', '$http', function($sc
 
     $scope.deleteProject = function (e) {
         $http.post('/projectInactivate', {'_id': $scope.selectedProject._id}).then(function(resp) {
-            console.log("projectInactivate success", resp);
+            alert("Success!");
         }, function(err) {
             console.error("Error", err.data);
         });
@@ -142,7 +142,6 @@ app.controller('EditProjectsCtrl', ['$scope', '$location', '$http', function($sc
     }
 
     $scope.toggleSort = function(keyword) {
-        console.log(keyword);
         if (keyword == $scope.sortTableBy) {
             if($scope.orderTableBy == 'ascending') {
                 $scope.orderTableBy = 'descending';

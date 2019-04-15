@@ -46,8 +46,6 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher'
 
         // send the request to the REST endpoint
 
-        console.log("status", $scope.request.status);
-        console.log($scope.request);
         var endpoint = "/procurementSave";
 
         if (submit) {
@@ -59,7 +57,6 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher'
         }
 
         $http.post(endpoint, $scope.request).then(function(resp) {
-            console.log("Success", resp);
             alert("Success!");
             dispatcher.emit("refreshStatuses");
             $scope.newRequest();
@@ -220,7 +217,6 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher'
         delete request.requestNumber;
         delete request.status;
         delete request.history;
-        console.log('cloneRequest', request)
         $scope.request = request;
         //remove the dollar signs on unit and total cost
         for (var x in $scope.request["items"]) {

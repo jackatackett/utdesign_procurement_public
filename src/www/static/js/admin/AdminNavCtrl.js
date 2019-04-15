@@ -124,8 +124,6 @@ app.controller('AdminNavCtrl', ['$scope', 'dispatcher', '$timeout', '$location',
             $("#addProjectsCtrlDiv").hide();
             $("#editProjectsCtrlDiv").hide();
         }
-
-        console.log("admin stuff", $location.hash());
     });
 
     $scope.doLogout = function() {

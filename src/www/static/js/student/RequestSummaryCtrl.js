@@ -54,7 +54,6 @@ app.controller('RequestSummaryCtrl', ['$scope', '$http', '$location', '$timeout'
     $scope.cancelRequest = function(request) {
         if (request._id) {
             $http.post('/procurementCancel', {_id: request._id}).then(function(resp) {
-                console.log(resp);
                 alert("Success!");
                 $scope.refreshStatuses();
             }, function(err) {
