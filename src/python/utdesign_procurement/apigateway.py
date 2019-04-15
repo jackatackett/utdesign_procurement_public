@@ -90,6 +90,8 @@ class ApiGateway(object):
         if not self.colProjects.find_one(findQuery):
             raise cherrypy.HTTPError(400, "projectNumber inactive")  # TODO better message
 
+        # TODO does this check interfere with admin edit powers?
+
         mySubmit = checkValidData("submit", data, bool)
 
         if "adminEdit" in data:
@@ -708,7 +710,13 @@ class ApiGateway(object):
             'role': 'admin'
         })
 
-        # TODO send notification to manager who will receive it?
+        # send notification email to manager
+        managerEmail = myRequest['manager']
+        self.email_handler.notifyUpdateManager(**{
+            'email': managerEmail,
+            'requestNumber': myRequest['requestNumber'],
+            'projectNumber': myRequest['projectNumber']
+        })
 
 
     @cherrypy.expose
@@ -799,8 +807,6 @@ class ApiGateway(object):
             'requestNumber': myRequest['requestNumber'],
             'projectNumber': myRequest['projectNumber']
         })
-
-        # TODO send email to admin?
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -1562,7 +1568,14 @@ class ApiGateway(object):
         self.colProjects.insert(myProject)
 
         # TODO send confirmation email to admin? maybe not
-        # TODO send notification emails to members of project
+
+        # send notification emails to students
+        teamEmails = myProject['membersEmails']
+        self.email_handler.notifyProjectAdd(**{
+            'teamEmails': teamEmails,
+            'projectNumber': myProject['projectNumber'],
+            'projectName': myProject['projectName']
+        })
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -1593,8 +1606,16 @@ class ApiGateway(object):
 
         self._updateDocument(findQuery, findQuery, updateRule, collection=self.colProjects)
 
+        myProject = self.colProjects.find_one(findQuery)
+
         # TODO send confirmation to admin who did this
-        # TODO send notification to project's members
+
+        self.email_handler.notifyProjectInactivate(**{
+            'teamEmails': myProject['membersEmails'],
+            'projectNumber': myProject['projectNumber'],
+            'projectName': myProject['projectName']
+        })
+
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -1736,6 +1757,13 @@ class ApiGateway(object):
 
         # TODO confirmation email to admin maybe
         # TODO notification email to project members maybe
+        self.email_handler.notifyProjectEdit(**{
+            'membersEmails': myProject['membersEmails'],
+            'projectNumber': myProject['projectNumber'],
+            'projectName': myProject['projectName'],
+            'sponsorName': myProject['sponsorName']
+        })
+
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -2202,6 +2230,7 @@ class ApiGateway(object):
 
 
         # TODO what if user doesn't have netID or course?
+        # TODO separate templates for notifying students or managers or admin?
         self.email_handler.notifyUserEdit(**{
             'email': myUser['email'],
             'projectNumbers': myUser['projectNumbers'],
@@ -2248,8 +2277,15 @@ class ApiGateway(object):
 
         self._updateDocument(findQuery, updateQuery, updateRule, collection=self.colUsers)
 
+        myUser = self.colUsers.find_one(findQuery)
+
         # TODO send confirmation email to admin?
-        # don't send notification to student?
+
+        self.email_handler.notifyUserRemove(**{
+            'email': myUser['email'],
+            'firstName': myUser['firstName'],
+            'lastName': myUser['lastName']
+        })
 
     @cherrypy.expose
     @cherrypy.tools.json_in()

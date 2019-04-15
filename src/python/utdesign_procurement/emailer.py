@@ -239,6 +239,63 @@ class EmailHandler(object):
         body = template.render(**renderArgs)
         self.send(email, subject, body)
 
+    def notifyUpdateManager(self, email, projectNumber, requestNumber):
+        renderArgs = {
+            'domain': self.domain,
+            'projectNumber': projectNumber,
+            'requestNumber': requestNumber
+        }
+        subject = "Request % has been sent for updates!" % (requestNumber)
+        template = self.templateLookup.get_template('notifyUpdateManager.html')
+        body = template.render(**renderArgs)
+        self.send(email, subject, body)
+
+    def notifyUserRemove(self, email, firstName, lastName):
+        renderArgs = {
+            'email': email,
+            'firstName': firstName,
+            'lastName': lastName
+        }
+        subject = "Your GettIt account has been deactivated"
+        template = self.templateLookup.get_template('notifyUserRemove.html')
+        body = template.render(**renderArgs)
+        self.send(email, subject, body)
+
+    def notifyProjectAdd(self, teamEmails, projectNumber, projectName):
+        renderArgs = {
+            'domain': self.domain,
+            'projectNumber': projectNumber,
+            'projectName': projectName,
+        }
+        subject = "You have been added to project %s" % (projectNumber)
+        template = self.templateLookup.get_template('notifyUpdateManager.html')
+        body = template.render(**renderArgs)
+        self.send(teamEmails, subject, body)
+
+    def notifyProjectInactivate(self, teamEmails, projectNumber, projectName):
+        renderArgs = {
+            'domain': self.domain,
+            'projectNumber': projectNumber,
+            'projectName': projectName,
+        }
+        subject = "project number %s has been inactivated" % (projectNumber)
+        template = self.templateLookup.get_template('notifyProjectInactivate.html')
+        body = template.render(**renderArgs)
+        self.send(teamEmails, subject, body)
+
+    def notifyProjectEdit(self, membersEmails, projectNumber, projectName, sponsorName):
+        renderArgs = {
+            'domain': self.domain,
+            'projectNumber': projectNumber,
+            'projectName': projectName,
+            'membersEmails': membersEmails,
+            'sponsorName': sponsorName
+        }
+        subject = "project number %s has been edited" % (projectNumber)
+        template = self.templateLookup.get_template('notifyProjectEdit.html')
+        body = template.render(**renderArgs)
+        self.send(membersEmails, subject, body)
+
 class Emailer(object):
     """
     Manages email connections and sends HTML emails in MIMEMultipart messages
