@@ -57,7 +57,7 @@ app.controller('EditProjectsCtrl', ['$scope', '$location', '$http', function($sc
     };
 
     $scope.saveProjectEdit = function() {
-        $http.post('/projectEdit', {'projectNumber': Number($scope.selectedProject.projectNumber), 'sponsorName':$scope.selectedProject.sponsorName, 'projectName':$scope.selectedProject.projectName, 'membersEmails':$scope.membersEmails}).then(function(resp) {
+        $http.post('/projectEdit', {'projectNumber': Number($scope.selectedProject.projectNumber), 'sponsorName':$scope.selectedProject.sponsorName, 'projectName':$scope.selectedProject.projectName, 'membersEmails':$scope.selectedProject.membersEmails}).then(function(resp) {
         }, function(err) {
             console.error("Error", err.data);
         });
@@ -67,11 +67,11 @@ app.controller('EditProjectsCtrl', ['$scope', '$location', '$http', function($sc
     };
 
     $scope.deleteProject = function (e) {
-//        $http.post('/userRemove', {'_id': $scope.selectedUser._id}).then(function(resp) {
-//            console.log("userData success", resp);
-//        }, function(err) {
-//            console.error("Error", err.data);
-//        });
+        $http.post('/projectInactivate', {'_id': $scope.selectedProject._id}).then(function(resp) {
+            console.log("projectInactivate success", resp);
+        }, function(err) {
+            console.error("Error", err.data);
+        });
 
         $scope.requery();
         $scope.closeEditBox();
