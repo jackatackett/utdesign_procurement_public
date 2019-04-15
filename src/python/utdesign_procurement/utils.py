@@ -219,11 +219,8 @@ def lenientConvertToCents(dollarAmt):
 
 def requestCreate(data, status, optional=False):
     """
-    Takes data as an input as uses the data to create a procurement request (dict).
-
-    PRECONDITION/POSTCONDITION: budget related information is ignored,
-        since this function is meant to create and clone requests
-        before they have been ordered.
+    Takes data as an input as uses the data to create
+    a procurement request (dict).
 
     Expected input::
 
@@ -273,6 +270,8 @@ def requestCreate(data, status, optional=False):
     # myItems is the list we are creating and adding to the database
     myItems = []
 
+    requestSubtotal = 0
+
     # iterate through list of items
     for theirDict in theirItems:
         # theirDict = checkValidData(item, data, dict) #check dict is actually a dict?
@@ -288,9 +287,23 @@ def requestCreate(data, status, optional=False):
         myDict['unitCost'] = convertToCents(myDict['unitCost'])
         myDict['totalCost'] = convertToCents(myDict['totalCost'])
 
+        #convert unitCost and totalCost to cents, and calculate the subTotal
+        for key in ("unitCost", "totalCost"):
+            myDict[key] = convertToCents(myDict[key])
+        requestSubtotal += myDict["totalCost"]
+        
         myItems.append(myDict)
 
     myRequest["items"] = myItems
+    myRequest["requestSubtotal"] = requestSubtotal
+
+    #~ #since this is creating a request, the shipping cost will be 0 (not set yet) and the requestTotal will be the same as requestSubtotal
+    # set shipping cost to 0 if not present
+    if "shippingCost" in data:
+        myRequest["shippingCost"] = convertToCents(checkValidData("shippingCost", data, str))
+    else:
+        myRequest["shippingCost"] = 0
+    myRequest["requestTotal"] = requestSubtotal + myRequest["shippingCost"]
 
     return myRequest
 
