@@ -2578,7 +2578,7 @@ class ApiGateway(object):
             # check for valid project
             if 'projectNumbers' in myUser:
                 for projectNumber in myUser['projectNumbers']:
-                    if not self.colProjects.find_one({'projectNumber': myUser['projectNumbers']}):
+                    if not self.colProjects.find_one({'projectNumber': projectNumber}):
                         myComment['missingProjects'].append(projectNumber)
 
         if comment:
