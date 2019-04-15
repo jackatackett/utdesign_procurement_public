@@ -2374,6 +2374,27 @@ class ApiGateway(object):
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
     @authorizedRoles("admin")
+    def userSingleData(self):
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myEmail = checkValidData('email', data, str)
+        user = self.colUsers.find_one({'email': myEmail})
+        if user:
+            myUser = dict()
+            for key in ("projectNumbers", "firstName", "lastName", "netID", "course", 'email', 'role'):
+                myUser[key] = user[key]
+            return myUser
+        else:
+            return dict()
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    @authorizedRoles("admin")
     def userData(self):
         """
         This REST endpoint returns a list of 10 users from the database. The users may be

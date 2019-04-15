@@ -28,17 +28,47 @@
         <tbody>
 
             <tr ng-repeat="user in users track by $index" ng-init="rowIdx = $index" class="badRow" ng-if="user != null">
-                <td class="cleanInputCell" ng-repeat="fieldK in bulkKeys" ng-class="{badCell: (
-                    (fieldK == 'projectNumbers' && user.comment.missingProjects.length) ||
-                    (fieldK == 'role' && user.comment.invalidRole) ||
-                    (user.comment.missingAttributes.indexOf(fieldK) >= 0) ||
-                    (user.comment.conflictingAttributes.indexOf(fieldK) >= 0)
-                )}">
+                <td class="cleanInputCell" ng-repeat="fieldK in bulkKeys" ng-class="{badCell: isBadCell(user, fieldK)}">
 
                     <input type="text" style="height: 100%" ng-model="users[rowIdx][fieldK]" ng-change="revalidateUser(rowIdx)" ng-model-options="{updateOn: 'blur'}">
 
                 </td>
+                <td style="border: 0px;" ng-if="filterStatus == 'conflicting' || filterStatus == 'existing'">
+                    <button type="button" class="btn btn-primary" ng-click="showCompare(rowIdx)">Compare</button>
+                </td>
             </tr>
         </tbody>
     </table>
+
+    <div id="compareModal" class="modal">
+        <div class="modal-content">
+            <table class="table" id="compareLightBoxTable" style="margin: 0; width: 100%; display:table;">
+                <thead>
+                    <th>Field</th>
+                    <th>Existing User</th>
+                    <th>Spreadsheet</th>
+                </thead>
+
+                <tr ng-repeat="info in editableFields track by $index" ng-init="rowIdx = $index">
+                    <td>
+                        {{info}}
+                    </td>
+                    <td>
+                        <input type="text" ng-model="compareUserOld[editableKeys[rowIdx]]" readonly>
+                    </td>
+                    <td>
+                        <input type="text" ng-model="compareUserNew[editableKeys[rowIdx]]" ng-class="{badCellBorder: isBadCell(compareUserNew, editableKeys[rowIdx])}">
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <button type="button" class="btn btn-primary" ng-click="exitCompare()">Close</button>
+                        <button type="button" class="btn btn-primary" ng-click="revalidateUser(selectedIdx, true)">Validate</button>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+    </div>
+
 </div>

@@ -3,12 +3,15 @@ app.controller('AddUserBulkCtrl', ['$scope', 'dispatcher', '$location', '$http',
     $scope.errorText = "";
     $scope.bulkKeys = ["projectNumbers", "firstName", "lastName", "netID", "email", "course", "role", "comment"];
     $scope.bulkFields = ["Project Number", "First Name", "Last Name", "NetID", "Email", "Course", "Role", "Comment"];
+    $scope.editableKeys = ["projectNumbers", "firstName", "lastName", "netID", "email", "course", 'role'];
+    $scope.editableFields = ["Project Number", "First Name", "Last Name", "NetID", 'Email', "Course", 'Role'];
     $scope.numberOfPages = 1;
     $scope.currentPage = 1;
     $scope.pageNumberArray = [];
     $scope.users = [];
     $scope.filterStatus = "valid";
     $scope.metadata = {};
+    $scope.selectedIdx = -1;
 
     $scope.submitBulk = function() {
         $http.post('/userSpreadsheetAdd').then(function(resp) {
@@ -96,11 +99,11 @@ app.controller('AddUserBulkCtrl', ['$scope', 'dispatcher', '$location', '$http',
         });
     }
 
-    $scope.revalidateUser = function(rowIdx) {
+    $scope.revalidateUser = function(rowIdx, comparisonBox) {
         $http.post('/userSpreadsheetRevalidate', {
             'bulkStatus': $scope.filterStatus,
             'index': rowIdx,
-            'user': $scope.users[rowIdx]
+            'user': comparisonBox ? $scope.compareUserNew : $scope.users[rowIdx]
         }).then(function(resp) {
             if ($scope.filterStatus != resp.data.status) {
                 $scope.metadata[$scope.filterStatus]--;
@@ -109,10 +112,42 @@ app.controller('AddUserBulkCtrl', ['$scope', 'dispatcher', '$location', '$http',
             } else {
                 $scope.users[rowIdx] = resp.data.user;
             }
+
+            if (comparisonBox) {
+                $scope.compareUserNew = resp.data.user;
+            }
+
         }, function(err) {
             alert("Error during revalidation.");
             console.log(err);
         });
+    }
+
+    $scope.showCompare = function(rowIdx) {
+        $http.post("/userSingleData", {
+            email: $scope.users[rowIdx].email
+        }).then(function(resp) {
+            $scope.selectedIdx = rowIdx;
+            $scope.compareUserNew = JSON.parse(JSON.stringify($scope.users[rowIdx]));
+            $scope.compareUserOld = resp.data;
+            $("#compareModal").show();
+        }, function(err) {
+            alert("Error retrieving user comparison data.")
+        });
+
+    }
+
+    $scope.exitCompare = function(rowIdx) {
+        $("#compareModal").hide();
+    }
+
+    $scope.isBadCell = function(user, fieldK) {
+        return (
+            (fieldK == 'projectNumbers' && user.comment.missingProjects.length) ||
+            (fieldK == 'role' && user.comment.invalidRole) ||
+            (user.comment.missingAttributes.indexOf(fieldK) >= 0) ||
+            (user.comment.conflictingAttributes.indexOf(fieldK) >= 0)
+        )
     }
 
     dispatcher.on('bulkRefresh', function() {
