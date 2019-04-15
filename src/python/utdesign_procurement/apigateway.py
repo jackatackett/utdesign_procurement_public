@@ -2723,6 +2723,10 @@ class ApiGateway(object):
 
         return retProjects
 
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    @authorizedRoles("admin")
     def userSingleData(self):
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
