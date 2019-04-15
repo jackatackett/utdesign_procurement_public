@@ -113,6 +113,10 @@ app.controller('EditProjectsCtrl', ['$scope', '$location', '$http', function($sc
     }
 
     $scope.requery = function() {
+        if ($scope.keywordSearch.defaultBudget) {
+            $scope.keywordSearch.defaultBudget = String($scope.keywordSearch.defaultBudget);
+        }
+
         $scope.repage();
         $scope.changePage($scope.pageNumber);
     }

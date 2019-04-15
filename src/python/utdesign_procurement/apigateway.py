@@ -11,7 +11,7 @@ from uuid import uuid4
 from utdesign_procurement.utils import (authorizedRoles, generateSalt,
     hashPassword, checkProjectNumbers, checkValidData, checkValidID,
     checkValidNumber, verifyPassword, requestCreate, convertToCents,
-    getKeywords)
+    getKeywords, getProjectKeywords)
 
 from datetime import datetime, timedelta
 
@@ -1498,18 +1498,13 @@ class ApiGateway(object):
             data = dict()
 
         myID = checkValidID(data)
-        findQuery = {
-            '$and': [
-                {'_id': ObjectId(myID)},
-                {'status': "active"}
-            ]}
-        updateQuery = {'_id': ObjectId(myID)}
+        findQuery = {'_id': ObjectId(myID)}
         updateRule = {
             "$set":
                 {'status': "inactive"}
         }
 
-        self._updateDocument(findQuery, updateQuery, updateRule, collection=self.colProjects)
+        self._updateDocument(findQuery, findQuery, updateRule, collection=self.colProjects)
 
         # TODO send confirmation to admin who did this
         # TODO send notification to project's members
@@ -2104,9 +2099,9 @@ class ApiGateway(object):
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
-            myFilter = getKeywords(cherrypy.request.json)
+            myFilter = getProjectKeywords(cherrypy.request.json)
         else:
-            myFilter = dict()
+            myFilter = getProjectKeywords()
         #myFilter['status'] = 'current'
 
         pageSize = 10 # TODO stretch goal make this configurable
@@ -2230,10 +2225,7 @@ class ApiGateway(object):
 
         pageSize = 10 # TODO stretch goal make this configurable
 
-        if 'keywordSearch' in data:
-            myFilter = getKeywords(data['keywordSearch'])
-        else:
-            myFilter = dict()
+        myFilter = getProjectKeywords(data.get('keywordSearch', {}))
         #myFilter['status'] = 'current'
 
         # finds projects who are current only
