@@ -19,7 +19,7 @@
                     <td colspan="2">
                         <button type="button" class="btn btn-primary" ng-click="addUser($event)" >Add</button>
                         <button type="button" class="btn btn-primary" ng-click="selectSpreadsheet($event)" >Upload Spreadsheet</button>
-                        <a href="/resources/userAddTemplate.xlsx" download="userAddTemplate.xlsx" class="btn btn-primary" >Download Template</button>
+                        <form action="/resources/userAddTemplate.xlsx"><button type="submit" class="btn btn-primary">Download Template</button></form>
                         <input type="file" style="display: none" id="spreadsheetField" name="file" onchange="angular.element(this).scope().submitSpreadsheet(this.files)"/>
                     </td>
                 </tr>

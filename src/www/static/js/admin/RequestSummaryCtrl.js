@@ -314,5 +314,61 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
     dispatcher.on("refreshStatuses", $scope.requery);
 
 
+    // ALL GENERATING REPORTS CODE BELOW
+
+    // set up the datepickers
+
+    $('#reportStart').datepicker({
+        weekStart: 1,
+        daysOfWeekHighlighted: "6,0",
+        autoclose: true,
+        todayHighlight: true,
+    });
+    $('#reportStart').datepicker("setDate", new Date());
+
+    $('#reportEnd').datepicker({
+        weekStart: 1,
+        daysOfWeekHighlighted: "6,0",
+        autoclose: true,
+        todayHighlight: true,
+    });
+    $('#reportEnd').datepicker("setDate", new Date());
+
+    $scope.showGenerateReportsModal = function() {
+        $("#generateReportsModal").show();
+    }
+
+    $scope.generateReport = function() {
+        $http.post('/reportGenerate', {
+            'sortBy': $scope.sortTableBy,
+            'order':$scope.orderTableBy,
+            'primaryFilter': $scope.primaryFilter,
+            'secondaryFilter': $scope.secondaryFilter
+        }).then(function(resp) {
+            $scope.data = resp.data;
+            console.log("generateReport", resp.data);
+
+            $('<form></form>')
+                 .attr('action', 'reportDownload/' + resp.data)
+                 .appendTo('body').submit().remove();
+
+        }, function(err) {
+            console.error("Error", err.data);
+        });
+    }
+
+    $scope.cancelReport = function() {
+        $("#generateReportsModal").hide();
+    }
+
+    $scope.isEmpty = function(obj) {
+        for (var x in obj) {
+            if (obj.hasOwnProperty(x) && obj[x]) {
+                return false;
+            }
+        }
+        return true;
+    }
 
 }]);
+
