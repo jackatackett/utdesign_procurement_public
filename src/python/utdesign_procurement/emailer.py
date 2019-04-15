@@ -278,10 +278,23 @@ class EmailHandler(object):
             'projectNumber': projectNumber,
             'projectName': projectName,
         }
-        subject = "projectNumber %s has been inactivated" % (projectNumber)
+        subject = "project number %s has been inactivated" % (projectNumber)
         template = self.templateLookup.get_template('notifyProjectInactivate.html')
         body = template.render(**renderArgs)
         self.send(teamEmails, subject, body)
+
+    def notifyProjectEdit(self, membersEmails, projectNumber, projectName, sponsorName):
+        renderArgs = {
+            'domain': self.domain,
+            'projectNumber': projectNumber,
+            'projectName': projectName,
+            'membersEmails': membersEmails,
+            'sponsorName': sponsorName
+        }
+        subject = "project number %s has been edited" % (projectNumber)
+        template = self.templateLookup.get_template('notifyProjectEdit.html')
+        body = template.render(**renderArgs)
+        self.send(membersEmails, subject, body)
 
 class Emailer(object):
     """

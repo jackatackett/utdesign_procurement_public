@@ -85,6 +85,8 @@ class ApiGateway(object):
         if not self.colProjects.find_one(findQuery):
             raise cherrypy.HTTPError(400, "projectNumber inactive")  # TODO better message
 
+        # TODO does this check interfere with admin edit powers?
+
         mySubmit = checkValidData("submit", data, bool)
 
         if "adminEdit" in data:
@@ -800,8 +802,6 @@ class ApiGateway(object):
             'requestNumber': myRequest['requestNumber'],
             'projectNumber': myRequest['projectNumber']
         })
-
-        # TODO send email to admin? I don't think so
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -1604,6 +1604,7 @@ class ApiGateway(object):
         myProject = self.colProjects.find_one(findQuery)
 
         # TODO send confirmation to admin who did this
+
         self.email_handler.notifyProjectInactivate(**{
             'teamEmails': myProject['membersEmails'],
             'projectNumber': myProject['projectNumber'],
@@ -1706,7 +1707,6 @@ class ApiGateway(object):
         projectNumber is used to specify which project will be edited,
         while the other values are what the values in the database will be set to.
         {
-            # TODO take ID?
             projectNumber: (int),
             sponsorName: (string, optional),
             projectName: (string, optional),
@@ -1752,6 +1752,13 @@ class ApiGateway(object):
 
         # TODO confirmation email to admin maybe
         # TODO notification email to project members maybe
+        self.email_handler.notifyProjectEdit(**{
+            'membersEmails': myProject['membersEmails'],
+            'projectNumber': myProject['projectNumber'],
+            'projectName': myProject['projectName'],
+            'sponsorName': myProject['sponsorName']
+        })
+
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
