@@ -13,14 +13,19 @@ app.controller('AddUserBulkCtrl', ['$scope', 'dispatcher', '$location', '$http',
     $scope.metadata = {};
     $scope.selectedIdx = -1;
 
-    $scope.submitBulk = function() {
-        $http.post('/userSpreadsheetAdd').then(function(resp) {
-            alert('Success!');
-            $scope.hideBulk();
-        }, function(err) {
-            alert('Error!');
-            $scope.hideBulk();
-        });
+    $scope.bulkSubmit = function() {
+        if ($scope.metadata.conflicting || $scope.metadata.invalid) {
+            alert("Cannot submit with unresolved issues.");
+        } else {
+            $http.post('/userSpreadsheetSubmit').then(function(resp) {
+                alert("Success!");
+                $location.hash('editUsers');
+                dispatcher.emit('bulkEnd');
+            }, function(err) {
+                alert("Error!");
+                console.error(err);
+            });
+        }
     }
 
     $scope.changePage = function(pageNumber) {

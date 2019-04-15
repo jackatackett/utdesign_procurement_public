@@ -1839,6 +1839,7 @@ class ApiGateway(object):
             'existing': [],
             'conflicting': [],
         }
+        emailLut = dict()
         for index, row in df.iterrows():
             # get from excel
             myUser = dict()
@@ -1853,6 +1854,17 @@ class ApiGateway(object):
                     break
 
             myUser = self.validateUser(myUser, comment=True)
+
+            if 'email' in myUser and myUser['email'] in emailLut:
+                # merge this user's project numbers into the old user's project numbers
+                # TODO merge courses too
+                # TODO maybe check for conflicts?
+                prevUser = emailLut[myUser['email']]
+                prevUser['projectNumbers'].extend(myUser['projectNumbers'])
+                continue
+            elif 'email' in myUser:
+                emailLut[myUser['email']] = myUser
+
             if (myUser['comment']['invalidRole'] or
                     myUser['comment']['missingProjects'] or
                     myUser['comment']['missingAttributes'] or
@@ -1874,7 +1886,7 @@ class ApiGateway(object):
     @cherrypy.tools.json_out()
     # @cherrypy.tools.json_in()
     @authorizedRoles("admin")
-    def userSpreadsheetAdd(self):
+    def userSpreadsheetSubmit(self):
 
         # check that we actually have bulk data
         if 'bulkData' in cherrypy.session:
@@ -1904,7 +1916,8 @@ class ApiGateway(object):
 
         # insert all new users
         # TODO once projects can be added, add these users to their projects
-        self.colUsers.insert_many(data['valid'])
+        if data['valid']:
+            self.colUsers.insert_many(data['valid'])
 
         # update all existing users
         for myUser in data['existing']:

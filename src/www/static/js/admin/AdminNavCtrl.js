@@ -7,6 +7,10 @@ app.controller('AdminNavCtrl', ['$scope', 'dispatcher', '$timeout', '$location',
         $timeout(function() {$scope.showBulkAdd = true;}, 0);
     });
 
+    dispatcher.on('bulkEnd', function() {
+        $timeout(function() {$scope.showBulkAdd = false;}, 0);
+    });
+
     //add a listener for the nav bar
     $scope.$on('$locationChangeSuccess', function() {
         // TODO What you want on the event.
