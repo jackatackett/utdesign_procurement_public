@@ -1563,7 +1563,14 @@ class ApiGateway(object):
         self.colProjects.insert(myProject)
 
         # TODO send confirmation email to admin? maybe not
-        # TODO send notification emails to members of project
+
+        # send notification emails to students
+        teamEmails = myProject['membersEmails']
+        self.email_handler.notifyProjectAdd(**{
+            'teamEmails': teamEmails,
+            'projectNumber': myProject['projectNumber'],
+            'projectName': myProject['projectName']
+        })
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
