@@ -1,4 +1,4 @@
-<div id="createRequestCtrlDiv" ng-controller="CreateRequestCtrl as $ctrl">
+<div id="createRequestCtrlDiv" ng-controller="EditRequestCtrl as $ctrl">
 <div class="errbar" ng-show="errorText">
     <p class="errtext" ng-bind="errorText"></p>
 </div>
@@ -19,21 +19,14 @@
             <tr>
                 <td style="width: 15em">Project Number: </td>
                 <td>
-                    <select ng-model="request.projectNumber"
-                            ng-options="pNo for pNo in projectNumbers"
-                            ng-change="refreshManagers()"
-                            style="width:30%">
-                    </select>
+                    <input ng-model="request.projectNumber" style="width:30%" readonly disabled>
                 </td>
             </tr>
 
             <tr>
                 <td style="width: 15em">Manager Email: </td>
                 <td>
-                    <select ng-model="request.manager"
-                            ng-options="manager for manager in projectManagers"
-                            style="width:30%">
-                    </select>
+                    <input ng-model="request.manager" style="width:30%" readonly disabled>
                 </td>
             </tr>
 
@@ -48,6 +41,13 @@
                 <td>Vendor URL: </td>
                 <td>
                     <input ng-model="request.URL" style="width:30%">
+                </td>
+            </tr>
+
+            <tr>
+                <td>Shipping Cost: </td>
+                <td>
+                    <input ng-model="request.shippingCost" style="width:30%">
                 </td>
             </tr>
 
@@ -109,15 +109,11 @@
         </table>
 
     <button type="button" class="btn btn-secondary btn-success" ng-click="saveRequest(true)">
-        Submit Request
+        Save Request
     </button>
 
-    <button type="button" class="btn btn-secondary" ng-click="saveRequest(false)">
-        Save for later
-    </button>
-
-    <button type="button" class="btn btn-danger" ng-click="newRequest()">
-        Start New Request
+    <button type="button" class="btn btn-danger" ng-click="closeEditBox($event)">
+        Cancel
     </button>
 
 

@@ -1,4 +1,4 @@
-app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout', '$interval', function($scope, $location, $http, $timeout, $interval) {
+app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout', '$interval', 'dispatcher', function($scope, $location, $http, $timeout, $interval, dispatcher) {
     function convertCosts(value) {
         if (typeof value === "undefined") {
             return "$0.00";
@@ -235,7 +235,9 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
         }, function(err) {
             console.error("Error", err.data)
         });
-    }
+    };
+
+    dispatcher.on("refreshStatuses", $scope.refreshStatuses);
 
     $timeout($scope.refreshStatuses, 0);
     $interval($scope.refreshStatuses, 5000);
@@ -262,5 +264,14 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
     $scope.closeHistoryBox = function(e) {
         $("#historyModal").hide();
     };
+
+    $scope.editRequest = function(e, rowIdx) {
+        $scope.selectedRequestInfo = $scope.data[rowIdx];
+        console.log("selected request");
+        console.log($scope.selectedRequestInfo);
+        dispatcher.emit("editRequest");
+        $("#editModal").show();
+    };
+
 
 }]);

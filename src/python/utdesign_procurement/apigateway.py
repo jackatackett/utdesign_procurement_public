@@ -35,7 +35,7 @@ class ApiGateway(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
-    @authorizedRoles("student")
+    @authorizedRoles("student", "admin")
     def procurementSave(self):
         """
         This REST endpoint takes data as an input as uses the data to create
@@ -45,7 +45,9 @@ class ApiGateway(object):
         Expected input::
 
             {
-                "submit": (Boolean),
+                "submit": (Boolean) optional (not optional if submitted by student),
+                "adminEdit": (Boolean) optional (not optional if admin performs an edit),
+                "status": (string) optional (not optional if admin performs an edit),
                 "requestNumber": (int) optional,
                 "manager": (string), //email of manager who can approve this
                 "vendor": (string),
@@ -85,7 +87,24 @@ class ApiGateway(object):
 
         mySubmit = checkValidData("submit", data, bool)
 
-        if mySubmit:
+        if "adminEdit" in data:
+            if "status" not in data:
+                raise cherrypy.HTTPError(400, "Bad data given")
+            myAdminEdit = checkValidData("adminEdit", data, bool)
+            if not myAdminEdit:
+                raise cherrypy.HTTPError(400, "Bad data given")
+            myStatus = checkValidData("status", data, str)
+        elif "submit" in data:
+            mySubmit = checkValidData("submit", data, bool)
+            myAdminEdit = False
+
+        if myAdminEdit is None and mySubmit is None:
+            raise cherrypy.HTTPError(400, "Bad submission info provided")
+
+        if myAdminEdit:
+            status = myStatus
+            optional = False
+        elif mySubmit:
             status = "pending"
             optional = False
         else:
@@ -99,6 +118,7 @@ class ApiGateway(object):
 
         myRequest = requestCreate(data, status, optional)
         myRequest['requestNumber'] = myRequestNumber
+        myRequest['oic'] = 0
 
         query = {"requestNumber": myRequestNumber}
 
@@ -117,7 +137,15 @@ class ApiGateway(object):
         else:
             oldState = 'saved' # old state is "saved" if there isn't an old state in the database?
 
-        if status == "pending":
+        if myAdminEdit:
+            oldHistory.append({
+                "actor": cherrypy.session["email"],
+                "timestamp": datetime.now(),
+                "comment": "edited by " + cherrypy.session["email"],
+                "oldState": oldState,
+                "newState": oldState
+            })
+        elif status == "pending":
             oldHistory.append({
                 "actor": cherrypy.session["email"],
                 "timestamp": datetime.now(),
@@ -144,6 +172,13 @@ class ApiGateway(object):
                 'email': myRequest['manager'],
                 'requestNumber': myRequest['requestNumber'],
                 'projectNumber': myRequest['projectNumber']
+            })
+        elif myAdminEdit:
+            #notify students and manager that admin has updated the request
+            teamEmails = self.getTeamEmails(myRequest["projectNumber"])
+            self.email_handler.procurementEditAdmin(**{
+                'teamEmails': teamEmails,
+                'request': myRequest,
             })
 
     def sequence(self):
@@ -412,7 +447,22 @@ class ApiGateway(object):
             'action': 'cancelled'
         })
 
-        # TODO send notification email to manager/admin?
+        # if need to send email to manager
+        if myRequest['oic'] >= 1:
+            self.email_handler.notifyCancelled(**{
+                'email': myRequest['manager'],
+                'requestNumber': myRequest['requestNumber'],
+                'projectNumber': myRequest['projectNumber'],
+            })
+
+        # if need to send email to admin
+        if myRequest['oic'] == 2:
+            adminEmails = self.getAdminEmails()
+            self.email_handler.notifyCancelled(**{
+                'email': adminEmails,
+                'requestNumber': myRequest['requestNumber'],
+                'projectNumber': myRequest['projectNumber'],
+            })
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -465,6 +515,9 @@ class ApiGateway(object):
         if myRequest is None:
             cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
             return
+
+        if myRequest['oic'] == 0:
+            myRequest['oic'] = 1
 
         # send confirmation email to manager
         self.email_handler.confirmRequestManagerAdmin(**{
@@ -548,6 +601,9 @@ class ApiGateway(object):
             cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
             return
 
+        if myRequest['oic'] == 0:
+            myRequest['oic'] = 1
+
         # send confirmation email to manager
         self.email_handler.confirmRequestManagerAdmin(**{
             'email': cherrypy.session['email'],
@@ -624,6 +680,9 @@ class ApiGateway(object):
         if myRequest is None:
             cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
             return
+
+        if myRequest['oic'] == 1:
+            myRequest['oic'] = 2
 
         # send confirmation email to admin
         self.email_handler.confirmRequestManagerAdmin(**{
@@ -882,6 +941,9 @@ class ApiGateway(object):
             cherrypy.log("Unable to send email in procurementCancel: missing request with id %s" % myID)
             return
 
+        if myRequest['oic'] == 1:
+            myRequest['oic'] = 2
+
         # send confirmation email to admin
         self.email_handler.confirmRequestManagerAdmin(**{
             'email': cherrypy.session['email'],
@@ -959,7 +1021,6 @@ class ApiGateway(object):
 
             self.calculateBudget(doc["projectNumber"])
 
-            # TODO send email
         except:
             raise cherrypy.HTTPError(400, "Error updating shipping")
         
@@ -1201,6 +1262,15 @@ class ApiGateway(object):
             'user': cherrypy.session['email'],
             'role': 'manager'
         })
+
+        if myRequest['oic'] == 2:
+            adminEmails = self.getAdminEmails()
+            self.email_handler.notifyRejectedAdmin(**{
+                'adminEmails': adminEmails,
+                'requestNumber': myRequest['requestNumber'],
+                'projectNumber': myRequest['projectNumber'],
+                'manager': myRequest['manager']
+            })
 
 
     @cherrypy.expose
@@ -1899,7 +1969,19 @@ class ApiGateway(object):
         updateRule = {'$set': myData}
         self._updateDocument(updateQuery, updateQuery, updateRule, collection=self.colUsers)
 
-        # TODO send notification email to student
+        myUser = self.colUsers.find_one({'_id': ObjectId(myID)})
+
+
+        # TODO what if user doesn't have netID or course?
+        self.email_handler.notifyUserEdit(**{
+            'email': myUser['email'],
+            'projectNumbers': myUser['projectNumbers'],
+            'firstName': myUser['firstName'],
+            'lastName': myUser['lastName'],
+            'netID': myUser['netID'],
+            'course': myUser['course']
+
+        })
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -2414,3 +2496,4 @@ class ApiGateway(object):
         for user in self.colUsers.find({'role': 'admin'}):
             adminEmails.append(user['email'])
         return adminEmails
+

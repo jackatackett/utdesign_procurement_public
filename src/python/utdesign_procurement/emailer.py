@@ -8,6 +8,8 @@ from email.mime.text import MIMEText
 from mako.lookup import TemplateLookup
 from multiprocessing import Process, Queue
 
+from utdesign_procurement.utils import convertToDollarStr
+
 def email_listen(emailer, queue):
     function_lut = {
         'send': emailer.emailSend,
@@ -116,6 +118,26 @@ class EmailHandler(object):
         self.send(teamEmails, subject, body)
         self.send(request['manager'], subject, body)
 
+    def procurementEditAdmin(self, teamEmails=None, request=None):
+        renderArgs = {
+            'domain': self.domain,
+            'requestNumber': request['requestNumber'],
+            'projectNumber': request['projectNumber'],
+            'managerEmail': request['manager'],
+            'vendor': request['vendor'],
+            'vendorURL': request['URL'],
+            'justification': request['justification'],
+            'additionalInfo': request['additionalInfo'],
+            'itemCount': len(request['items']),
+            'shippingCost': convertToDollarStr(request['shippingCost'])
+        }
+
+        subject = 'Request Updated For Project %s' % request['projectNumber']
+        template = self.templateLookup.get_template('procurementUpdated.html')
+        body = template.render(**renderArgs)
+        self.send(teamEmails, subject, body)
+        self.send(request['manager'], subject, body)
+
     def confirmStudent(self, teamEmails, requestNumber, projectNumber, action):
         renderArgs = {
             'domain': self.domain,
@@ -179,6 +201,43 @@ class EmailHandler(object):
         template = self.templateLookup.get_template('notifyRequestAdmin.html')
         body = template.render(**renderArgs)
         self.send(adminEmails, subject, body)
+
+    def notifyCancelled(self, email, projectNumber, requestNumber):
+        renderArgs = {
+            'domain': self.domain,
+            'requestNumber': requestNumber,
+            'projectNumber': projectNumber
+        }
+        subject = "Request %s has been cancelled" % (requestNumber)
+        template = self.templateLookup.get_template('notifyCancelled.html')
+        body = template.render(**renderArgs)
+        self.send(email, subject, body)
+
+    def notifyRejectedAdmin(self, adminEmails, projectNumber, requestNumber, manager):
+        renderArgs = {
+            'domain': self.domain,
+            'requestNumber': requestNumber,
+            'projectNumber': projectNumber,
+            'manager': manager
+        }
+        subject = "Request %s has been rejected" % (requestNumber)
+        template = self.templateLookup.get_template('notifyRejectedAdmin.html')
+        body = template.render(**renderArgs)
+        self.send(adminEmails, subject, body)
+
+    def notifyUserEdit(self, email, projectNumbers, firstName, lastName, netID, course):
+        renderArgs = {
+            'domain': self.domain,
+            'projectNumbers': projectNumbers,
+            'firstName': firstName,
+            'lastName': lastName,
+            'netID': netID,
+            'course': course
+        }
+        subject = "You have been edited!"
+        template = self.templateLookup.get_template('notifyUserEdit.html')
+        body = template.render(**renderArgs)
+        self.send(email, subject, body)
 
 class Emailer(object):
     """
