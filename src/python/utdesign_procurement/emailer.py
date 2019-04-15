@@ -148,7 +148,7 @@ class EmailHandler(object):
             'action': action
         }
 
-        subject = 'Request %s is now %s' % (int(requestNumber), action)
+        subject = 'Request %s has been %s' % (int(requestNumber), action)
         template = self.templateLookup.get_template('confirmStudent.html')
         body = template.render(**renderArgs)
         self.send(teamEmails, subject, body)
@@ -161,7 +161,7 @@ class EmailHandler(object):
             'action': action
         }
 
-        subject = 'Request %s is now %s' % (int(requestNumber), action)
+        subject = 'Request %s has been %s' % (int(requestNumber), action)
         template = self.templateLookup.get_template('confirmRequestManagerAdmin.html')
         body = template.render(**renderArgs)
         self.send(email, subject, body)
