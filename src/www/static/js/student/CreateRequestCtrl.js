@@ -208,6 +208,15 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher'
             $scope.request["items"][x]["unitCost"] = $scope.request["items"][x]["unitCost"].replace("$", "");
             $scope.request["items"][x]["totalCost"] = $scope.request["items"][x]["totalCost"].replace("$", "");
         }
+
+        if($scope.request["requestTotal"]) {
+            $scope.request["requestTotal"] = $scope.request["requestTotal"].replace("$", "");
+        }
+
+        if($scope.request["salesTax"]) {
+            $scope.request["salesTax"] = $scope.request["salesTax"].replace("$", "");
+        }
+
         $scope.refreshManagers();
     })
 

@@ -207,6 +207,10 @@ def lenientConvertToCents(dollarAmt):
     :param dollarAmt: the string dollar amount, does not have $ sign
     :return: cents in int
     """
+
+    if dollarAmt.startswith('$'):
+        dollarAmt = dollarAmt[1:]
+
     try:
         if re.match("^[0-9]*\.[0-9]{2}?$", dollarAmt):
             return int(dollarAmt.replace(".", ""))
