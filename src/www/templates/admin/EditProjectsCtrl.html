@@ -33,7 +33,14 @@
         <tbody>
 
             <tr ng-repeat="proj in projects | filter : editFilter" ng-init="rowIdx = $index">
-                <td ng-repeat="fieldK in fieldKeys" ng-bind="proj[fieldK]" style="max-width:20px; overflow:auto;"></td>
+                <td ng-repeat="fieldK in fieldKeys" style="max-width:20px; overflow:auto;">
+                    <div ng-if="fieldK != 'membersEmails'">
+                        {{proj[fieldK]}}
+                    </div>
+                    <select ng-if="fieldK == 'membersEmails'" style="width:100%">
+                        <option ng-repeat="email in projects[rowIdx].membersEmails">{{email}}</option>
+                    </select>
+                </td>
                 <td style="border: 0px;">
                     <button type="button" class="btn btn-primary" ng-click="editProject($event, rowIdx)">Edit</button>
                 </td>
