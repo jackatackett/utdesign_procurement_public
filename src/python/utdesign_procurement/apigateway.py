@@ -2574,15 +2574,12 @@ class ApiGateway(object):
             raise cherrypy.HTTPError(400, 'No data was given')
 
         # prepare the sort, order, and page number
-        sortBy = checkValidData('sortBy', data, str, default='email',
+        sortBy = checkValidData('sortBy', data, str, default='requestNumber',
                                 optional=True)
 
-        if sortBy not in ('projectNumbers', 'firstName', 'lastName', 'netID',
-                'email', 'course', 'role', 'status'):
-            raise cherrypy.HTTPError(
-                400, 'sortBy must be any of projectNumbers, firstName, '
-                     'lastName, netID, email, course, role, status. Not %s'
-                     % sortBy)
+        keyList = ('requestNumber', 'projectNumber', 'status', 'vendor', 'URL', 'requestTotal', 'shippingCost')
+        if sortBy not in keyList:
+            raise cherrypy.HTTPError(400, 'sortBy must be any of %s. Not %s' % (', '.join(keyList), sortBy))
 
         order = checkValidData('order', data, str, default='ascending',
                                 optional=True)
@@ -2605,6 +2602,8 @@ class ApiGateway(object):
         pageSize = 10 # TODO stretch goal make this configurable
 
         myFilter = getRequestKeywords(data)
+
+        cherrypy.log('filter %s' % myFilter)
 
         # finds users who are current only
         cursor = self.colRequests.find(myFilter).collation({ 'locale': 'en' }).sort(sortBy, direction)

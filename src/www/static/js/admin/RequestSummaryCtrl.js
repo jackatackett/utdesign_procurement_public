@@ -42,6 +42,8 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
     $scope.pageNumberArray = [];
     $scope.primaryFilter = {};
     $scope.secondaryFilter = {};
+    $scope.sortTableBy = 'requestNumber';
+    $scope.orderTableBy = 'ascending';
 
     $scope.data = [];
 
