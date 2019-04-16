@@ -1,5 +1,5 @@
 app.value('statusLut', {
-    'complete': 'Picked up',
+    'complete': 'Picked Up',
     'ordered': 'Ordered',
     'manager approved': 'Approved',
     'pending': 'Pending Approval',

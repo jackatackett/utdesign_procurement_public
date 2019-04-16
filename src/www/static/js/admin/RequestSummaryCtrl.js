@@ -42,6 +42,8 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
     $scope.pageNumberArray = [];
     $scope.primaryFilter = {};
     $scope.secondaryFilter = {};
+    $scope.sortTableBy = 'requestNumber';
+    $scope.orderTableBy = 'ascending';
 
     $scope.data = [];
 
@@ -193,7 +195,12 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
         for (var hist in $scope.data[rowIdx]["history"]) {
             historyHTML += '<tr style="border-bottom: 1.5px solid black">';
             for (var ele in $scope.historyFieldKeys) {
-                historyHTML += '<td scope="col" style="background-color: #eee;">' + $scope.data[rowIdx]["history"][hist][$scope.historyFieldKeys[ele]] + '</td>';
+                if ($scope.historyFieldKeys[ele] == "oldState" || $scope.historyFieldKeys[ele] == "newState") {
+                    historyHTML += '<td scope="col" style="background-color: #eee;">' + statusLut[$scope.data[rowIdx]["history"][hist][$scope.historyFieldKeys[ele]]] + '</td>';
+                }
+                else {
+                    historyHTML += '<td scope="col" style="background-color: #eee;">' + $scope.data[rowIdx]["history"][hist][$scope.historyFieldKeys[ele]] + '</td>';
+                }
             }
             historyHTML += '</tr>';
         }
