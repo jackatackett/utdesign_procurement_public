@@ -63,6 +63,8 @@ app.controller('AdminNavCtrl', ['$scope', 'dispatcher', '$timeout', '$location',
             $("#adminAddCostsDiv").hide();
             $("#adminEditCostsDiv").show();
             $("#addUserBulkCtrlDiv").hide();
+            $("#addProjectsCtrlDiv").hide();
+            $("#editProjectsCtrlDiv").hide();
         } else if (hash == 'addUserBulk') {
             //show edit costs
             $scope.activeTab = 'addUserBulk';
