@@ -13,7 +13,7 @@ from uuid import uuid4
 from utdesign_procurement.utils import (authorizedRoles, generateSalt,
     hashPassword, checkProjectNumbers, checkValidData, checkValidID,
     checkValidNumber, verifyPassword, requestCreate, convertToCents,
-    getKeywords, getProjectKeywords, getRequestKeywords)
+    getKeywords, getProjectKeywords, getRequestKeywords, lenientConvertToCents)
 
 from datetime import datetime, timedelta
 
@@ -997,7 +997,7 @@ class ApiGateway(object):
             raise cherrypy.HTTPError(400, 'No data was given')
 
         myID = checkValidID(data)
-        shippingAmt = convertToCents(checkValidData("amount", data, str))
+        shippingAmt = lenientConvertToCents(checkValidData("amount", data, str))
         findQuery = {
             '$and': [
                 {'_id': ObjectId(myID)},
@@ -1433,7 +1433,7 @@ class ApiGateway(object):
                 raise cherrypy.HTTPError(400, "Bad cost type")
             cost[key] = checkValidData(key, data, str)
             if key == "amount":
-                cost[key] = convertToCents(cost[key])
+                cost[key] = lenientConvertToCents(cost[key])
         #~ cost["timestamp"] = datetime.now().isoformat()
         cost["timestamp"] = datetime.now()
         self.colCosts.insert(cost)
@@ -1546,7 +1546,7 @@ class ApiGateway(object):
 
         for key in ("defaultBudget", "availableBudget", "pendingBudget"):
             myProject[key] = checkValidData(key, data, str)
-            myProject[key] = convertToCents(myProject[key])
+            myProject[key] = lenientConvertToCents(myProject[key])
 
 
         for key in ("sponsorName", "projectName"):
