@@ -213,9 +213,9 @@ def lenientConvertToCents(dollarAmt):
         elif re.match("^[0-9]+$", dollarAmt):
             return int(dollarAmt) * 100
         else:
-            raise cherrypy.HTTPError(400, "Bad currency value")
+            raise cherrypy.HTTPError(400, "Bad currency value: %s" % dollarAmt)
     except:
-        raise cherrypy.HTTPError(400, "Bad currency value")
+        raise cherrypy.HTTPError(400, "Bad currency value: %s" % dollarAmt)
 
 def requestCreate(data, status, optional=False):
     """
@@ -285,7 +285,7 @@ def requestCreate(data, status, optional=False):
 
         #convert unitCost and totalCost to cents, and calculate the subTotal
         for key in ("unitCost", "totalCost"):
-            myDict[key] = convertToCents(myDict[key])
+            myDict[key] = lenientConvertToCents(myDict[key])
         requestSubtotal += myDict["totalCost"]
         
         myItems.append(myDict)
@@ -296,7 +296,7 @@ def requestCreate(data, status, optional=False):
     #~ #since this is creating a request, the shipping cost will be 0 (not set yet) and the requestTotal will be the same as requestSubtotal
     # set shipping cost to 0 if not present
     if "shippingCost" in data:
-        myRequest["shippingCost"] = convertToCents(checkValidData("shippingCost", data, str))
+        myRequest["shippingCost"] = lenientConvertToCents(checkValidData("shippingCost", data, str))
     else:
         myRequest["shippingCost"] = 0
     myRequest["requestTotal"] = requestSubtotal + myRequest["shippingCost"]
@@ -361,7 +361,7 @@ def getProjectKeywords(keywords):
         s = keywords['defaultBudget'].strip()
         if s:
             try:
-                myFilter['defaultBudget'] = convertToCents(s)
+                myFilter['defaultBudget'] = lenientConvertToCents(s)
             except cherrypy.HTTPError:
                 cherrypy.log('sadness c : ::%s::' % s)
 

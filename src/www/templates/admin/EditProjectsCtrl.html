@@ -25,7 +25,7 @@
                            ng-model="keywordSearch[fieldKey]"
                            ng-model-options='{ debounce: 500 }'
                            ng-change='requery()'
-                           style="width: inherit !important;">
+                           style="width: 100% !important;">
                 </td>
             </tr>
         </thead>
@@ -58,7 +58,7 @@
                     <td colspan="2">
                         <button type="button" class="btn btn-primary" ng-click="closeEditBox()">Close</button>
                         <button type="button" class="btn btn-primary" ng-click="saveProjectEdit($event)">Save</button>
-                        <button type="button" class="btn btn-primary" ng-click="deleteProject($event)">Inactivate</button>
+                        <button type="button" class="btn btn-primary" ng-click="deleteProject($event)">Deactivate</button>
                     </td>
                 </tr>
             </table>
