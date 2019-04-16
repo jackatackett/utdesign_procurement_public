@@ -107,6 +107,7 @@ app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '
     };
 
     $scope.getTeams = function() {
+        // determine which projects the manager is assigned to
         $http.post('/findProject', {}).then(function(resp) {
             projectData = resp.data;
             numProjects = projectData.length;
@@ -118,12 +119,17 @@ app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '
                 tempData["name"] = projectData[pr]["projectName"];
                 $scope.projects.push(tempData);
             }
+
+            // refresh table as soon as project membership of manager is known
+            $scope.refreshStatuses();
         }, function(err) {
             console.error("Error", err.data);
         });
     };
 
     $scope.refreshStatuses = function() {
+        // may only show requests of one project at a time,
+        // by default the "first" project in the list returned by getTeams() is shown
         var filterData = {"projectNumbers": $scope.projects[curProject]["number"]};
         $http.post('/procurementStatuses', filterData).then(function(resp) {
             $scope.data = cleanData(resp.data);
@@ -132,8 +138,10 @@ app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '
         });
     };
 
+    // table cannot refresh until manager's project membership is known
     $scope.getTeams();
     $timeout($scope.refreshStatuses, 0);
+    // table of procurement requests refreshes every 5 seconds
     $interval($scope.refreshStatuses, 5000);
 
     $scope.historyFields = ["Timestamp", "Source", "Comment", "Old State", "New State"];
