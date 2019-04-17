@@ -144,7 +144,6 @@ app.controller('EditUsersCtrl', ['$scope', '$location', '$http', function($scope
     }
 
     $scope.listProjectNumbers = function(nums) {
-        console.log(nums);
         var numList = "";
         for (var i = 0; i < nums.length; i++) {
             numList += nums[i];
