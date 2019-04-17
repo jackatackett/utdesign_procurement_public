@@ -7,13 +7,30 @@
         <div>
             <table class="table" id="addUserTable" style="width: 50%; display:table;">
 
-                <tr ng-repeat="info in fields track by $index">
+                <tr ng-repeat="info in fields track by $index" ng-init="fieldKey = fieldKeys[$index]">
                     <td>
                         {{info}}
                     </td>
                     <td>
-                        <input type="text" ng-model="userInfo[fieldKeys[$index]]" style="width:100%">
+                        <input ng-if="fieldKey != 'role'"
+                               placeholder="{{col}}"
+                               ng-model="userInfo[fieldKey]"
+                               ng-model-options='{ debounce: 500 }'
+                               style="width: 100% !important;">
+
+                        <select ng-if="fieldKey == 'role'"
+                                placeholder="{{col}}"
+                                ng-model="userInfo[fieldKey]"
+                                ng-model-options='{ debounce: 500 }'
+                                style="width: 100% !important;">
+                            <option value= "" selected>Role</option>
+                            <option>admin</option>
+                            <option>manager</option>
+                            <option>student</option>
+                        </select>
                     </td>
+
+
                 </tr>
                 <tr>
                     <td colspan="2">
