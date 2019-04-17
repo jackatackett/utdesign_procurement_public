@@ -3,32 +3,41 @@
         <li class="nav-item">
             <a class="nav-link" href="/" style="color: white !important">UTDesign GettIt</a>
         </li>
+
+
         <li class="nav-item">
-            <a class="nav-link" href="#requestSummary" ng-class="{active: activeTab == 'requestDashboard'}">Requests Dashboard</a>
+            <a class="nav-link" href="#requestSummary" style="" ng-class="{active: activeTab == 'requestDashboard'}">Requests</a>
         </li>
-        <li class="nav-item">
-            <a class="nav-link" href="#addUsers" ng-class="{active: activeTab == 'addUsers'}">Add Users</a>
+
+        <li class="nav-item dropdown">
+            <a class="dropbtn nav-link" href="#editUsers" style="" ng-class="{active: activeTab == 'editUsers' || activeTab == 'addUsers'}">Users</a>
+            <div class="dropdown-content">
+                <a href="#editUsers">Edit Users</a>
+                <a href="#addUsers">Add Users</a>
+            </div>
         </li>
-        <li class="nav-item">
-            <a class="nav-link" href="#editUsers" ng-class="{active: activeTab == 'editUsers'}">Edit Users</a>
+
+        <li class="nav-item dropdown">
+            <a class="dropbtn nav-link" href="#editUsers" style="" ng-class="{active: activeTab == 'viewCosts' || activeTab == 'addCosts'}">Costs</a>
+            <div class="dropdown-content">
+                <a href="#viewCosts">View Costs</a>
+                <a href="#addCosts">Add Costs</a>
+            </div>
         </li>
-        <li class="nav-item">
-            <a class="nav-link" href="#addCosts" ng-class="{active: activeTab == 'addCosts'}">Add Costs</a>
+
+        <li class="nav-item dropdown">
+            <a class="dropbtn nav-link" href="#editProjects" style="" ng-class="{active: activeTab == 'editProjects' || activeTab == 'addProjects'}">Projects</a>
+            <div class="dropdown-content">
+                <a href="#editProjects">Edit Projects</a>
+                <a href="#addProjects">Add Projects</a>
+            </div>
         </li>
-        <li class="nav-item">
-            <a class="nav-link" href="#viewCosts" ng-class="{active: activeTab == 'viewCosts'}">View Costs</a>
-        </li>
+
         <li class="nav-item" ng-show="showBulkAdd">
-            <a class="nav-link" href="#addUserBulk" ng-class="{active: activeTab == 'addUserBulk'}" style="background-color: #a312c7 !important">Bulk User Add</a>
+            <a class="nav-link" href="#addUserBulk" style="" ng-class="{active: activeTab == 'addUserBulk'}" style="background-color: #a312c7 !important">Bulk User Add</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="#addProjects" ng-class="{active: activeTab == 'addProjects'}">Add Projects</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="#editProjects" ng-class="{active: activeTab == 'editProjects'}">Edit Projects</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="#help" ng-class="{active: activeTab == 'help'}">About/Help</a>
+            <a class="nav-link" href="#help" style="" ng-class="{active: activeTab == 'help'}">About/Help</a>
         </li>
         <li class="nav-item ml-auto">
             <button type="button" class="btn btn-danger" ng-click="doLogout()">Logout</button>

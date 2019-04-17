@@ -396,6 +396,18 @@ def getProjectKeywords(keywords):
 }
 """
 
+STATUS_SET = {
+    "saved",
+    "pending",
+    "manager approved",
+    "ordered",
+    "ready for pickup",
+    "complete",
+    "updates for manager",
+    "updates for admin",
+    "rejected"
+}
+
 def getRequestKeywords(data):
     myFilter = {'$and': [{'status': {'$ne': 'saved'}}, {'status': {'$ne': 'cancelled'}}]}
 
@@ -416,6 +428,13 @@ def getRequestKeywords(data):
                         '$regex': re.compile('.*' + re.escape(s) + '.*', re.IGNORECASE)
                     }
 
+        # get currency fields
+        for kw in ('requestTotal', 'salesTax'):
+            if kw in data['primaryFilter']:
+                s = checkValidData(kw, data['primaryFilter'], str).strip()
+                if s:
+                    myFilter[kw] = lenientConvertToCents(s)
+
         # parse out proper project numbers
         if 'projectNumber' in myFilter:
             try:
@@ -424,7 +443,6 @@ def getRequestKeywords(data):
             except ValueError:
                 raise cherrypy.HTTPError(400, 'Invalid projectNumber format')
 
-        # TODO filter statuses and other things
 
     if 'secondaryFilter' in data:
         # get basic fields
@@ -442,6 +460,16 @@ def getRequestKeywords(data):
                 myFilter['items.quantity'] = int(data['secondaryFilter']['quantity'])
             except:
                 cherrypy.log("Invalid request number: %s" % data['secondaryFilter']['quantity'])
+
+    if 'statusFilter' in data:
+        myStatuses = []
+        for status in data['statusFilter']:
+            if status in STATUS_SET:
+                myStatuses.append({'status': status})
+            else:
+                cherrypy.log("Invalid status filter option: %s" % status)
+        if myStatuses:
+            myFilter['$and'].append({'$or': myStatuses})
 
     cherrypy.log("getRequestKeywords1 %s" % data)
     cherrypy.log("getRequestKeywords2 %s" % myFilter)

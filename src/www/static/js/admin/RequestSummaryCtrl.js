@@ -36,8 +36,8 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
     $scope.itemFields = ["Description", 'Item URL', "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
     $scope.historyFields = ["Timestamp", "Source", "Comment", "Old State", "New State"];
     $scope.historyFieldKeys = ["timestamp", "actor", "comment", "oldState", "newState"];
-    $scope.statuses = ["Pending", "Saved", "Manager Approved", "Admin Approved", "Rejected", "Updates for Manager", "Updates for Admin", "Cancelled", "Ordered", "Ready for Pickup", "Complete"];
-    $scope.statusesKeys = ["pending", "saved", "manager approved", "admin approved", "rejected", "updates for manager", "updates for admin", "cancelled", "ordered", "ready for pickup", "complete"];
+    $scope.statuses = ["Pending Approval", "Saved", "Manager Approved", "Rejected", "Updates for Manager", "Updates for Admin", "Ordered", "Ready for Pickup", "Complete"];
+    $scope.statusesKeys = ["pending", "saved", "manager approved", "rejected", "updates for manager", "updates for admin", "ordered", "ready for pickup", "complete"];
 
     $scope.pageNumberArray = [];
     $scope.primaryFilter = {};
@@ -57,6 +57,7 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
         } else {
             $scope.selectedStatuses.push(status);
         }
+        $scope.requery();
     };
 
     $scope.expanded = false;
@@ -229,7 +230,8 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
             'order':$scope.orderTableBy,
             'pageNumber': pageNumber-1,
             'primaryFilter': $scope.primaryFilter,
-            'secondaryFilter': $scope.secondaryFilter
+            'secondaryFilter': $scope.secondaryFilter,
+            'statusFilter': $scope.selectedStatuses
         }).then(function(resp) {
             $scope.data = cleanData(resp.data);
             $scope.pageNumber = pageNumber;
