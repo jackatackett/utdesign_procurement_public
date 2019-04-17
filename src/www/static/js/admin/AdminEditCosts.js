@@ -1,4 +1,6 @@
-app.controller('AdminEditCosts', ['$scope', '$location', '$http', '$timeout', '$interval', function($scope, $location, $http, $timeout, $interval) {
+app.controller('AdminEditCosts', ['$scope', '$location', '$http', '$timeout', '$interval', 'costTypeLut', function($scope, $location, $http, $timeout, $interval, costTypeLut) {
+
+    $scope.costTypeLut = costTypeLut;
 
     function convertCosts(value) {
         if (typeof value === "undefined") {

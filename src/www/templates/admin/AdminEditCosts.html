@@ -12,7 +12,7 @@
         <tbody>
 
             <tr ng-repeat="co in costs | filter : editCostsFilter" ng-init="rowIdx = $index">
-                <td ng-repeat="fieldK in fieldKeys" ng-bind="co[fieldK]"></td>
+                <td ng-repeat="fieldK in fieldKeys" ng-bind="fieldK == 'type' ? costTypeLut[co[fieldK]] : co[fieldK]"></td>
 <!--
                 <td style="border: 0px;">
                     <button type="button" class="btn btn-primary" ng-click="editCost($event, rowIdx)">Edit</button>
