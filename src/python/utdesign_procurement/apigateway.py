@@ -1196,7 +1196,7 @@ class ApiGateway(object):
             'teamEmails': teamEmails,
             'requestNumber': myRequest['requestNumber'],
             'projectNumber': myRequest['projectNumber'],
-            'action': 'picked up',
+            'action': 'marked as picked up',
             'user': cherrypy.session['email'],
             'role': 'admin'
         })
