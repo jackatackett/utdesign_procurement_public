@@ -7,5 +7,6 @@ app.value('statusLut', {
     'updates for manager': 'Pending Updates by Students',
     'updates for admin': 'Pending Updates by Students',
     'ready for pickup': 'Ready for Pickup',
-    'rejected': 'Rejected'
+    'rejected': 'Rejected',
+    'cancelled': 'Cancelled'
 });
