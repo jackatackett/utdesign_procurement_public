@@ -7,6 +7,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from mako.lookup import TemplateLookup
 from multiprocessing import Process, Queue
+from string import capwords
 
 from utdesign_procurement.utils import convertToDollarStr
 
@@ -153,8 +154,8 @@ class EmailHandler(object):
             'projectNumber': int(projectNumber),
             'action': action
         }
-
-        subject = 'Request #%s Has Been %s' % (int(requestNumber), action.capitalize())
+        capitalAction = capwords(action)
+        subject = 'Request #%s Has Been %s' % (int(requestNumber), capitalAction)
         template = self.templateLookup.get_template('confirmStudent.html')
         body = template.render(**renderArgs)
         self.send(teamEmails, subject, body)
@@ -166,8 +167,8 @@ class EmailHandler(object):
             'projectNumber': int(projectNumber),
             'action': action
         }
-
-        subject = 'Request #%s Has Been %s' % (int(requestNumber), action.capitalize())
+        capitalAction = capwords(action)
+        subject = 'Request #%s Has Been %s' % (int(requestNumber), capitalAction)
         template = self.templateLookup.get_template('confirmRequestManagerAdmin.html')
         body = template.render(**renderArgs)
         self.send(email, subject, body)
@@ -182,8 +183,8 @@ class EmailHandler(object):
             'user': user,
             'role': role
         }
-
-        subject = 'Request #%s Has Been %s' % (int(requestNumber), action.capitalize())
+        capitalAction = capwords(action)
+        subject = 'Request #%s Has Been %s' % (int(requestNumber), capitalAction)
         template = self.templateLookup.get_template('notifyStudent.html')
         body = template.render(**renderArgs)
         self.send(teamEmails, subject, body)
@@ -315,7 +316,9 @@ class EmailHandler(object):
             'role': role,
             'comment': comment
         }
-        subject = 'Request #%s Has Been %s' % (int(requestNumber), action.capitalize())
+        capitalAction = capwords(action)
+        print(capitalAction)
+        subject = 'Request #%s Has Been %s' % (int(requestNumber), capitalAction)
         template = self.templateLookup.get_template('notifyStudentRejected.html')
         body = template.render(**renderArgs)
         self.send(teamEmails, subject, body)
