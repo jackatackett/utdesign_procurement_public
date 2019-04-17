@@ -428,6 +428,13 @@ def getRequestKeywords(data):
                         '$regex': re.compile('.*' + re.escape(s) + '.*', re.IGNORECASE)
                     }
 
+        # get currency fields
+        for kw in ('requestTotal', 'salesTax'):
+            if kw in data['primaryFilter']:
+                s = checkValidData(kw, data['primaryFilter'], str).strip()
+                if s:
+                    myFilter[kw] = lenientConvertToCents(s)
+
         # parse out proper project numbers
         if 'projectNumber' in myFilter:
             try:
@@ -436,7 +443,6 @@ def getRequestKeywords(data):
             except ValueError:
                 raise cherrypy.HTTPError(400, 'Invalid projectNumber format')
 
-        # TODO filter statuses and other things
 
     if 'secondaryFilter' in data:
         # get basic fields
