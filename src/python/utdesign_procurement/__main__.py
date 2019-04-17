@@ -18,7 +18,7 @@ def main():
     # TODO prompt for these credentials!
     email_handler = EmailHandler(email_user='noreplygettit@gmail.com',
                          email_password='0ddrun knows all',
-                         email_inwardly=True,
+                         email_inwardly=True,               #set to True for testing; set to False for production to send emails to all
                          template_dir=email_template_dir)
 
     #configure the cherrypy server
