@@ -36,7 +36,7 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
     $scope.itemFields = ["Description", 'Item URL', "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Item Cost"];
     $scope.historyFields = ["Timestamp", "Source", "Comment", "Old State", "New State"];
     $scope.historyFieldKeys = ["timestamp", "actor", "comment", "oldState", "newState"];
-    $scope.statuses = ["Pending Approval", "Saved", "Manager Approved", "Rejected", "Updates for Manager", "Updates for Admin", "Ordered", "Ready for Pickup", "Complete"];
+    $scope.statuses = ["Pending Approval", "Unsubmitted", "Approved", "Rejected", "Pending Updates and Reapproval", "Pending Updates", "Ordered", "Ready for Pickup", "Picked Up"];
     $scope.statusesKeys = ["pending", "saved", "manager approved", "rejected", "updates for manager", "updates for admin", "ordered", "ready for pickup", "complete"];
 
     $scope.pageNumberArray = [];
