@@ -33,7 +33,7 @@
 
         <tbody>
             <tr ng-repeat="requestDict in curRequestData">
-                <td ng-repeat="requestK in requestKeys">{{requestDict[requestK]}}</td>
+                <td ng-repeat="requestK in requestKeys">{{requestK == 'status' ? statusLut[requestDict[requestK]] : requestDict[requestK]}}</td>
             </tr>
         </tbody>
     </table>
@@ -50,7 +50,7 @@
 
         <tbody>
             <tr ng-repeat="costDict in curCostData">
-                <td ng-repeat="costK in costKeys">{{costDict[costK]}}</td>
+                <td ng-repeat="costK in costKeys">{{costK == 'type' ? costTypeLut[costDict[costK]] : costDict[costK]}}</td>
             </tr>
         </tbody>
     </table>
