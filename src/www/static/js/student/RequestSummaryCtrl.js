@@ -34,7 +34,7 @@ app.controller('RequestSummaryCtrl', ['$scope', '$http', '$location', '$timeout'
     $scope.fields = ["Request Number", "Project Number", "Assigned Manager Email", "Status", "Vendor", "URL", "Total Cost", "Shipping Cost"];
     $scope.grid = [];
     $scope.itemFieldKeys = ["description", "itemURL", "partNo", "quantity", "unitCost", "totalCost"];
-    $scope.itemFields = ["Description", "Item URL", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
+    $scope.itemFields = ["Description", "Item URL", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Item Cost"];
 
     $scope.data = [];
 
