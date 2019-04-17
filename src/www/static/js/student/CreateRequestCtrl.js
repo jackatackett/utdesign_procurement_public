@@ -232,6 +232,9 @@ app.controller('CreateRequestCtrl', ['$scope', '$http', '$timeout', 'dispatcher'
             $scope.request["items"][x]["unitCost"] = $scope.request["items"][x]["unitCost"].replace("$", "");
             $scope.request["items"][x]["totalCost"] = $scope.request["items"][x]["totalCost"].replace("$", "");
         }
+        //remove the shipping and request total
+        delete $scope.request["shippingCost"];
+        delete $scope.request["requestTotal"];
         $scope.refreshManagers();
     })
 
