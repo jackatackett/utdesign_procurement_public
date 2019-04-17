@@ -34,7 +34,7 @@ app.controller('ViewRequestsCtrl', ['$scope', '$location', '$http', '$window', '
     $scope.fields = ["Request Number", "Project Number", "Status", "Vendor", "URL", "Total Cost", "Shipping Cost"];
     $scope.grid = [];
     $scope.itemFieldKeys = ["description", "partNo", "quantity", "unitCost", "totalCost"];
-    $scope.itemFields = ["Description", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
+    $scope.itemFields = ["Description", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Item Cost"];
     $scope.teams = ["Procurement", "Clock-It", "Smart Glasses"];
 
     $scope.mgrComment = "";

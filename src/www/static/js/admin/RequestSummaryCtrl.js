@@ -33,7 +33,7 @@ app.controller('RequestSummaryCtrl', ['$scope', '$location', '$http', '$timeout'
     $scope.fieldKeys = ["requestNumber", "projectNumber", "status", "vendor", "URL", "requestTotal", "shippingCost"];
     $scope.fields = ["Request Number", "Project Number", "Status", "Vendor", "URL", "Total Cost", "Shipping Cost"];
     $scope.itemFieldKeys = ["description", 'itemURL', "partNo", "quantity", "unitCost", "totalCost"];
-    $scope.itemFields = ["Description", 'Item URL', "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
+    $scope.itemFields = ["Description", 'Item URL', "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Item Cost"];
     $scope.historyFields = ["Timestamp", "Source", "Comment", "Old State", "New State"];
     $scope.historyFieldKeys = ["timestamp", "actor", "comment", "oldState", "newState"];
     $scope.statuses = ["Pending Approval", "Saved", "Manager Approved", "Rejected", "Updates for Manager", "Updates for Admin", "Ordered", "Ready for Pickup", "Complete"];
