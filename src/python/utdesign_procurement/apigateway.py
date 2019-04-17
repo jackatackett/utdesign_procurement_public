@@ -1648,7 +1648,7 @@ class ApiGateway(object):
                         validNum.append(pNum)
 
             for project in validNum:
-                for res in self.colProjects.find({'projectNumber': project}):
+                for res in self.colProjects.find({'projectNumber': project, 'status': 'active'}):
                     res['_id'] = str(res['_id'])
                     result.append(res)
             #~ return result
@@ -1656,12 +1656,12 @@ class ApiGateway(object):
             if cherrypy.session['role'] != 'admin':
                 validNum = cherrypy.session['projectNumbers']
                 for project in validNum:
-                    for res in self.colProjects.find({'projectNumber': project}):
+                    for res in self.colProjects.find({'projectNumber': project, 'status': 'active'}):
                         res['_id'] = str(res['_id'])
                         result.append(res)
                 #~ return result
             else:   # is admin
-                for res in self.colProjects.find({}):
+                for res in self.colProjects.find({'status': 'active'}):
                     res['_id'] = str(res['_id'])
                     result.append(res)
                 #~ return result
