@@ -34,7 +34,7 @@
 
         <tbody>
             <tr ng-repeat="requestDict in curRequestData">
-                <td ng-repeat="requestK in requestKeys">{{requestDict[requestK]}}</td>
+                <td ng-repeat="requestK in requestKeys">{{requestK == 'status' ? statusLut[requestDict[requestK]] : requestDict[requestK]}}</td>
             </tr>
         </tbody>
     </table>

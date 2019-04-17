@@ -1,4 +1,6 @@
-app.controller('StudentBudgetCtrl', ['$scope', '$location', '$http', '$window', '$timeout', '$interval', function($scope, $location, $http, $window, $timeout, $interval) {
+app.controller('StudentBudgetCtrl', ['$scope', '$location', '$http', '$window', '$timeout', '$interval', 'statusLut', function($scope, $location, $http, $window, $timeout, $interval, statusLut) {
+
+    $scope.statusLut = statusLut
 
     function convertCosts(value) {
         if (typeof value === "undefined") {
