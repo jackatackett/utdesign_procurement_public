@@ -1,7 +1,19 @@
 app.controller('AdminNavCtrl', ['$scope', 'dispatcher', '$timeout', '$location', '$window', '$http', function($scope, dispatcher, $timeout, $location, $window, $http) {
 
     $scope.activeTab = "";
+    $scope.activeId = "";
     $scope.showBulkAdd = false;
+    $scope.tabIds = [
+        "#addUsersCtrlDiv",
+        "#editUsersCtrlDiv",
+        "#requestSummaryCtrlDiv",
+        "#adminHelpDiv",
+        "#adminAddCostsDiv",
+        "#adminEditCostsDiv",
+        "#addUserBulkCtrlDiv",
+        "#addProjectsCtrlDiv",
+        "#editProjectsCtrlDiv",
+    ];
 
     dispatcher.on('bulkRefresh', function() {
         $timeout(function() {$scope.showBulkAdd = true;}, 0);
@@ -18,114 +30,41 @@ app.controller('AdminNavCtrl', ['$scope', 'dispatcher', '$timeout', '$location',
         var hash = $location.hash();
 
         if (hash == 'addUsers') {
-            //show add users
             $scope.activeTab = 'addUsers';
-            $("#addUsersCtrlDiv").show();
-            $("#editUsersCtrlDiv").hide();
-            $("#requestSummaryCtrlDiv").hide();
-            $("#adminHelpDiv").hide();
-            $("#adminAddCostsDiv").hide();
-            $("#adminEditCostsDiv").hide();
-            $("#addUserBulkCtrlDiv").hide();
-            $("#addProjectsCtrlDiv").hide();
-            $("#editProjectsCtrlDiv").hide();
+            $scope.activeId = "#addUsersCtrlDiv";
         } else if (hash == 'editUsers') {
-            //show edit users
             $scope.activeTab = 'editUsers';
-            $("#addUsersCtrlDiv").hide();
-            $("#editUsersCtrlDiv").show();
-            $("#requestSummaryCtrlDiv").hide();
-            $("#adminHelpDiv").hide();
-            $("#adminAddCostsDiv").hide();
-            $("#adminEditCostsDiv").hide();
-            $("#addUserBulkCtrlDiv").hide();
-            $("#addProjectsCtrlDiv").hide();
-            $("#editProjectsCtrlDiv").hide();
+            $scope.activeId = "#editUsersCtrlDiv";
         } else if (hash == 'addCosts') {
-            //show add costs
             $scope.activeTab = 'addCosts';
-            $("#addUsersCtrlDiv").hide();
-            $("#editUsersCtrlDiv").hide();
-            $("#requestSummaryCtrlDiv").hide();
-            $("#adminHelpDiv").hide();
-            $("#adminAddCostsDiv").show();
-            $("#adminEditCostsDiv").hide();
-            $("#addUserBulkCtrlDiv").hide();
-            $("#addProjectsCtrlDiv").hide();
-            $("#editProjectsCtrlDiv").hide();
+            $scope.activeId = "#adminAddCostsDiv";
         } else if (hash == 'viewCosts') {
-            //show edit costs
             $scope.activeTab = 'viewCosts';
-            $("#addUsersCtrlDiv").hide();
-            $("#editUsersCtrlDiv").hide();
-            $("#requestSummaryCtrlDiv").hide();
-            $("#adminHelpDiv").hide();
-            $("#adminAddCostsDiv").hide();
-            $("#adminEditCostsDiv").show();
-            $("#addUserBulkCtrlDiv").hide();
-            $("#addProjectsCtrlDiv").hide();
-            $("#editProjectsCtrlDiv").hide();
+            $scope.activeId = "#adminEditCostsDiv";
         } else if (hash == 'addUserBulk') {
-            //show edit costs
             $scope.activeTab = 'addUserBulk';
-            $("#addUsersCtrlDiv").hide();
-            $("#editUsersCtrlDiv").hide();
-            $("#requestSummaryCtrlDiv").hide();
-            $("#adminHelpDiv").hide();
-            $("#adminAddCostsDiv").hide();
-            $("#adminEditCostsDiv").hide();
-            $("#addUserBulkCtrlDiv").show();
-            $("#addProjectsCtrlDiv").hide();
-            $("#editProjectsCtrlDiv").hide();
+            $scope.activeId = "#addUserBulkCtrlDiv";
         } else if (hash == 'help') {
-            //show help
             $scope.activeTab = 'help';
-            $("#addUsersCtrlDiv").hide();
-            $("#editUsersCtrlDiv").hide();
-            $("#requestSummaryCtrlDiv").hide();
-            $("#adminHelpDiv").show();
-            $("#adminAddCostsDiv").hide();
-            $("#adminEditCostsDiv").hide();
-            $("#addUserBulkCtrlDiv").hide();
-            $("#addProjectsCtrlDiv").hide();
-            $("#editProjectsCtrlDiv").hide();
+            $scope.activeId = "#adminHelpDiv";
         } else if (hash == 'addProjects') {
-            //show addProjects
             $scope.activeTab = 'addProjects';
-            $("#addUsersCtrlDiv").hide();
-            $("#editUsersCtrlDiv").hide();
-            $("#requestSummaryCtrlDiv").hide();
-            $("#adminHelpDiv").hide();
-            $("#adminAddCostsDiv").hide();
-            $("#adminEditCostsDiv").hide();
-            $("#addUserBulkCtrlDiv").hide();
-            $("#addProjectsCtrlDiv").show();
-            $("#editProjectsCtrlDiv").hide();
+            $scope.activeId = "#addProjectsCtrlDiv";
         } else if (hash == 'editProjects') {
-            //show editProjects
             $scope.activeTab = 'editProjects';
-            $("#addUsersCtrlDiv").hide();
-            $("#editUsersCtrlDiv").hide();
-            $("#requestSummaryCtrlDiv").hide();
-            $("#adminHelpDiv").hide();
-            $("#adminAddCostsDiv").hide();
-            $("#adminEditCostsDiv").hide();
-            $("#addUserBulkCtrlDiv").hide();
-            $("#addProjectsCtrlDiv").hide();
-            $("#editProjectsCtrlDiv").show();
+            $scope.activeId = "#editProjectsCtrlDiv";
         } else {
-            //show summary
             $scope.activeTab = 'requestDashboard';
-            $("#addUsersCtrlDiv").hide();
-            $("#editUsersCtrlDiv").hide();
-            $("#requestSummaryCtrlDiv").show();
-            $("#adminHelpDiv").hide();
-            $("#adminAddCostsDiv").hide();
-            $("#adminEditCostsDiv").hide();
-            $("#addUserBulkCtrlDiv").hide();
-            $("#addProjectsCtrlDiv").hide();
-            $("#editProjectsCtrlDiv").hide();
+            $scope.activeId = "#requestSummaryCtrlDiv";
         }
+
+        $scope.tabIds.forEach(function(tabId) {
+            if (tabId == $scope.activeId) {
+                $(tabId).show();
+            } else {
+                $(tabId).hide();
+            }
+        })
     });
 
     $scope.doLogout = function() {
