@@ -168,18 +168,13 @@ class ApiGateway(object):
 
         # send emails only if status is pending i.e. request is officially submitted
         if status == 'pending':
-            #send confirmation emails to students
+            #send confirmation emails to students and notification to manager
             teamEmails = self.getTeamEmails(myRequest['projectNumber'])
             self.email_handler.procurementSave(**{
                 'teamEmails': teamEmails,
                 'request': myRequest,
             })
-            #send notification email to manager
-            self.email_handler.notifyRequestManager(**{
-                'email': myRequest['manager'],
-                'requestNumber': myRequest['requestNumber'],
-                'projectNumber': myRequest['projectNumber']
-            })
+
         elif myAdminEdit:
             #notify students and manager that admin has updated the request
             teamEmails = self.getTeamEmails(myRequest["projectNumber"])
@@ -621,13 +616,14 @@ class ApiGateway(object):
 
         # send notification emails to students
         teamEmails = self.getTeamEmails(myRequest['projectNumber'])
-        self.email_handler.notifyStudent(**{
+        self.email_handler.notifyStudentRejected(**{
             'teamEmails': teamEmails,
             'requestNumber': myRequest['requestNumber'],
             'projectNumber': myRequest['projectNumber'],
             'action': 'sent back to you for updates',
             'user': cherrypy.session['email'],
-            'role': 'manager'
+            'role': 'manager',
+            'comment': myComment
         })
 
 
@@ -701,13 +697,14 @@ class ApiGateway(object):
 
         # send notification emails to students
         teamEmails = self.getTeamEmails(myRequest['projectNumber'])
-        self.email_handler.notifyStudent(**{
+        self.email_handler.notifyStudentRejected(**{
             'teamEmails': teamEmails,
             'requestNumber': myRequest['requestNumber'],
             'projectNumber': myRequest['projectNumber'],
             'action': 'sent back to you for updates',
             'user': cherrypy.session['email'],
-            'role': 'admin'
+            'role': 'admin',
+            'comment': myComment
         })
 
         # send notification email to manager
@@ -965,13 +962,14 @@ class ApiGateway(object):
 
         # send notification emails to students
         teamEmails = self.getTeamEmails(myRequest['projectNumber'])
-        self.email_handler.notifyStudent(**{
+        self.email_handler.notifyStudentRejected(**{
             'teamEmails': teamEmails,
             'requestNumber': myRequest['requestNumber'],
             'projectNumber': myRequest['projectNumber'],
             'action': 'sent back to you for updates',
             'user': cherrypy.session['email'],
-            'role': 'manager'
+            'role': 'admin',
+            'comment': myComment
         })
 
     @cherrypy.expose
@@ -1193,7 +1191,7 @@ class ApiGateway(object):
             'teamEmails': teamEmails,
             'requestNumber': myRequest['requestNumber'],
             'projectNumber': myRequest['projectNumber'],
-            'action': 'picked up',
+            'action': 'marked as picked up',
             'user': cherrypy.session['email'],
             'role': 'admin'
         })
@@ -1265,13 +1263,14 @@ class ApiGateway(object):
 
         # send notification emails to students
         teamEmails = self.getTeamEmails(myRequest['projectNumber'])
-        self.email_handler.notifyStudent(**{
+        self.email_handler.notifyStudentRejected(**{
             'teamEmails': teamEmails,
             'requestNumber': myRequest['requestNumber'],
             'projectNumber': myRequest['projectNumber'],
             'action': 'rejected by your technical manager',
             'user': cherrypy.session['email'],
-            'role': 'manager'
+            'role': 'manager',
+            'comment': myComment
         })
 
         if myRequest['oic'] == 2:
@@ -1349,13 +1348,14 @@ class ApiGateway(object):
 
         # send notification emails to students
         teamEmails = self.getTeamEmails(myRequest['projectNumber'])
-        self.email_handler.notifyStudent(**{
+        self.email_handler.notifyStudentRejected(**{
             'teamEmails': teamEmails,
             'requestNumber': myRequest['requestNumber'],
             'projectNumber': myRequest['projectNumber'],
             'action': 'rejected by an admin',
             'user': cherrypy.session['email'],
-            'role': 'admin'
+            'role': 'admin',
+            'comment': myComment
         })
 
 

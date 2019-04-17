@@ -207,6 +207,10 @@ def lenientConvertToCents(dollarAmt):
     :param dollarAmt: the string dollar amount, does not have $ sign
     :return: cents in int
     """
+
+    if dollarAmt.startswith('$'):
+        dollarAmt = dollarAmt[1:]
+
     try:
         if re.match("^[0-9]*\.[0-9]{2}?$", dollarAmt):
             return int(dollarAmt.replace(".", ""))
@@ -392,6 +396,18 @@ def getProjectKeywords(keywords):
 }
 """
 
+STATUS_SET = {
+    "saved",
+    "pending",
+    "manager approved",
+    "ordered",
+    "ready for pickup",
+    "complete",
+    "updates for manager",
+    "updates for admin",
+    "rejected"
+}
+
 def getRequestKeywords(data):
     myFilter = {'$and': [{'status': {'$ne': 'saved'}}, {'status': {'$ne': 'cancelled'}}]}
 
@@ -438,6 +454,16 @@ def getRequestKeywords(data):
                 myFilter['items.quantity'] = int(data['secondaryFilter']['quantity'])
             except:
                 cherrypy.log("Invalid request number: %s" % data['secondaryFilter']['quantity'])
+
+    if 'statusFilter' in data:
+        myStatuses = []
+        for status in data['statusFilter']:
+            if status in STATUS_SET:
+                myStatuses.append({'status': status})
+            else:
+                cherrypy.log("Invalid status filter option: %s" % status)
+        if myStatuses:
+            myFilter['$and'].append({'$or': myStatuses})
 
     cherrypy.log("getRequestKeywords1 %s" % data)
     cherrypy.log("getRequestKeywords2 %s" % myFilter)

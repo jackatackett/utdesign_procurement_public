@@ -7,6 +7,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from mako.lookup import TemplateLookup
 from multiprocessing import Process, Queue
+from string import capwords
 
 from utdesign_procurement.utils import convertToDollarStr
 
@@ -112,10 +113,16 @@ class EmailHandler(object):
             'itemCount': len(request['items'])
         }
 
-        subject = 'New Request For Project %s' % request['projectNumber']
+        subject = 'New Request For Project %s' % int(request['projectNumber'])
+
+        # send email to students
         template = self.templateLookup.get_template('procurementSaveStudent.html')
         body = template.render(**renderArgs)
         self.send(teamEmails, subject, body)
+
+        # send email to manager
+        template = self.templateLookup.get_template('procurementSaveManager.html')
+        body = template.render(**renderArgs)
         self.send(request['manager'], subject, body)
 
     def procurementEditAdmin(self, teamEmails=None, request=None):
@@ -134,7 +141,7 @@ class EmailHandler(object):
             'shippingCost': convertToDollarStr(request['shippingCost'])
         }
 
-        subject = 'Request Updated For Project %s' % request['projectNumber']
+        subject = 'Request #%s Updated For Project %s' % (int(request['requestNumber']), int(request['projectNumber']))
         template = self.templateLookup.get_template('procurementUpdated.html')
         body = template.render(**renderArgs)
         self.send(teamEmails, subject, body)
@@ -147,8 +154,8 @@ class EmailHandler(object):
             'projectNumber': int(projectNumber),
             'action': action
         }
-
-        subject = 'Request %s is now %s' % (int(requestNumber), action)
+        capitalAction = capwords(action)
+        subject = 'Request #%s Has Been %s' % (int(requestNumber), capitalAction)
         template = self.templateLookup.get_template('confirmStudent.html')
         body = template.render(**renderArgs)
         self.send(teamEmails, subject, body)
@@ -160,8 +167,8 @@ class EmailHandler(object):
             'projectNumber': int(projectNumber),
             'action': action
         }
-
-        subject = 'Request %s is now %s' % (int(requestNumber), action)
+        capitalAction = capwords(action)
+        subject = 'Request #%s Has Been %s' % (int(requestNumber), capitalAction)
         template = self.templateLookup.get_template('confirmRequestManagerAdmin.html')
         body = template.render(**renderArgs)
         self.send(email, subject, body)
@@ -176,8 +183,8 @@ class EmailHandler(object):
             'user': user,
             'role': role
         }
-
-        subject = 'Request %s has been %s' % (int(requestNumber), action)
+        capitalAction = capwords(action)
+        subject = 'Request #%s Has Been %s' % (int(requestNumber), capitalAction)
         template = self.templateLookup.get_template('notifyStudent.html')
         body = template.render(**renderArgs)
         self.send(teamEmails, subject, body)
@@ -188,7 +195,7 @@ class EmailHandler(object):
             'requestNumber': int(requestNumber),
             'projectNumber': int(projectNumber)
         }
-        subject = "Request %s has been submitted to you" % (int(requestNumber))
+        subject = "Request #%s Has Been Submitted to You" % (int(requestNumber))
         template = self.templateLookup.get_template('notifyRequestManager.html')
         body = template.render(**renderArgs)
         self.send(email, subject, body)
@@ -199,7 +206,7 @@ class EmailHandler(object):
             'requestNumber': int(requestNumber),
             'projectNumber': int(projectNumber)
         }
-        subject = "Request %s needs admin approval" % (int(requestNumber))
+        subject = "Request #%s Needs Admin Approval" % (int(requestNumber))
         template = self.templateLookup.get_template('notifyRequestAdmin.html')
         body = template.render(**renderArgs)
         self.send(adminEmails, subject, body)
@@ -210,7 +217,7 @@ class EmailHandler(object):
             'requestNumber': int(requestNumber),
             'projectNumber': int(projectNumber)
         }
-        subject = "Request %s has been cancelled" % (int(requestNumber))
+        subject = "Request #%s Has Been Cancelled" % (int(requestNumber))
         template = self.templateLookup.get_template('notifyCancelled.html')
         body = template.render(**renderArgs)
         self.send(email, subject, body)
@@ -222,7 +229,7 @@ class EmailHandler(object):
             'projectNumber': int(projectNumber),
             'manager': manager
         }
-        subject = "Request %s has been rejected" % (int(requestNumber))
+        subject = "Request #%s Has Been Rejected" % (int(requestNumber))
         template = self.templateLookup.get_template('notifyRejectedAdmin.html')
         body = template.render(**renderArgs)
         self.send(adminEmails, subject, body)
@@ -236,7 +243,7 @@ class EmailHandler(object):
             'netID': netID,
             'course': course
         }
-        subject = "You have been edited!"
+        subject = "You Have Been Edited!"
         template = self.templateLookup.get_template('notifyUserEdit.html')
         body = template.render(**renderArgs)
         self.send(email, subject, body)
@@ -247,7 +254,7 @@ class EmailHandler(object):
             'projectNumber': int(projectNumber),
             'requestNumber': int(requestNumber)
         }
-        subject = "Request % has been sent for updates!" % (requestNumber)
+        subject = "Request #% Has Been Sent For Updates!" % (requestNumber)
         template = self.templateLookup.get_template('notifyUpdateManager.html')
         body = template.render(**renderArgs)
         self.send(email, subject, body)
@@ -258,7 +265,7 @@ class EmailHandler(object):
             'firstName': firstName,
             'lastName': lastName
         }
-        subject = "Your GettIt account has been deactivated"
+        subject = "Your GettIt Account Has Been Deactivated"
         template = self.templateLookup.get_template('notifyUserRemove.html')
         body = template.render(**renderArgs)
         self.send(email, subject, body)
@@ -269,7 +276,7 @@ class EmailHandler(object):
             'projectNumber': int(projectNumber),
             'projectName': int(projectName),
         }
-        subject = "You have been added to project %s" % (projectNumber)
+        subject = "You Have Been Added to Project %s" % (int(projectNumber))
         template = self.templateLookup.get_template('notifyUpdateManager.html')
         body = template.render(**renderArgs)
         self.send(teamEmails, subject, body)
@@ -280,7 +287,7 @@ class EmailHandler(object):
             'projectNumber': int(projectNumber),
             'projectName': projectName,
         }
-        subject = "project number %s has been inactivated" % (projectNumber)
+        subject = "Project Number %s Has Been Inactivated" % (int(projectNumber))
         template = self.templateLookup.get_template('notifyProjectInactivate.html')
         body = template.render(**renderArgs)
         self.send(teamEmails, subject, body)
@@ -293,10 +300,28 @@ class EmailHandler(object):
             'membersEmails': membersEmails,
             'sponsorName': sponsorName
         }
-        subject = "project number %s has been edited" % (int(projectNumber))
+        subject = "Project Number %s Has Been Edited" % (int(projectNumber))
         template = self.templateLookup.get_template('notifyProjectEdit.html')
         body = template.render(**renderArgs)
         self.send(membersEmails, subject, body)
+
+    def notifyStudentRejected(self, teamEmails, requestNumber, projectNumber, action,
+                      user, role, comment):
+        renderArgs = {
+            'domain': self.domain,
+            'requestNumber': int(requestNumber),
+            'projectNumber': int(projectNumber),
+            'action': action,
+            'user': user,
+            'role': role,
+            'comment': comment
+        }
+        capitalAction = capwords(action)
+        print(capitalAction)
+        subject = 'Request #%s Has Been %s' % (int(requestNumber), capitalAction)
+        template = self.templateLookup.get_template('notifyStudentRejected.html')
+        body = template.render(**renderArgs)
+        self.send(teamEmails, subject, body)
 
 class Emailer(object):
     """

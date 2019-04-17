@@ -254,7 +254,7 @@ db.requests.insert({
         "timestamp": new Date("2019-03-01T09:00:00"),
         "comment": "managerApproved",
         "oldState": "pending",
-        "newState": "managerApproved"
+        "newState": "manager approved"
     }]
 })
 
@@ -284,7 +284,7 @@ db.requests.insert({
         "timestamp": new Date("2019-03-01T09:00:00"),
         "comment": "managerApproved",
         "oldState": "pending",
-        "newState": "managerApproved"
+        "newState": "manager approved"
     }]
 })
 
