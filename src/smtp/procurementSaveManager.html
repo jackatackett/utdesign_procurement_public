@@ -1,7 +1,7 @@
 <html>
 <body>
 
-<p>The team for project ${projectNumber} has submitted a new procurement request to you!</p>
+<p>The team for project ${projectNumber} has submitted a new procurement request to you for approval!</p>
 
 <p>Log in at <a href="${domain}">${domain}</a> to see more details about this request.</p>
 
@@ -37,6 +37,11 @@
     </tr>
 
     <tr>
+        <td>Number of Items:</td>
+        <td>${itemCount}</td>
+    </tr>
+
+    <tr>
         <td>Justification:</td>
         <td>${justification}</td>
     </tr>
@@ -44,11 +49,6 @@
     <tr>
         <td>Additional Info:</td>
         <td>${additionalInfo}</td>
-    </tr>
-
-    <tr>
-        <td>Items:</td>
-        <td>${itemCount}</td>
     </tr>
 </table>
 
