@@ -168,18 +168,13 @@ class ApiGateway(object):
 
         # send emails only if status is pending i.e. request is officially submitted
         if status == 'pending':
-            #send confirmation emails to students
+            #send confirmation emails to students and notification to manager
             teamEmails = self.getTeamEmails(myRequest['projectNumber'])
             self.email_handler.procurementSave(**{
                 'teamEmails': teamEmails,
                 'request': myRequest,
             })
-            #send notification email to manager
-            self.email_handler.notifyRequestManager(**{
-                'email': myRequest['manager'],
-                'requestNumber': myRequest['requestNumber'],
-                'projectNumber': myRequest['projectNumber']
-            })
+
         elif myAdminEdit:
             #notify students and manager that admin has updated the request
             teamEmails = self.getTeamEmails(myRequest["projectNumber"])
