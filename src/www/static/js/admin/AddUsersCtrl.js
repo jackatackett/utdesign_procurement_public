@@ -40,6 +40,7 @@ app.controller('AddUsersCtrl', ['$scope', 'dispatcher', '$location', '$http', '$
                 'role':$scope.userInfo.role
             }).then(function(resp) {
                 alert("Success");
+                $scope.userInfo = {};
             }, function(err) {
                 console.error("Error", err.data);
                 alert("Error")
