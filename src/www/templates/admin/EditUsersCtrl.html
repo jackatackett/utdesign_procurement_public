@@ -30,7 +30,7 @@
                            ng-model-options='{ debounce: 500 }'
                            ng-change='requery()'
                            style="width: 100% !important;">
-                    
+
                     <select ng-if="fieldKey == 'role'"
                             placeholder="{{col}}"
                             ng-model="keywordSearch[fieldKey]"
@@ -49,7 +49,7 @@
         <tbody>
 
             <tr ng-repeat="user in users | filter : editFilter" ng-init="rowIdx = $index">
-                <td ng-repeat="fieldK in fieldKeys" ng-bind="user[fieldK]"></td>
+                <td ng-repeat="fieldK in fieldKeys" ng-bind="fieldK == 'projectNumbers' ? listProjectNumbers(user[fieldK]) : user[fieldK]"></td>
                 <td style="border: 0px;">
                     <button type="button" class="btn btn-primary" ng-click="editUser($event, rowIdx)">Edit</button>
                 </td>

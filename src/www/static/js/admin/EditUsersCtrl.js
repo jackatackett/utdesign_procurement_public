@@ -7,7 +7,7 @@ app.controller('EditUsersCtrl', ['$scope', '$location', '$http', function($scope
     $scope.grid = [];
     $scope.itemFieldKeys = ["description", "partNo", "quantity", "unitCost", "total"];
     $scope.itemFields = ["Description", "Catalog Part Number", "Quantity", "Estimated Unit Cost", "Total Cost"];
-    $scope.columns = ["Project Number", "First Name", "Last Name", "NetID", "Email", "Course", "Role"];
+    $scope.columns = ["Project Numbers", "First Name", "Last Name", "NetID", "Email", "Course", "Role"];
     $scope.sortTableBy = 'lastName';
     $scope.orderTableBy = 'ascending';
     $scope.numberOfPages = 1;
@@ -141,6 +141,18 @@ app.controller('EditUsersCtrl', ['$scope', '$location', '$http', function($scope
             $scope.orderTableBy = 'ascending';
         }
         $scope.requery();
+    }
+
+    $scope.listProjectNumbers = function(nums) {
+        console.log(nums);
+        var numList = "";
+        for (var i = 0; i < nums.length; i++) {
+            numList += nums[i];
+            if (i != (nums.length - 1)) {
+                numList += ", ";
+            }
+        }
+        return numList;
     }
 
     $scope.repage();
