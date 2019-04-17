@@ -10,3 +10,9 @@ app.value('statusLut', {
     'rejected': 'Rejected',
     'cancelled': 'Cancelled'
 });
+
+app.value('costTypeLut', {
+    'refund': 'Refund',
+    'reimbursement': 'Reimbursement',
+    'new budget': 'New Budget'
+});

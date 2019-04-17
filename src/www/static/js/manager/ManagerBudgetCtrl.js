@@ -1,6 +1,7 @@
-app.controller('ManagerBudgetCtrl', ['$scope', '$location', '$http', '$window', '$timeout', '$interval', 'statusLut', function($scope, $location, $http, $window, $timeout, $interval, statusLut) {
+app.controller('ManagerBudgetCtrl', ['$scope', '$location', '$http', '$window', '$timeout', '$interval', 'statusLut', 'costTypeLut', function($scope, $location, $http, $window, $timeout, $interval, statusLut, costTypeLut) {
 
     $scope.statusLut = statusLut;
+    $scope.costTypeLut = costTypeLut;
 
     function convertCosts(value) {
         if (typeof value === "undefined") {
