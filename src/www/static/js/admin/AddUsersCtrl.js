@@ -1,8 +1,8 @@
 app.controller('AddUsersCtrl', ['$scope', 'dispatcher', '$location', '$http', '$window', function($scope, dispatcher, $location, $http, $window) {
 
     $scope.errorText = "";
-    $scope.fieldKeys = ["projectNumbers", "firstName", "lastName", "netID", "email", "course"];
-    $scope.fields = ["Project Number(s)", "First Name", "Last Name", "NetID", "Email", "Course"];
+    $scope.fieldKeys = ["projectNumbers", "firstName", "lastName", "netID", "email", "course", "role"];
+    $scope.fields = ["Project Number(s)", "First Name", "Last Name", "NetID", "Email", "Course", "Role"];
     $scope.bulkKeys = ["projectNumbers", "firstName", "lastName", "netID", "email", "course", "role", "comment"];
     $scope.bulkFields = ["Project Number", "First Name", "Last Name", "NetID", "Email", "Course", "Role", "Comment"];
     $scope.grid = [];
@@ -18,6 +18,7 @@ app.controller('AddUsersCtrl', ['$scope', 'dispatcher', '$location', '$http', '$
     $scope.users = []
 
     $scope.addUser = function(e) {
+        console.log($scope.userInfo);
         var target = e.currentTarget;
 
         if($scope.userInfo.projectNumbers) {
@@ -28,14 +29,22 @@ app.controller('AddUsersCtrl', ['$scope', 'dispatcher', '$location', '$http', '$
             $scope.projectNumArray = prjNumsAry;
         }
 
-        if(validateRequest()) {
-            $http.post('/userAdd', {'projectNumbers':prjNumsAry, 'firstName':$scope.userInfo.firstName, 'lastName':$scope.userInfo.lastName, 'netID':$scope.userInfo.netID, 'email':$scope.userInfo.email, 'course':$scope.userInfo.course, 'role':'student'}).then(function(resp) {
+        validateRequest(function() {
+            $http.post('/userAdd', {
+                'projectNumbers':prjNumsAry,
+                'firstName':$scope.userInfo.firstName,
+                'lastName':$scope.userInfo.lastName,
+                'netID':$scope.userInfo.netID,
+                'email':$scope.userInfo.email,
+                'course':$scope.userInfo.course,
+                'role':$scope.userInfo.role
+            }).then(function(resp) {
                 alert("Success");
             }, function(err) {
                 console.error("Error", err.data);
                 alert("Error")
             });
-        }
+        });
     };
 
     $scope.selectSpreadsheet = function(e) {
@@ -80,20 +89,8 @@ app.controller('AddUsersCtrl', ['$scope', 'dispatcher', '$location', '$http', '$
         $location.hash("addUserBulk");
     };
 
-    function validateRequest() {
+    function validateRequest(callback) {
         var valid = false;
-
-        $http.post('/projectValidate', {'projectNumbers': $scope.projectNumArray}).then(function(resp) {
-            if(resp.data === "true") {
-                valid = true;
-            }
-            if (valid === false) {
-                $scope.errorText = "Invalid Project Number";
-                return false;
-            }
-        }, function(err) {
-            console.error("project validate fail", err)
-        });
 
         if(!$scope.userInfo.firstName || $scope.userInfo.firstName.length <= 0) {
             $scope.errorText = "First name must not be empty";
@@ -115,8 +112,24 @@ app.controller('AddUsersCtrl', ['$scope', 'dispatcher', '$location', '$http', '$
             return false;
         }
 
-        $scope.errorText = "";
-        return true;
+        if(!$scope.userInfo.role || ['student', 'admin', 'manager'].indexOf($scope.userInfo.role) < 0) {
+            $scope.errorText = "Role must be 'student', 'admin', or 'manager'";
+            return false;
+        }
+
+        $http.post('/projectValidate', {'projectNumbers': $scope.projectNumArray}).then(function(resp) {
+            if(resp.data === "true") {
+                $scope.errorText = "";
+                valid = true;
+                callback();
+            }
+            if (valid === false) {
+                $scope.errorText = "Invalid Project Number";
+                return false;
+            }
+        }, function(err) {
+            console.error("project validate fail", err)
+        });
     }
 
 }]);
