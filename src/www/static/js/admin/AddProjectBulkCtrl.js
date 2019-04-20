@@ -1,14 +1,14 @@
-app.controller('AddUserBulkCtrl', ['$scope', 'dispatcher', '$location', '$http', '$window', function($scope, dispatcher, $location, $http, $window) {
+app.controller('AddProjectBulkCtrl', ['$scope', 'dispatcher', '$location', '$http', '$window', function($scope, dispatcher, $location, $http, $window) {
 
     $scope.errorText = "";
-    $scope.bulkKeys = ["projectNumbers", "firstName", "lastName", "netID", "email", "course", "role", "comment"];
-    $scope.bulkFields = ["Project Number", "First Name", "Last Name", "NetID", "Email", "Course", "Role", "Comment"];
-    $scope.editableKeys = ["projectNumbers", "firstName", "lastName", "netID", "email", "course", 'role'];
-    $scope.editableFields = ["Project Number", "First Name", "Last Name", "NetID", 'Email', "Course", 'Role'];
+    $scope.bulkKeys = ["projectNumber", "sponsorName", "projectName", "defaultBudget", "comment"];
+    $scope.bulkFields = ["Project Number", "Sponsor Name", "Project Name", "Starting Budget", "Comment"];
+    $scope.editableKeys = ["projectNumber", "sponsorName", "projectName", "defaultBudget"];
+    $scope.editableFields = ["Project Number", "Sponsor Name", "Project Name", "Starting Budget"];
     $scope.numberOfPages = 1;
     $scope.currentPage = 1;
     $scope.pageNumberArray = [];
-    $scope.users = [];
+    $scope.projects = [];
     $scope.filterStatus = "valid";
     $scope.metadata = {};
     $scope.selectedIdx = -1;
@@ -17,10 +17,10 @@ app.controller('AddUserBulkCtrl', ['$scope', 'dispatcher', '$location', '$http',
         if ($scope.metadata.conflicting || $scope.metadata.invalid) {
             alert("Cannot submit with unresolved issues.");
         } else {
-            $http.post('/userSpreadsheetSubmit').then(function(resp) {
+            $http.post('/projectSpreadsheetSubmit').then(function(resp) {
                 alert("Success!");
-                $location.hash('editUsers');
-                dispatcher.emit('bulkUserEnd');
+                $location.hash('editProjects');
+                dispatcher.emit('bulkProjectEnd');
             }, function(err) {
                 alert("Error!");
                 console.error(err);
@@ -29,13 +29,13 @@ app.controller('AddUserBulkCtrl', ['$scope', 'dispatcher', '$location', '$http',
     }
 
     $scope.changePage = function(pageNumber) {
-        $http.post('/userSpreadsheetData', {
+        $http.post('/projectSpreadsheetData', {
             'sortBy': $scope.sortTableBy,
             'order':$scope.orderTableBy,
             'pageNumber': pageNumber-1,
             'bulkStatus': $scope.filterStatus
         }).then(function(resp) {
-            $scope.users = resp.data;
+            $scope.projects = cleanData(resp.data);
             $scope.pageNumber = pageNumber;
             $scope.updatePageNumberArray();
         }, function(err) {
@@ -80,7 +80,7 @@ app.controller('AddUserBulkCtrl', ['$scope', 'dispatcher', '$location', '$http',
     }
 
     $scope.repage = function(toFirst) {
-        $http.post('/userSpreadsheetPages', {
+        $http.post('/projectSpreadsheetPages', {
             'bulkStatus': $scope.filterStatus
         }).then(function(resp) {
             $scope.numberOfPages = resp.data;
@@ -99,27 +99,27 @@ app.controller('AddUserBulkCtrl', ['$scope', 'dispatcher', '$location', '$http',
     }
 
     $scope.metadataQuery = function() {
-        $http.post('/userSpreadsheetMetadata').then(function(resp) {
+        $http.post('/projectSpreadsheetMetadata').then(function(resp) {
             $scope.metadata = resp.data;
         });
     }
 
-    $scope.revalidateUser = function(rowIdx, comparisonBox) {
-        $http.post('/userSpreadsheetRevalidate', {
+    $scope.revalidateProject = function(rowIdx, comparisonBox) {
+        $http.post('/projectSpreadsheetRevalidate', {
             'bulkStatus': $scope.filterStatus,
             'index': rowIdx,
-            'user': comparisonBox ? $scope.compareUserNew : $scope.users[rowIdx]
+            'project': comparisonBox ? $scope.compareProjectNew : $scope.projects[rowIdx]
         }).then(function(resp) {
             if ($scope.filterStatus != resp.data.status) {
                 $scope.metadata[$scope.filterStatus]--;
                 $scope.metadata[resp.data.status]++;
-                $scope.users[rowIdx] = null;
+                $scope.projects[rowIdx] = null;
             } else {
-                $scope.users[rowIdx] = resp.data.user;
+                $scope.projects[rowIdx] = cleanProject(resp.data.project);
             }
 
             if (comparisonBox) {
-                $scope.compareUserNew = resp.data.user;
+                $scope.compareProjectNew = cleanProject(resp.data.project);
             }
 
         }, function(err) {
@@ -127,36 +127,70 @@ app.controller('AddUserBulkCtrl', ['$scope', 'dispatcher', '$location', '$http',
         });
     }
 
+    $scope.markOverwrite = function(rowIdx, comparisonBox) {
+        $http.post('/projectSpreadsheetOverwrite', {
+            'projectNumber': $scope.projects[rowIdx].projectNumber,
+        }).then(function(resp) {
+
+            $scope.revalidateProject(rowIdx, comparisonBox);
+            $scope.exitCompare();
+
+        }, function(err) {
+            alert("Error while marking project for overwrite.");
+        });
+    }
+
     $scope.showCompare = function(rowIdx) {
-        $http.post("/userSingleData", {
-            email: $scope.users[rowIdx].email
+        $http.post("/projectSingleData", {
+            projectNumber: $scope.projects[rowIdx].projectNumber
         }).then(function(resp) {
             $scope.selectedIdx = rowIdx;
-            $scope.compareUserNew = JSON.parse(JSON.stringify($scope.users[rowIdx]));
-            $scope.compareUserOld = resp.data;
-            $("#compareModal").show();
+            $scope.compareProjectNew = JSON.parse(JSON.stringify($scope.projects[rowIdx]));
+            $scope.compareProjectOld = cleanProject(resp.data);
+            $("#compareProjectsModal").show();
         }, function(err) {
-            alert("Error retrieving user comparison data.")
+            alert("Error retrieving project comparison data.")
         });
 
     }
 
-    $scope.exitCompare = function(rowIdx) {
-        $("#compareModal").hide();
+    $scope.exitCompare = function() {
+        $("#compareProjectsModal").hide();
     }
 
-    $scope.isBadCell = function(user, fieldK) {
-        return !user || (
-            (fieldK == 'projectNumbers' && user.comment.missingProjects.length) ||
-            (fieldK == 'role' && user.comment.invalidRole) ||
-            (user.comment.missingAttributes.indexOf(fieldK) >= 0) ||
-            (user.comment.conflictingAttributes.indexOf(fieldK) >= 0)
-        )
+    $scope.isBadCell = function(project, fieldK) {
+        return !project || (project.comment.missingAttributes.indexOf(fieldK) >= 0);
     }
 
-    dispatcher.on('bulkUserRefresh', function() {
+    dispatcher.on('bulkProjectRefresh', function() {
        $scope.repage(true);
        $scope.metadataQuery();
     });
+
+    function convertCosts(value) {
+        if (typeof value === "undefined") {
+            return "0.00";
+        }
+        value = String(value);
+        if (value !== "undefined") {
+            while (value.length < 3) {
+                value = "0" + value;
+            }
+            return value.slice(0, -2) + "." + value.slice(value.length-2);
+        }
+        return "0.00";
+    };
+
+    function cleanProject(project) {
+        project["defaultBudget"] = convertCosts(project["defaultBudget"]);
+        return project;
+    };
+
+    function cleanData(data) {
+        for (var d in data) {
+            data[d]["defaultBudget"] = convertCosts(data[d]["defaultBudget"]);
+        }
+        return data;
+    };
 
 }]);

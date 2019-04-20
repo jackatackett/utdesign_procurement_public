@@ -24,9 +24,6 @@ def authorizedRoles(*acceptableRoles, redirect=False):
         def decorated_function(*args, **kwargs):
             role = cherrypy.session.get('role', None)
 
-            # cherrypy.log("authorizedRoles called with user role %s and "
-            #              "roles %s" % (role, acceptableRoles))
-
             # no role means force a login
             if role is None and redirect:
                 raise cherrypy.HTTPRedirect('/login')
@@ -108,7 +105,7 @@ def checkProjectNumbers(data, default=None):
         raise cherrypy.HTTPError(400, 'Project Number not found.')
 
 # checks if key value exists and is the right type
-def checkValidData(key, data, dataType, optional=False, default=""):
+def checkValidData(key, data, dataType, optional=False, default="", coerce=False):
     """
     This function takes a data dict, determines whether a key value exists
     and is the right data type. Returns the data if it is, raises an
@@ -126,9 +123,15 @@ def checkValidData(key, data, dataType, optional=False, default=""):
         if isinstance(localVar, dataType):
             return localVar
         else:
-            cherrypy.log("Expected %s of type %s. See: %s" %
-            (key, dataType, localVar))
-            raise cherrypy.HTTPError(400, 'Invalid %s format. See: %s' % (key, data[key]))
+            if coerce:
+                try:
+                    return dataType(localVar)
+                except:
+                    raise cherrypy.HTTPError(400, "Could not coerce to type %s. See: %s" % (dataType, localVar))
+            else:
+                cherrypy.log("Expected %s of type %s. See: %s" %
+                (key, dataType, localVar))
+                raise cherrypy.HTTPError(400, 'Invalid %s format. See: %s' % (key, data[key]))
     else:
         if not optional:
             raise cherrypy.HTTPError(400, 'Missing %s' % key)
@@ -214,6 +217,8 @@ def lenientConvertToCents(dollarAmt):
     try:
         if re.match("^[0-9]*\.[0-9]{2}?$", dollarAmt):
             return int(dollarAmt.replace(".", ""))
+        if re.match("^[0-9]*\.[0-9]{1}?$", dollarAmt):
+            return int(dollarAmt.replace(".", "")) * 10
         elif re.match("^[0-9]+$", dollarAmt):
             return int(dollarAmt) * 100
         else:
@@ -312,8 +317,6 @@ def getKeywords(keywords):
     # parse the keyword search
     myFilter = dict()
 
-    cherrypy.log(str(keywords))
-
     for kw in ('projectNumbers', 'firstName', 'lastName', 'netID', 'email', 'course', 'role'):
         if kw in keywords:
             s = checkValidData(kw, keywords, str).strip()
@@ -364,16 +367,7 @@ def getProjectKeywords(keywords):
     if 'defaultBudget' in keywords:
         s = keywords['defaultBudget'].strip()
         if s:
-            try:
-                myFilter['defaultBudget'] = lenientConvertToCents(s)
-            except cherrypy.HTTPError:
-                cherrypy.log('sadness c : ::%s::' % s)
-
-        else:
-            cherrypy.log('sadness b : ::%s::' % s)
-
-    else:
-        cherrypy.log('sadness a')
+            myFilter['defaultBudget'] = lenientConvertToCents(s)
 
     return myFilter
 
@@ -470,8 +464,5 @@ def getRequestKeywords(data):
                 cherrypy.log("Invalid status filter option: %s" % status)
         if myStatuses:
             myFilter['$and'].append({'$or': myStatuses})
-
-    cherrypy.log("getRequestKeywords1 %s" % data)
-    cherrypy.log("getRequestKeywords2 %s" % myFilter)
 
     return myFilter

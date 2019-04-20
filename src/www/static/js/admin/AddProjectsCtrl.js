@@ -1,4 +1,4 @@
-app.controller('AddProjectsCtrl', ['$scope', '$location', '$http', '$window', function($scope, $location, $http, $window) {
+app.controller('AddProjectsCtrl', ['$scope', '$location', '$http', '$window', 'dispatcher', function($scope, $location, $http, $window, dispatcher) {
 
     $scope.errorText = "";
     $scope.fieldKeys = ["projectNumber", "sponsorName", "projectName", "membersEmails"];
@@ -37,24 +37,30 @@ app.controller('AddProjectsCtrl', ['$scope', '$location', '$http', '$window', fu
     };
 
     $scope.selectSpreadsheet = function(e) {
-//        var target = e.currentTarget;
-//        $("#spreadsheetField").click();
+        var target = e.currentTarget;
+        $("#projectSpreadsheetField").click();
     };
 
     $scope.submitSpreadsheet = function(files) {
-//        var fd = new FormData();
-//        //Take the first selected file
-//        fd.append("sheet", files[0]);
-//
-//        $http.post('/userAddBulk', fd, {
-//            withCredentials: true,
-//            headers: {'Content-Type': undefined },
-//            transformRequest: angular.identity
-//        }).then(function(resp) {
-//        }, function(err) {
-//            console.error("userAddBulk fail", err)
-//        });
+        var fd = new FormData();
+        //Take the first selected file
+        fd.append("sheet", files[0]);
+
+        $http.post('/projectSpreadsheetUpload', fd, {
+            withCredentials: true,
+            headers: {'Content-Type': undefined },
+            transformRequest: angular.identity
+        }).then(function(resp) {
+            $scope.showBulk();
+            dispatcher.emit('bulkProjectRefresh');
+        }, function(err) {
+            alert("Error!", err);
+        });
     }
+
+    $scope.showBulk = function() {
+        $location.hash("addProjectBulk");
+    };
 
     $scope.regeneratePage = function(e) {
 //        var target = e.currentTarget;

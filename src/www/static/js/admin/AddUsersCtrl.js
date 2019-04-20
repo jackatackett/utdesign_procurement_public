@@ -18,7 +18,6 @@ app.controller('AddUsersCtrl', ['$scope', 'dispatcher', '$location', '$http', '$
     $scope.users = []
 
     $scope.addUser = function(e) {
-        console.log($scope.userInfo);
         var target = e.currentTarget;
 
         if($scope.userInfo.projectNumbers) {
@@ -50,7 +49,7 @@ app.controller('AddUsersCtrl', ['$scope', 'dispatcher', '$location', '$http', '$
 
     $scope.selectSpreadsheet = function(e) {
         var target = e.currentTarget;
-        $("#spreadsheetField").click();
+        $("#userSpreadsheetField").click();
     };
 
     $scope.submitSpreadsheet = function(files) {
@@ -63,9 +62,8 @@ app.controller('AddUsersCtrl', ['$scope', 'dispatcher', '$location', '$http', '$
             headers: {'Content-Type': undefined },
             transformRequest: angular.identity
         }).then(function(resp) {
-            $scope.bulkData = resp.data;
             $scope.showBulk();
-            dispatcher.emit('bulkRefresh')
+            dispatcher.emit('bulkUserRefresh');
         }, function(err) {
             alert("Error!", err);
         });

@@ -1,0 +1,81 @@
+<div id="addProjectBulkCtrlDiv" ng-controller="AddProjectBulkCtrl as $ctrl" class="interfaceDiv">
+
+    <div style="width: 100%;">
+        <ul class="pagination" style="position: relative; float: left;">
+          <li class="page-item" ng-click="firstPage()"><a class="page-link" href="">First</a></li>
+          <li class="page-item" ng-click="prevPage()"><a class="page-link" href="">Previous</a></li>
+          <li ng-repeat="pageNum in pageNumberArray" class="page-item" ng-click="changePage(pageNum)" ng-class="{active: pageNumber == pageNum}"><a class="page-link" href="">{{pageNum}}</a></li>
+          <li class="page-item" ng-click="nextPage()"><a class="page-link" href="">Next</a></li>
+          <li class="page-item" ng-click="lastPage()"><a class="page-link" href="">Last ({{numberOfPages}})</a></li>
+        </ul>
+
+        <div style="position: relative; float: right;">
+            <button type="button" class="btn btn-success" style="float: right;" ng-click="bulkSubmit()">Submit All</button>
+            <button type="button" class="btn btn-danger" style="float: right;" ng-click="setFilterStatus('conflicting')">Conflicts: {{metadata.conflicting}}</button>
+            <button type="button" class="btn btn-danger" style="float: right;" ng-click="setFilterStatus('invalid')">Invalid: {{metadata.invalid}}</button>
+            <button type="button" class="btn btn-secondary" style="float: right;" ng-click="setFilterStatus('valid')">Valid: {{metadata.valid}}</button>
+        </div>
+    </div>
+
+    <table class="table table-bordered" id="editProjectTable" style="border:0px;">
+        <thead>
+            <tr>
+                <th ng-repeat="col in bulkFields track by $index">{{col}}</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            <tr ng-repeat="project in projects track by $index" ng-init="rowIdx = $index" class="badRow" ng-if="project != null">
+                <td class="cleanInputCell"
+                    ng-repeat="fieldK in bulkKeys"
+                    ng-class="{badCell: isBadCell(project, fieldK), dollarfy: fieldK=='defaultBudget'}"
+                style="white-space:nowrap;">
+
+                    <!--<div style="width: 16px; display: inline-block; " ng-if="fieldK=='defaultBudget'">$</div>-->
+                    <input type="text"
+                           style="height: 100%; width: 95%;"
+                           ng-model="projects[rowIdx][fieldK]"
+                           ng-change="revalidateProject(rowIdx)"
+                           ng-model-options="{updateOn: 'blur'}">
+
+                </td>
+                <td style="border: 0px;" ng-if="project.comment.existingNumber">
+                    <button type="button" class="btn btn-primary" ng-click="showCompare(rowIdx)">Compare</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div id="compareProjectsModal" class="modal">
+        <div class="modal-content" style="width: 60%">
+            <table class="table" id="compareLightBoxTable" style="margin: 0; width: 100%; display:table;">
+                <thead>
+                    <th>Field</th>
+                    <th>Existing Project</th>
+                    <th>Spreadsheet</th>
+                </thead>
+
+                <tr ng-repeat="info in editableFields track by $index" ng-init="rowIdx = $index">
+                    <td>
+                        {{info}}
+                    </td>
+                    <td>
+                        <input type="text" ng-model="compareProjectOld[editableKeys[rowIdx]]" readonly>
+                    </td>
+                    <td>
+                        <input type="text" ng-model="compareProjectNew[editableKeys[rowIdx]]" ng-class="{badCellBorder: isBadCell(compareProjectNew, editableKeys[rowIdx])}">
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <button type="button" class="btn btn-primary" ng-click="exitCompare()">Close</button>
+                        <button type="button" class="btn btn-primary" ng-click="markOverwrite(selectedIdx, true)">Overwrite</button>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+    </div>
+
+</div>

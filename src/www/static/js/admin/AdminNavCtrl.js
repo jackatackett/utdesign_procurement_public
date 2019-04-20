@@ -2,7 +2,8 @@ app.controller('AdminNavCtrl', ['$scope', 'dispatcher', '$timeout', '$location',
 
     $scope.activeTab = "";
     $scope.activeId = "";
-    $scope.showBulkAdd = false;
+    $scope.showBulkUserAdd = false;
+    $scope.showBulkProjectAdd = false;
     $scope.tabIds = [
         "#addUsersCtrlDiv",
         "#editUsersCtrlDiv",
@@ -11,16 +12,25 @@ app.controller('AdminNavCtrl', ['$scope', 'dispatcher', '$timeout', '$location',
         "#adminAddCostsDiv",
         "#adminEditCostsDiv",
         "#addUserBulkCtrlDiv",
+        "#addProjectBulkCtrlDiv",
         "#addProjectsCtrlDiv",
         "#editProjectsCtrlDiv",
     ];
 
-    dispatcher.on('bulkRefresh', function() {
-        $timeout(function() {$scope.showBulkAdd = true;}, 0);
+    dispatcher.on('bulkUserRefresh', function() {
+        $timeout(function() {$scope.showBulkUserAdd = true;}, 0);
     });
 
-    dispatcher.on('bulkEnd', function() {
-        $timeout(function() {$scope.showBulkAdd = false;}, 0);
+    dispatcher.on('bulkUserEnd', function() {
+        $timeout(function() {$scope.showBulkUserAdd = false;}, 0);
+    });
+
+    dispatcher.on('bulkProjectRefresh', function() {
+        $timeout(function() {$scope.showBulkProjectAdd = true;}, 0);
+    });
+
+    dispatcher.on('bulkProjectEnd', function() {
+        $timeout(function() {$scope.showBulkProjectAdd = false;}, 0);
     });
 
     //add a listener for the nav bar
@@ -44,6 +54,9 @@ app.controller('AdminNavCtrl', ['$scope', 'dispatcher', '$timeout', '$location',
         } else if (hash == 'addUserBulk') {
             $scope.activeTab = 'addUserBulk';
             $scope.activeId = "#addUserBulkCtrlDiv";
+        } else if (hash == 'addProjectBulk') {
+            $scope.activeTab = 'addProjectBulk';
+            $scope.activeId = "#addProjectBulkCtrlDiv";
         } else if (hash == 'help') {
             $scope.activeTab = 'help';
             $scope.activeId = "#adminHelpDiv";

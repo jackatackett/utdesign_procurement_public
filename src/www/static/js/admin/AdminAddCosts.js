@@ -69,11 +69,6 @@ app.controller('AdminAddCosts', ['$scope', '$location', '$http', '$window', func
         }
     };
 
-    $scope.uploadSpreadsheet = function(e) {
-        var target = e.currentTarget;
-        $("#spreadsheetField").click();
-    };
-
     $scope.regeneratePage = function(e) {
         var target = e.currentTarget;
         var id = target.id;

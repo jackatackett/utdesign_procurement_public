@@ -1959,8 +1959,8 @@ class ApiGateway(object):
                 else:
                     bulkData['valid'].append(myUser)
 
-        cherrypy.session['bulkData'] = bulkData
-        cherrypy.session['bulkMetadata'] = {status: len(arr) for status, arr in bulkData.items()}
+        cherrypy.session['bulkUserData'] = bulkData
+        cherrypy.session['bulkUserMetadata'] = {status: len(arr) for status, arr in bulkData.items()}
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -1969,13 +1969,13 @@ class ApiGateway(object):
     def userSpreadsheetSubmit(self):
 
         # check that we actually have bulk data
-        if 'bulkData' in cherrypy.session:
-            data = cherrypy.session['bulkData']
+        if 'bulkUserData' in cherrypy.session:
+            data = cherrypy.session['bulkUserData']
         else:
             raise cherrypy.HTTPError(400, 'No bulk data to add. Must call userSpreadsheetUpload first.')
 
         # check that all users have been resolved
-        if cherrypy.session['bulkMetadata']['conflicting'] or cherrypy.session['bulkMetadata']['invalid']:
+        if cherrypy.session['bulkUserMetadata']['conflicting'] or cherrypy.session['bulkUserMetadata']['invalid']:
             raise cherrypy.HTTPError(400, 'Not all users have been resolved')
 
         # invite all new users
@@ -2019,8 +2019,8 @@ class ApiGateway(object):
     def userSpreadsheetMetadata(self):
 
         # check that we actually have json
-        if 'bulkData' in cherrypy.session:
-            return cherrypy.session['bulkMetadata']
+        if 'bulkUserData' in cherrypy.session:
+            return cherrypy.session['bulkUserMetadata']
         else:
             raise cherrypy.HTTPError(400, 'No bulk data. Must call userSpreadsheetUpload first.')
 
@@ -2050,8 +2050,8 @@ class ApiGateway(object):
             raise cherrypy.HTTPError(400, 'No data was given')
 
         # check that we actually have json
-        if 'bulkData' in cherrypy.session:
-            bulkData = cherrypy.session['bulkData']
+        if 'bulkUserData' in cherrypy.session:
+            bulkData = cherrypy.session['bulkUserData']
         else:
             raise cherrypy.HTTPError(400, 'No bulk data to add. Must call userSpreadsheetUpload first.')
 
@@ -2100,8 +2100,8 @@ class ApiGateway(object):
         """
 
         # check that we actually have json
-        if 'bulkData' in cherrypy.session:
-            bulkData = cherrypy.session['bulkData']
+        if 'bulkUserData' in cherrypy.session:
+            bulkData = cherrypy.session['bulkUserData']
         else:
             raise cherrypy.HTTPError(400, 'No bulk data to add. Must call userSpreadsheetUpload first.')
 
@@ -2131,8 +2131,8 @@ class ApiGateway(object):
     def userSpreadsheetRevalidate(self):
 
         # check that we actually have json
-        if 'bulkData' in cherrypy.session:
-            bulkData = cherrypy.session['bulkData']
+        if 'bulkUserData' in cherrypy.session:
+            bulkData = cherrypy.session['bulkUserData']
         else:
             raise cherrypy.HTTPError(400, 'No bulk data to add. Must call userSpreadsheetUpload first.')
 
@@ -2170,10 +2170,272 @@ class ApiGateway(object):
         if myStatus != newStatus:
             bulkData[myStatus][myIndex] = None
             bulkData[newStatus].append(myUser)
-            cherrypy.session['bulkMetadata'][myStatus] -= 1
-            cherrypy.session['bulkMetadata'][newStatus] += 1
+            cherrypy.session['bulkUserMetadata'][myStatus] -= 1
+            cherrypy.session['bulkUserMetadata'][newStatus] += 1
 
         return {'user': myUser, 'status': newStatus}
+
+
+    @cherrypy.expose
+    # @cherrypy.tools.json_out()
+    # @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def projectSpreadsheetUpload(self, sheet):
+
+        # get the whole file
+        xlsx = bytearray()
+        while True:
+            data = sheet.file.read(8192)
+            if not data:
+                break
+            # size += len(data)
+            xlsx.extend(data)
+
+        # parse into pandas dataframe
+        df = pd.read_excel(BytesIO(bytes(xlsx)))
+
+        # validate each project
+        bulkData = {
+            'valid': [],
+            'invalid': [],
+            'conflicting': [],
+        }
+        pnoLut = dict()
+        for index, row in df.iterrows():
+            # get from excel
+            myProject = dict()
+
+            for i, e in enumerate(('projectNumber', 'sponsorName', 'projectName', 'defaultBudget')):
+                if i < row.size:
+                    myProject[e] = row[i]
+                else:
+                    break
+
+            # TODO parse numerical and string fields
+
+            myProject = self.validateProject(myProject, comment=True)
+
+            if 'projectNumber' in myProject and myProject['projectNumber'] in pnoLut:
+                myProject['comment']['sheetConflict'] = True
+                pnoLut[myProject['projectNumber']]['sheetConflict'] = True
+                continue
+            elif 'projectNumber' in myProject:
+                pnoLut[myProject['projectNumber']] = myProject
+
+            if myProject['comment']['existingNumber']:
+                bulkData['conflicting'].append(myProject)
+            elif (myProject['comment']['sheetConflict'] or
+                    myProject['comment']['missingAttributes']):
+                bulkData['invalid'].append(myProject)
+            else:
+                bulkData['valid'].append(myProject)
+
+        cherrypy.session['bulkProjectData'] = bulkData
+        cherrypy.session['bulkProjectMetadata'] = {status: len(arr) for status, arr in bulkData.items()}
+        cherrypy.session['bulkProjectsOverwrite'] = set()
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    # @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def projectSpreadsheetSubmit(self):
+
+        # check that we actually have bulk data
+        if 'bulkProjectData' in cherrypy.session:
+            data = cherrypy.session['bulkProjectData']
+        else:
+            raise cherrypy.HTTPError(400, 'No bulk data to add. Must call projectSpreadsheetUpload first.')
+
+        # check that all issues have been resolved
+        if (cherrypy.session['bulkProjectMetadata']['invalid'] or
+                cherrypy.session['bulkProjectMetadata']['conflicting']):
+            raise cherrypy.HTTPError(400, 'Not all issues have been resolved')
+
+        # insert all new projects
+        operations = []
+        for project in data['valid']:
+            if project['projectNumber'] in cherrypy.session['bulkProjectsOverwrite']:
+                del project['comment']
+                operations.append(pm.UpdateOne({'projectNumber': project['projectNumber']}, {'$set': project}))
+            else:
+                operations.append(pm.InsertOne(project))
+
+        self.colProjects.bulk_write(operations)
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @authorizedRoles("admin")
+    def projectSpreadsheetMetadata(self):
+
+        # check that we actually have json
+        if 'bulkProjectData' in cherrypy.session:
+            return cherrypy.session['bulkProjectMetadata']
+        else:
+            raise cherrypy.HTTPError(400, 'No bulk data. Must call projectSpreadsheetUpload first.')
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    @authorizedRoles("admin")
+    def projectSpreadsheetPages(self):
+        """
+        Returns an int: the number of pages it would take to
+        display all current projects if 10 projects are displayed
+        per page. At present time, the page size (number of
+        projects per page) cannot be configured.
+
+        {
+            "bulkStatus": (string, Optional, default "valid".
+                Whether these are the "valid", "invalid", or "conflicting")
+        }
+
+        """
+
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        # check that we actually have json
+        if 'bulkProjectData' in cherrypy.session:
+            bulkData = cherrypy.session['bulkProjectData']
+        else:
+            raise cherrypy.HTTPError(400, 'No bulk data to add. Must call projectSpreadsheetUpload first.')
+
+        pageSize = 10 # TODO stretch goal make this configurable
+
+        div, remainder = divmod(len(bulkData.get(data.get('bulkStatus', 'valid'))), pageSize)
+        if remainder:
+            return div + 1
+        else:
+            return div
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    @authorizedRoles("admin")
+    def projectSpreadsheetData(self):
+        """
+        This REST endpoint returns a list of 10 projects from the database. The projects may be
+        sorted by a key and ordered by ascending or descending, and the pageNumber
+        decides which 10 projects are returned. pageNumber must be a non-negative integer.
+
+        Incoming ::
+        {
+            "bulkStatus": (string, Optional, default "valid".
+                Whether these are the "valid", "invalid", "existing", or
+                "conflicting" bulk projects)
+
+            'pageNumber': (int)
+                (Optional. Default: 0)
+        }
+
+        Outgoing ::
+        [
+            {
+                “projectNumbers”: (list of ints),
+                "firstName": (string),
+                "lastName": (string),
+                "netID": (string),
+                "email": (string),
+                "course": (string),
+                “role”: “student”,
+                “status”: (string), //”current” or “removed”
+            }
+        ]
+
+        """
+
+        # check that we actually have json
+        if 'bulkProjectData' in cherrypy.session:
+            bulkData = cherrypy.session['bulkProjectData']
+        else:
+            raise cherrypy.HTTPError(400, 'No bulk data to add. Must call projectSpreadsheetUpload first.')
+
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        pageNumber = checkValidData('pageNumber', data, int, default=0,
+                                optional=True)
+
+        if pageNumber < 0:
+            raise cherrypy.HTTPError(
+                400, "Invalid pageNumber format. "
+                     "Expected nonnegative integer. "
+                     "See: %s" % pageNumber)
+
+        pageSize = 10 # TODO stretch goal make this configurable
+
+        return bulkData[data.get('bulkStatus', 'valid')][pageSize*pageNumber: pageSize*(pageNumber+1)]
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def projectSpreadsheetRevalidate(self):
+
+        # check that we actually have json
+        if 'bulkProjectData' in cherrypy.session:
+            bulkData = cherrypy.session['bulkProjectData']
+        else:
+            raise cherrypy.HTTPError(400, 'No bulk data to add. Must call projectSpreadsheetUpload first.')
+
+        # check that we actually have bulk data
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myProject = self.validateProject(data.get('project', {}), comment=True)
+
+        myStatus = checkValidData('bulkStatus', data, str)
+        if myStatus not in bulkData:
+            raise cherrypy.HTTPError(400, "Invalid bulkStatus type: %s" % myStatus)
+
+        myIndex = checkValidData('index', data, int)
+        if myIndex < 0 or myIndex >= len(bulkData[myStatus]):
+            raise cherrypy.HTTPError(400, "Index %s out of bounds for status: %s" % (myIndex, myStatus))
+
+        newStatus = None
+        if myProject['comment']['existingNumber']:
+            newStatus = 'conflicting'
+        elif (myProject['comment']['sheetConflict'] or
+              myProject['comment']['missingAttributes']):
+            newStatus = 'invalid'
+        else:
+            newStatus = 'valid'
+
+        if myStatus != newStatus:
+            bulkData[myStatus][myIndex] = None
+            bulkData[newStatus].append(myProject)
+            cherrypy.session['bulkProjectMetadata'][myStatus] -= 1
+            cherrypy.session['bulkProjectMetadata'][newStatus] += 1
+
+        return {'project': myProject, 'status': newStatus}
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @authorizedRoles("admin")
+    def projectSpreadsheetOverwrite(self):
+
+        # check that we actually have json
+        if 'bulkProjectData' in cherrypy.session:
+            bulkData = cherrypy.session['bulkProjectData']
+        else:
+            raise cherrypy.HTTPError(400, 'No bulk data to add. Must call projectSpreadsheetUpload first.')
+
+        # check that we actually have bulk data
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myPno = checkValidData('projectNumber', data, int, coerce=True)
+        cherrypy.session['bulkProjectsOverwrite'].add(myPno)
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -2603,8 +2865,6 @@ class ApiGateway(object):
 
         myFilter = getRequestKeywords(data)
 
-        cherrypy.log('filter %s' % myFilter)
-
         # finds users who are current only
         cursor = self.colRequests.find(myFilter).collation({ 'locale': 'en' }).sort(sortBy, direction)
 
@@ -2738,6 +2998,28 @@ class ApiGateway(object):
             for key in ("projectNumbers", "firstName", "lastName", "netID", "course", 'email', 'role'):
                 myUser[key] = user[key]
             return myUser
+        else:
+            return dict()
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    @authorizedRoles("admin")
+    def projectSingleData(self):
+        # check that we actually have json
+        if hasattr(cherrypy.request, 'json'):
+            data = cherrypy.request.json
+        else:
+            raise cherrypy.HTTPError(400, 'No data was given')
+
+        myPno = checkValidData('projectNumber', data, int, coerce=True)
+        project = self.colProjects.find_one({'projectNumber': myPno})
+        if project:
+            myProject = dict()
+            for key in ("projectNumber", "sponsorName", "projectName", "defaultBudget", "membersEmails"):
+                if key in project:
+                    myProject[key] = project[key]
+            return myProject
         else:
             return dict()
 
@@ -3088,3 +3370,75 @@ class ApiGateway(object):
         if comment:
             myUser['comment'] = myComment
         return myUser
+
+    #helper function, do not expose
+    def validateProject(self, data, comment=False):
+        """
+        Validates a project to check for a projectNumber, sponsorName, projectName,
+        memberEmails, and defaultBudget. If types are wrong, things are coerced
+        if possible.
+
+        A sanitized version of the project dict is returned.
+
+        If comment is True, then the project also has a 'comment' attribute ::
+
+            comment: {
+                missingAttributes: (list of strings)
+                existingNumber: (boolean, true if a project with this projectNumber exists),
+            }
+
+        :param data: dict. The project to be validated.
+        :param myComment: bool. As described above.
+        :return:
+        """
+
+        myComment = {
+            'sheetConflict': False,
+            'existingNumber': False,
+            'missingAttributes': [],
+        }
+
+        myProject = dict()
+
+        # set default value of value in dict
+        myProject['status'] = 'active'
+
+        # get the projectNumber
+        try:
+            myProject['projectNumber'] = checkValidData("projectNumber", data, int, coerce=True)
+
+            if myProject['projectNumber'] not in cherrypy.session.get('bulkProjectsOverwrite', tuple()):
+                oldProject = self.colProjects.find_one({'projectNumber': myProject['projectNumber']})
+                if oldProject:
+                    myComment['existingNumber'] = True
+
+        except cherrypy.HTTPError:
+            if comment:
+                myComment['missingAttributes'].append("projectNumber")
+            else:
+                return None
+
+        # get the defaultBudget
+        try:
+            myCurrency = checkValidData("defaultBudget", data, str, coerce=True)
+            myProject['defaultBudget'] = lenientConvertToCents(myCurrency)
+        except cherrypy.HTTPError:
+            if comment:
+                myComment['missingAttributes'].append("defaultBudget")
+            else:
+                return None
+
+        # check the project's other keys
+        for key in ("sponsorName", "projectName"):
+            try:
+                myProject[key] = checkValidData(key, data, str)
+            except cherrypy.HTTPError:
+                if comment:
+                    myComment['missingAttributes'].append(key)
+                else:
+                    return None
+
+        if comment:
+            myProject['comment'] = myComment
+        return myProject
+
