@@ -1,4 +1,4 @@
-app.controller('EditUsersCtrl', ['$scope', '$location', '$http', function($scope, $location, $http) {
+app.controller('EditUsersCtrl', ['$scope', '$location', '$http', 'dispatcher', function($scope, $location, $http, dispatcher) {
 
     $scope.fieldKeys = ["projectNumbers", "firstName", "lastName", "netID", "email", "course", "role"];
     $scope.fields = ["Project Number", "First Name", "Last Name", "NetID", "Email", "Course", "Role"];
@@ -160,5 +160,10 @@ app.controller('EditUsersCtrl', ['$scope', '$location', '$http', function($scope
 
     $scope.repage();
     $scope.changePage(1);
+
+
+    dispatcher.on('bulkUserEnd', function() {
+        $scope.requery();
+    });
 
 }]);

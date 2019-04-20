@@ -1,4 +1,4 @@
-app.controller('EditProjectsCtrl', ['$scope', '$location', '$http', function($scope, $location, $http) {
+app.controller('EditProjectsCtrl', ['$scope', '$location', '$http', 'dispatcher', function($scope, $location, $http, dispatcher) {
 
     $scope.fieldKeys = ["projectNumber", "sponsorName", "projectName", "membersEmails", "defaultBudget"];
     $scope.fields = ["Project Number", "Sponsor Name", "Project Name", "Members Emails", "Budget"];
@@ -157,5 +157,9 @@ app.controller('EditProjectsCtrl', ['$scope', '$location', '$http', function($sc
 
     $scope.repage();
     $scope.changePage(1);
+
+    dispatcher.on('bulkProjectEnd', function() {
+        $scope.requery();
+    });
 
 }]);
