@@ -3324,6 +3324,21 @@ class ApiGateway(object):
             try:
                 myUser['projectNumbers'] = checkProjectNumbers(data)
             except cherrypy.HTTPError:
+                myPnos = str(data.get('projectNumbers', None))
+                if not myPnos:
+                    myComment['missingAttributes'].append("projectNumbers")
+                else:
+                    try:
+                        if ',' in myPnos:
+                            myPnos = list(map(str.strip, myPnos.split(',')))
+                        else:
+                            myPnos = myPnos.split()
+                        myPnos = list(map(int, myPnos))
+                    except ValueError:
+                        myComment['missingAttributes'].append("projectNumbers")
+
+                    myUser['projectNumbers'] = myPnos
+
                 if comment:
                     myComment['missingAttributes'].append("projectNumbers")
                 else:
