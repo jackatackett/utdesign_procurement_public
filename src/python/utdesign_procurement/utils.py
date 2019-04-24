@@ -251,10 +251,12 @@ def requestCreate(data, status, optional=False):
                 }
             ]
         }
+
     :param data: a dict containing data to be stored in the request
     :param status: what will be the initial status of the request?
     :param optional: if True, all fields of data except procjectNumber will be optional
     :return: procurement request, stored as a dict
+
     """
     myRequest = dict()
 

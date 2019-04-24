@@ -2639,10 +2639,13 @@ class ApiGateway(object):
         Returns true if the project number(s) exist in the database
 
         Returns ::
+
             {
                 "valid": boolean
             }
+
         """
+
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
