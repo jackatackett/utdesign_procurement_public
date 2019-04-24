@@ -40,6 +40,7 @@ class ApiGateway(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
     @authorizedRoles("student", "admin")
     def procurementSave(self):
         """
@@ -184,6 +185,11 @@ class ApiGateway(object):
                 'teamEmails': teamEmails,
                 'request': myRequest,
             })
+
+        return {
+            '_id': str((self.colRequests.find_one(query) or dict()).get('_id', '')),
+            'requestNumber': myRequestNumber
+        }
 
     def sequence(self):
         """
@@ -3374,6 +3380,14 @@ class ApiGateway(object):
     # helper function, do not expose!
     # TODO edge cases?
     def getTeamEmails(self, projectNumber):
+        """
+        Take the projectNumber of a project and return a list of emails
+        of users associated with that project.
+
+
+        :param projectNumber: the projectNumber of a project
+        :return: list of emails of members of the specified project
+        """
         teamEmails = []
         for user in self.colUsers.find({'projectNumbers': projectNumber}):
             if user['role'] == 'student':
@@ -3383,6 +3397,10 @@ class ApiGateway(object):
     #helper function, do not expose
     # TODO check if redundant (getAdminList)
     def getAdminEmails(self):
+        """
+        Return a list of emails of all admins.
+        :return: a list of emails of all admins
+        """
         adminEmails = []
         for user in self.colUsers.find({'role': 'admin'}):
             adminEmails.append(user['email'])
