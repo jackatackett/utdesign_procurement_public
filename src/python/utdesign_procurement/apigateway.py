@@ -2030,7 +2030,7 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def userSpreadsheetPages(self):
         """
-        Returns an int: the number of pages it would take to
+        Return an int: the number of pages it would take to
         display all current users if 10 users are displayed
         per page. At present time, the page size (number of
         users per page) cannot be configured.
@@ -2279,7 +2279,7 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def projectSpreadsheetPages(self):
         """
-        Returns an int: the number of pages it would take to
+        Return an int: the number of pages it would take to
         display all current projects if 10 projects are displayed
         per page. At present time, the page size (number of
         projects per page) cannot be configured.
@@ -2442,11 +2442,10 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def userEdit(self):
         """
-        This REST endpoint edits a user document in the databse. It takes a
+        Edit a user document in the databse. Takes a
         MongoDB ObjectID and optional data fields for a user. The ObjectID is
         used to identify the user whose information will be edited and the
-        optional data provided to the endpoint is what the existing data will
-        be changed to.
+        optional data is what the existing data will be changed to.
 
         Expected input::
 
@@ -2459,6 +2458,7 @@ class ApiGateway(object):
                 "course": (string, optional)
             }
 
+        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -2506,15 +2506,18 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def userRemove(self):
         """
-        This REST endpoint "removes" a user from the system. It changes the
-        status of a user with the effect that the user is no longer able to
-        interact with the system, but doesn't delete their data from the database.
+        "Remove" a user from the system. Changes the
+        status of a user from "current" to "removed", which has
+        the effect that the user is no longer able to interact
+        with the system. Doesn't delete the user from the database.
 
         Expected input::
 
             {
                 "_id": (string)
             }
+
+        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -2551,12 +2554,12 @@ class ApiGateway(object):
     @cherrypy.tools.json_in()
     def userVerify(self):
         """
-        This REST endpoint allows a new user to set their password.
-        It checks that a provided email is matched with a provided UUID.
-        If so, it creates and stores a password hash and salt for the user.
-        The UUID is a key in an invitation document. The document is created
-        when a user is first invited to use the system and when a user
-        forgets their password.
+        Set the password of a new user. Checks that a provided email is
+        matched in the database to a provided UUID. If so, creates and
+        stores a password hash and salt for the user.
+
+        The UUID is a key in an invitation document. An invitation is created when
+        a user is first invited to use the system and when a user forgets their password.
 
         Expected input::
 
@@ -2565,6 +2568,8 @@ class ApiGateway(object):
                 "email": (string),
                 "password": (string)
             }
+
+        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -2600,8 +2605,8 @@ class ApiGateway(object):
     @cherrypy.tools.json_in()
     def userLogin(self):
         """
-        This REST endpoint takes an email and password, checks if the password's hash
-        is associated with the given email, and if so, logs in a user.
+        Take an email and password, check if the password's hash
+        is associated with the given email, and if so, log in a user.
 
         Expected input::
 
@@ -2609,6 +2614,8 @@ class ApiGateway(object):
                 "email": (string),
                 "password": (string)
             }
+
+        :return: A message if login is successful
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -2636,7 +2643,12 @@ class ApiGateway(object):
     @cherrypy.tools.json_in()
     def projectValidate(self):
         """
-        Returns true if the project number(s) exist in the database
+        Return true if the project number(s) exist in the database.
+
+        Incoming::
+        {
+
+        }
 
         Returns ::
 
@@ -2644,6 +2656,7 @@ class ApiGateway(object):
                 "valid": boolean
             }
 
+        :return: a boolean, as per above
         """
 
         # check that we actually have json
@@ -2669,8 +2682,11 @@ class ApiGateway(object):
     @authorizedRoles("student", "manager")
     def userProjects(self):
         """
-        This REST endpoint returns a list of projectNumbers associated with
+        Return a list of projectNumbers associated with
         the authenticated user.
+
+        Will only return the projects associated with the user
+        who calls this function.
 
         Returns ::
 
@@ -2678,6 +2694,7 @@ class ApiGateway(object):
                 'projectNumbers': (list of ints)
             }
 
+        :return: a list of project numbers
         """
         return cherrypy.session.get('projectNumbers', [])
 
@@ -2687,6 +2704,11 @@ class ApiGateway(object):
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def userInfo(self):
+        """
+        This function is for debugging, and probably shouldn't be here.
+
+        :return: a variable called ret
+        """
         # auth/authenticated is helpful for debugging
         auth = 'role' in cherrypy.session
         ret =  {'authenticated': auth}
@@ -2705,11 +2727,13 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def projectPages(self):
         """
-        Returns an int: the number of pages it would take to
-        display all current projects if 10 projects are displayed
+        Return an int: the number of pages it would take to
+        display all current projects, filtered per the incoming JSON
+        object described below, if 10 projects are displayed
         per page. At present time, the page size (number of
-        projects per page) cannot be configured.
+        projects per page, i.e. 10) cannot be configured.
 
+        Incoming ::
         {
             "projectNumber": (int),
             "sponsorName": (string, optional),
@@ -2718,6 +2742,7 @@ class ApiGateway(object):
             "defaultBudget": (string, optional)
         }
 
+        :return: the number of pages it would take to display all specified projects
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -2740,11 +2765,13 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def userPages(self):
         """
-        Returns an int: the number of pages it would take to
-        display all current users if 10 users are displayed
-        per page. At present time, the page size (number of
-        users per page) cannot be configured.
+        Return an int: the number of pages it would take to
+        display all current users, filtered per the incoming JSON
+        object described below, if 10 users are displayed per page.
+        At present time, the page size (number of users per page, i.e. 10)
+        cannot be configured.
 
+        Incoming ::
         {
             "projectNumbers": (int or list of ints, optional),
             "firstName": (string, optional),
@@ -2755,6 +2782,7 @@ class ApiGateway(object):
             "role": (string, optional)
         }
 
+        :return: the total number of pages required to display all specified users
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -2807,17 +2835,17 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def requestData(self):
         """
-        This REST endpoint returns a list of 10 users from the database. The users may be
+        Return a list of at most 10 requests from the database. The requests may be
         sorted by a key and ordered by ascending or descending, and the pageNumber
         decides which 10 users are returned. pageNumber must be a non-negative integer.
 
         Incoming ::
         {
-            'sortBy': (string in projectNumbers, firstName, lastName, netID,
-                email, course, role, status)
+            'sortBy': (string in 'projectNumbers', 'firstName', 'lastName', 'netID',
+                'email', 'course', 'role', 'status')
                 (Optional. Default "email")
             'order': (string in 'ascending', 'descending')
-                (Optional. Default: "ascending")
+                (Optional. Default: 'ascending')
             'pageNumber': (int)
                 (Optional. Default: 0)
             'keywordSearch': (dict)
@@ -2830,7 +2858,14 @@ class ApiGateway(object):
         }
 
         Outgoing ::
+        [
+            {
 
+            }
+        ]
+
+
+        :return: a list of at most 10 requests
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -2888,14 +2923,14 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def projectData(self):
         """
-        This REST endpoint returns a list of 10 projects from the database. The projects may be
+        Return a list of at most 10 projects from the database. The projects may be
         sorted by a key and ordered by ascending or descending, and the pageNumber
         decides which 10 projects are returned. pageNumber must be a non-negative integer.
 
         Incoming ::
         {
-            'sortBy': (string in projectNumber, sponsorName, projectName, membersEmails,
-                defaultBudget)
+            'sortBy': (string in 'projectNumber', 'sponsorName', 'projectName', 'membersEmails',
+                'defaultBudget')
                 (Optional. Default "projectNumber")
             'order': (string in 'ascending', 'descending')
                 (Optional. Default: "ascending")
@@ -2922,6 +2957,7 @@ class ApiGateway(object):
             }
         ]
 
+        :return: a list of at most 10 projects
         """
 
         # check that we actually have json
@@ -2988,6 +3024,28 @@ class ApiGateway(object):
     @cherrypy.tools.json_out()
     @authorizedRoles("admin")
     def userSingleData(self):
+        """
+        Return the data of a user in the database. See "Outgoing::" below for
+        which data is returned. The user is found by their email.
+
+        Incoming::
+        {
+            'email': (int)
+        }
+
+        Outgoing::
+        {
+            'projectNumbers':, (list of ints)
+            'firstName':, (str)
+            'lastName':, (str)
+            'netID':, (str)
+            'course':, (str)
+            'email':, (str)
+            'role': (str)
+        }
+
+        :return: a dict containing a single project's data, as per above
+        """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
@@ -3009,6 +3067,26 @@ class ApiGateway(object):
     @cherrypy.tools.json_out()
     @authorizedRoles("admin")
     def projectSingleData(self):
+        """
+        Return the data of a project in the database. See "Outgoing" below for
+        which data is returned. The project is found by its projectNumber.
+
+        Incoming::
+        {
+            'projectNumber': (int)
+        }
+
+        Outgoing::
+        {
+            'projectNumber': (int),
+            'sponsorName': (str),
+            'projectName': (str),
+            'defaultBudget': (???),
+            'membersEmails': (list of str)
+        }
+
+        :return: a dict containing a single project's data, as per above
+        """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
@@ -3032,8 +3110,8 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def userData(self):
         """
-        This REST endpoint returns a list of 10 users from the database. The users may be
-        sorted by a key and ordered by ascending or descending, and the pageNumber
+        Return a list of at most 10 user documents from the database. The users may be
+        sorted by a key and ordered ascending or descending, and the pageNumber
         decides which 10 users are returned. pageNumber must be a non-negative integer.
 
         Incoming ::
@@ -3071,6 +3149,7 @@ class ApiGateway(object):
             }
         ]
 
+        :return: a list of at most 10 users
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -3140,6 +3219,8 @@ class ApiGateway(object):
     def userLogout(self):
         """
         Logs out a user by expiring their session.
+
+        :return:
         """
         cherrypy.lib.sessions.expire()
 
@@ -3148,6 +3229,10 @@ class ApiGateway(object):
     @cherrypy.tools.json_out()
     @authorizedRoles("admin")
     def reportGenerate(self):
+        """
+
+        :return:
+        """
 
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -3229,11 +3314,13 @@ class ApiGateway(object):
     # helper function, do not expose!
     def _updateDocument(self, findQuery, updateQuery, updateRule, collection=None):
         """
-        This function updates a document. It finds the document in the
-        database and updates it using the provided queries/rules.
+        Update a document. Find the document in the
+        database and updates it using the provided queries/rule.
 
-        :param myID: ID of document to be updated
-        :param findQuery: query to find document
+        If findQuery finds a document, then updateQuery is used to find
+        the document to be updated, which is updated by updateRule.
+
+        :param findQuery: query to find a document
         :param updateQuery: query to find document to update
         :param updateRule: rule to update document to update
         """
@@ -3266,7 +3353,7 @@ class ApiGateway(object):
     #helper function, do not expose
     def validateUser(self, data, comment=False):
         """
-        Validates a user to check for a role, firstName, lastName, email,
+        Validate a user to check for a role, firstName, lastName, email,
         and optional netID. Non-admin users are also checked for valid
         project numbers and courses.
 
@@ -3392,7 +3479,7 @@ class ApiGateway(object):
     #helper function, do not expose
     def validateProject(self, data, comment=False):
         """
-        Validates a project to check for a projectNumber, sponsorName, projectName,
+        Validate a project to check for a projectNumber, sponsorName, projectName,
         memberEmails, and defaultBudget. If types are wrong, things are coerced
         if possible.
 

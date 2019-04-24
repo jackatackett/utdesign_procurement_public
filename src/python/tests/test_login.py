@@ -7,10 +7,16 @@ import requests
 from unittest import TestCase
 
 class LoginTester(TestCase):
+    """
+    Tests the user login sequence of events.
+
+    This class will try to log in as an admin, add a new user, verify the
+    user account and set a password, and try to log in as that user.
+    """
 
     def test_login(self):
         """
-        Test the process of creating a new user.
+        Test the user login sequence of events.
 
         :return:
         """
@@ -127,6 +133,9 @@ class LoginTester(TestCase):
         """
         Test the /userVerify REST endpoint.
 
+        :param uuid: str. The uuid of the user invitation.
+        :param email: str. The email address of the user to be added.
+
         :return:
         """
 
@@ -156,6 +165,7 @@ class LoginTester(TestCase):
         Login as the new student.
         Test the validity of the /userVerify and /userLogin REST endpoints.
 
+        :param email: str. The email address of the user to be added.
         :return: CookieJar. The cookies returned by /userLogin
         """
 
