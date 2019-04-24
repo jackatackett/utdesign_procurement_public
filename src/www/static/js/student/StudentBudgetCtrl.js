@@ -60,7 +60,7 @@ app.controller('StudentBudgetCtrl', ['$scope', '$location', '$http', '$window', 
     };
 
     $scope.getData = function() {
-        var filterData = {"projectNumbers": [$scope.projects[curProject]["number"]]};
+        var filterData = {"projectNumbers": [$scope.projects[currentProj]["number"]]};
         $http.post('/procurementStatuses', filterData).then(function(resp) {
             procurementData = resp.data;
             filterRequests();
