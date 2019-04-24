@@ -3296,7 +3296,6 @@ class ApiGateway(object):
 
         :return:
         """
-
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
@@ -3365,6 +3364,11 @@ class ApiGateway(object):
     @cherrypy.expose
     # @authorizedRoles("admin")
     def reportDownload(self, uuid):
+        """
+
+        :param uuid:
+        :return:
+        """
         # check that we actually have json
         if uuid in self.reportUUIDs:
             filename = uuid + '.xlsx'
