@@ -63,7 +63,8 @@ class LoginTester(TestCase):
         )
 
         # see if the response comes back okay
-        self.assertTrue(200 <= response.status_code <= 300)
+        if not (200 <= response.status_code <= 300):
+            raise ValueError(response.content.decode("utf-8"))
 
         # save our cookies for later
         return response.cookies
@@ -98,7 +99,8 @@ class LoginTester(TestCase):
         )
 
         # see if the response comes back okay
-        self.assertTrue(200 <= response.status_code <= 300)
+        if not (200 <= response.status_code <= 300):
+            raise ValueError(response.content.decode("utf-8"))
 
         # save the uuid
         j = json.loads(response.content.decode('utf-8'))
@@ -153,7 +155,8 @@ class LoginTester(TestCase):
         )
 
         # see if the response comes back okay
-        self.assertTrue(200 <= response.status_code <= 300)
+        if not (200 <= response.status_code <= 300):
+            raise ValueError(response.content.decode("utf-8"))
 
         # see if his user data has some password hash in MongoDB now
         userDoc = self.colUsers.find_one({"email": email})
@@ -182,7 +185,8 @@ class LoginTester(TestCase):
         )
 
         # see if the response comes back okay
-        self.assertTrue(200 <= response.status_code <= 300)
+        if not (200 <= response.status_code <= 300):
+            raise ValueError(response.content.decode("utf-8"))
 
         # save our cookies for later
         return response.cookies

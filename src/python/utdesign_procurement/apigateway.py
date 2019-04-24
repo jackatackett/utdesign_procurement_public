@@ -40,6 +40,7 @@ class ApiGateway(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
     @authorizedRoles("student", "admin")
     def procurementSave(self):
         """
@@ -72,7 +73,6 @@ class ApiGateway(object):
                 ]
             }
 
-        :param:
         :return:
         """
         # check that we actually have json
@@ -186,12 +186,16 @@ class ApiGateway(object):
                 'request': myRequest,
             })
 
+        return {
+            '_id': str((self.colRequests.find_one(query) or dict()).get('_id', '')),
+            'requestNumber': myRequestNumber
+        }
+
     def sequence(self):
         """
         Check the current sequence value of requests, return it,
         and increment the value.
 
-        :param:
         :return:
         """
 
@@ -227,7 +231,6 @@ class ApiGateway(object):
                 "projectNumber": (int)
             }
 
-        :param:
         :return: list of technical manager's emails
         """
         # check that we actually have json
@@ -278,7 +281,6 @@ class ApiGateway(object):
             statuses: (string or list of strings, optional)
         }
 
-        :param:
         :return: list of requests matching filter
         """
         # check that we actually have json
@@ -374,7 +376,6 @@ class ApiGateway(object):
                 ]
             }
 
-        :param:
         :return:
         """
         # check that we actually have json
@@ -410,7 +411,6 @@ class ApiGateway(object):
                 "_id": (string)
             }
 
-        :param:
         :return:
         """
         # check that we actually have json
@@ -497,7 +497,6 @@ class ApiGateway(object):
                 "_id": (string)
             }
 
-        :param:
         :return:
         """
         # check that we actually have json
@@ -584,7 +583,6 @@ class ApiGateway(object):
                 "comment": (string)
             }
 
-        :param:
         :return:
         """
         # check that we actually have json
@@ -666,7 +664,6 @@ class ApiGateway(object):
                 "comment": (string)
             }
 
-        :param:
         :return:
         """
         # check that we actually have json
@@ -775,7 +772,6 @@ class ApiGateway(object):
                 ]
             }
 
-        :param:
         :return:
         """
         # check that we actually have json
@@ -865,7 +861,6 @@ class ApiGateway(object):
                 ]
             }
 
-        :param:
         :return:
         """
         # check that we actually have json
@@ -939,7 +934,6 @@ class ApiGateway(object):
                 "comment": (string)
             }
 
-        :param:
         :return:
         """
         # check that we actually have json
@@ -1022,7 +1016,6 @@ class ApiGateway(object):
                 "amount": (string)
             }
 
-        :param:
         :return:
         """
         # check that we actually have json
@@ -1109,7 +1102,6 @@ class ApiGateway(object):
                 "_id": (string)
             }
 
-        :param:
         :return:
         """
         # check that we actually have json
@@ -1182,7 +1174,6 @@ class ApiGateway(object):
                 "_id": (string)
             }
 
-        :param:
         :return:
         """
         # check that we actually have json
@@ -1257,7 +1248,6 @@ class ApiGateway(object):
                 "comment": (string)
             }
 
-        :param:
         :return:
         """
         # check that we actually have json
@@ -1347,7 +1337,6 @@ class ApiGateway(object):
                 "comment": (string)
             }
 
-        :param:
         :return:
         """
         # check that we actually have json
@@ -1482,7 +1471,6 @@ class ApiGateway(object):
             actor: (string, email of admin)
         }
 
-        :param:
         :return:
         """
 
@@ -1533,7 +1521,6 @@ class ApiGateway(object):
             projectNumbers: (list of ints, optional)
         }
 
-        :param:
         :return: list of costs (refund, reimbursement, etc.)
         """
 
@@ -1597,7 +1584,6 @@ class ApiGateway(object):
             “pendingBudget”: (string) optional
         }
 
-        :param:
         :return:
         """
         # TODO defaultBudget, availableBudget, pendingBudget not yet optional
@@ -1666,7 +1652,6 @@ class ApiGateway(object):
             "_id": (string)
         }
 
-        :param:
         :return:
         """
 
@@ -1710,7 +1695,6 @@ class ApiGateway(object):
             projectNumbers: (list of ints, optional)
         }
 
-        :param:
         :return: list of projects
         """
 
@@ -1775,7 +1759,6 @@ class ApiGateway(object):
             membersEmails: [(string), …, optional]
         }
 
-        :param:
         :return:
         """
         # check that we actually have json
@@ -1845,7 +1828,6 @@ class ApiGateway(object):
                 "role": (string)
             }
 
-        :param:
         :return:
         """
 
@@ -1920,7 +1902,6 @@ class ApiGateway(object):
                 "email": (string),
             }
 
-        :param:
         :return:
         """
 
