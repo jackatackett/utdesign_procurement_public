@@ -2030,7 +2030,7 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def userSpreadsheetPages(self):
         """
-        Returns an int: the number of pages it would take to
+        Return an int: the number of pages it would take to
         display all current users if 10 users are displayed
         per page. At present time, the page size (number of
         users per page) cannot be configured.
@@ -2279,7 +2279,7 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def projectSpreadsheetPages(self):
         """
-        Returns an int: the number of pages it would take to
+        Return an int: the number of pages it would take to
         display all current projects if 10 projects are displayed
         per page. At present time, the page size (number of
         projects per page) cannot be configured.
@@ -2442,11 +2442,10 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def userEdit(self):
         """
-        This REST endpoint edits a user document in the databse. It takes a
+        Edit a user document in the databse. Takes a
         MongoDB ObjectID and optional data fields for a user. The ObjectID is
         used to identify the user whose information will be edited and the
-        optional data provided to the endpoint is what the existing data will
-        be changed to.
+        optional data is what the existing data will be changed to.
 
         Expected input::
 
@@ -2459,6 +2458,7 @@ class ApiGateway(object):
                 "course": (string, optional)
             }
 
+        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -2506,15 +2506,18 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def userRemove(self):
         """
-        This REST endpoint "removes" a user from the system. It changes the
-        status of a user with the effect that the user is no longer able to
-        interact with the system, but doesn't delete their data from the database.
+        "Remove" a user from the system. Changes the
+        status of a user from "current" to "removed", which has
+        the effect that the user is no longer able to interact
+        with the system. Doesn't delete the user from the database.
 
         Expected input::
 
             {
                 "_id": (string)
             }
+
+        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -2551,12 +2554,12 @@ class ApiGateway(object):
     @cherrypy.tools.json_in()
     def userVerify(self):
         """
-        This REST endpoint allows a new user to set their password.
-        It checks that a provided email is matched with a provided UUID.
-        If so, it creates and stores a password hash and salt for the user.
-        The UUID is a key in an invitation document. The document is created
-        when a user is first invited to use the system and when a user
-        forgets their password.
+        Set the password of a new user. Checks that a provided email is
+        matched in the database to a provided UUID. If so, creates and
+        stores a password hash and salt for the user.
+
+        The UUID is a key in an invitation document. An invitation is created when
+        a user is first invited to use the system and when a user forgets their password.
 
         Expected input::
 
@@ -2565,6 +2568,8 @@ class ApiGateway(object):
                 "email": (string),
                 "password": (string)
             }
+
+        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -2600,8 +2605,8 @@ class ApiGateway(object):
     @cherrypy.tools.json_in()
     def userLogin(self):
         """
-        This REST endpoint takes an email and password, checks if the password's hash
-        is associated with the given email, and if so, logs in a user.
+        Take an email and password, check if the password's hash
+        is associated with the given email, and if so, log in a user.
 
         Expected input::
 
@@ -2609,6 +2614,8 @@ class ApiGateway(object):
                 "email": (string),
                 "password": (string)
             }
+
+        :return: A message if login is successful
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -2636,7 +2643,12 @@ class ApiGateway(object):
     @cherrypy.tools.json_in()
     def projectValidate(self):
         """
-        Returns true if the project number(s) exist in the database
+        Return true if the project number(s) exist in the database.
+
+        Incoming::
+        {
+
+        }
 
         Returns ::
 
@@ -2644,6 +2656,7 @@ class ApiGateway(object):
                 "valid": boolean
             }
 
+        :return: a boolean, as per above
         """
 
         # check that we actually have json
@@ -2669,8 +2682,11 @@ class ApiGateway(object):
     @authorizedRoles("student", "manager")
     def userProjects(self):
         """
-        This REST endpoint returns a list of projectNumbers associated with
+        Return a list of projectNumbers associated with
         the authenticated user.
+
+        Will only return the projects associated with the user
+        who calls this function.
 
         Returns ::
 
@@ -2678,6 +2694,7 @@ class ApiGateway(object):
                 'projectNumbers': (list of ints)
             }
 
+        :return: a list of project numbers
         """
         return cherrypy.session.get('projectNumbers', [])
 
@@ -2706,7 +2723,8 @@ class ApiGateway(object):
     def projectPages(self):
         """
         Return an int: the number of pages it would take to
-        display all current projects if 10 projects are displayed
+        display all current projects, filtered per the incoming JSON
+        object described below, if 10 projects are displayed
         per page. At present time, the page size (number of
         projects per page, i.e. 10) cannot be configured.
 
@@ -2719,6 +2737,7 @@ class ApiGateway(object):
             "defaultBudget": (string, optional)
         }
 
+        :return: the number of pages it would take to display all specified projects
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -2741,11 +2760,13 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def userPages(self):
         """
-        Returns an int: the number of pages it would take to
-        display all current users if 10 users are displayed
-        per page. At present time, the page size (number of
-        users per page) cannot be configured.
+        Return an int: the number of pages it would take to
+        display all current users, filtered per the incoming JSON
+        object described below, if 10 users are displayed per page.
+        At present time, the page size (number of users per page, i.e. 10)
+        cannot be configured.
 
+        Incoming ::
         {
             "projectNumbers": (int or list of ints, optional),
             "firstName": (string, optional),
@@ -2756,6 +2777,7 @@ class ApiGateway(object):
             "role": (string, optional)
         }
 
+        :return: the total number of pages required to display all specified users
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
