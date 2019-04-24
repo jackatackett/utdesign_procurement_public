@@ -40,14 +40,15 @@ class ApiGateway(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
     @authorizedRoles("student", "admin")
     def procurementSave(self):
         """
-        This REST endpoint takes data as an input as uses the data to create
-        a procurement request and save it to the database. If the submit flag
-        is true, the request will be submitted to the TM, and if not, it won't.
+        Save a procurement request. Take data as input and use it to create the request
+        and save it to the database. If the submit flag is true, submit the request to
+        the TM.
 
-        Expected input::
+        Expected Input ::
 
             {
                 "submit": (Boolean) optional (not optional if submitted by student),
@@ -71,6 +72,8 @@ class ApiGateway(object):
                     }
                 ]
             }
+
+        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -183,10 +186,16 @@ class ApiGateway(object):
                 'request': myRequest,
             })
 
+        return {
+            '_id': str((self.colRequests.find_one(query) or dict()).get('_id', '')),
+            'requestNumber': myRequestNumber
+        }
+
     def sequence(self):
         """
-        Checks the current sequence value of requests, returns it,
-        and increments the value.
+        Check the current sequence value of requests, return it,
+        and increment the value.
+
         :return:
         """
 
@@ -213,15 +222,16 @@ class ApiGateway(object):
     @authorizedRoles("student")
     def managerList(self):
         """
-        Takes a projectNumber and returns a list of technical managers who
-        are assigned to that project
+        Return a list of technical managers who are associated to the given
+        project number
 
-        Expected input::
+        Expected Input ::
 
             {
                 "projectNumber": (int)
             }
-        :return:
+
+        :return: list of technical manager's emails
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -254,11 +264,15 @@ class ApiGateway(object):
     @authorizedRoles("student", "manager", "admin")
     def procurementStatuses(self):
         """
-        Returns a list of procurement requests matching all provided filters.
-        Currently matches with any combination of vendor, projectNumbers, and
-        URL. For non-admin users, projectNumbers will be restricted only to
-        those projectNumbers which the user is authorized to view. Ignores
-        projectNumbers that the user is not authorized to view.
+        Return a list of procurement requests matching all provided filters.
+        Match with any combination of vendor, projectNumbers, and URL. For
+        non-admin users, restrict projectNumbers to only those projectNumbers
+        which the user is authorized to view. Ignore projectNumbers that the
+        user is not authorized to view.
+
+        If the user is a manager, they will not be able to see "saved" requests
+
+        Expected Input ::
 
         {
             vendor: (string, optional),
@@ -267,7 +281,7 @@ class ApiGateway(object):
             statuses: (string or list of strings, optional)
         }
 
-        If the user is a manager, they will not be able to see "saved" requests
+        :return: list of requests matching filter
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -344,9 +358,9 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def procurementEditAdmin(self):
         """
-        This REST endpoint allows an admin to edit a procurement request.
+        Edit procurement request. Only available to admin user.
 
-        Expected input::
+        Expected Input :: 
             {
                 "vendor": (string) optional,
                 "URL": (string) optional,
@@ -361,6 +375,8 @@ class ApiGateway(object):
                     }
                 ]
             }
+
+        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -386,15 +402,16 @@ class ApiGateway(object):
     @authorizedRoles("student")
     def procurementCancel(self):
         """
-        This REST endpoint changes the status of a procurement request
-        with the effect that the request is cancelled by the students
-        and therefore unable to be edited or considered by any user.
+        Change the status of a procurement request to cancelled. The
+        request is then unable to be considered by any user.
 
-        Expected input::
+        Expected Input :: 
 
             {
                 "_id": (string)
             }
+
+        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -471,15 +488,16 @@ class ApiGateway(object):
     @authorizedRoles("manager")
     def procurementApproveManager(self):
         """
-        This REST endpoint changes the status of a procurement request
-        with the effect that a status submitted to the technical manager
-        is approved and sent to an administrator for review.
+        Change the status of a procurement request to manager approved.
+        This in effect sends the request to the admin for review.
 
-        Expected input::
+        Expected Input :: 
 
             {
                 "_id": (string)
             }
+
+        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -554,16 +572,18 @@ class ApiGateway(object):
     @authorizedRoles("manager")
     def procurementUpdateManager(self):
         """
-        This REST endpoint changes the status of a procurement request
-        with the effect that the students who originally submitted it may
-        make changes to it or cancel it.
+        Change the status of a procurement request to updates for manager.
+        This will allow the student who submitted the request to make changes
+        or cancel it.
 
-        Expected input::
+        Expected Input :: 
 
             {
                 "_id": (string),
                 "comment": (string)
             }
+
+        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -633,16 +653,18 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def procurementUpdateManagerAdmin(self):
         """
-        This REST endpoint changes the status of a procurement request
-        with the effect that the students who originally submitted it may
-        make changes to it or cancel it.
+        Change the status of a procurement request to updates for manager.
+        Initiated by the admin. The request will go back to the student
+        and once submitted, will again go to the technical manager.
 
-        Expected input::
+        Expected Input :: 
 
             {
                 "_id": (string),
                 "comment": (string)
             }
+
+        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -722,12 +744,11 @@ class ApiGateway(object):
     @authorizedRoles("student")
     def procurementResubmitToManager(self):
         """
-        This REST endpoint changes the status of a procurement request
-        with the effect that a request that had previously been sent back
-        to the students for updates is now submitted back to the technical
-        manager.
+        Change the status of a procurement request to pending. This happens
+        after a request was sent back to the student and has been submitted
+        to the manager for reconsideration.
 
-        Expected input::
+        Expected Input :: 
 
             {
                 "_id": (string),
@@ -750,6 +771,8 @@ class ApiGateway(object):
                     }
                 ]
             }
+
+        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -810,11 +833,11 @@ class ApiGateway(object):
     @authorizedRoles("student")
     def procurementResubmitToAdmin(self):
         """
-        This REST endpoint changes the status of a procurement request
-        with the effect that a request that had previously been sent back
-        to the students for changes is now submitted back to the admin.
+        Change the status of a procurement request to manager approved. This
+        happens after a request has been sent back to the students for updates
+        and then submitted directly back to the admin for reconsideration.
 
-        Expected input::
+        Expected Input :: 
 
              {
                 "_id": (string),
@@ -837,6 +860,8 @@ class ApiGateway(object):
                     }
                 ]
             }
+
+        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -898,16 +923,18 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def procurementUpdateAdmin(self):
         """
-        This REST endpoint changes the status of a procurement request
-        with the effect that a request is sent back to the students who
-        originally submitted it in order to make small changes.
+        Change the status of a procurement request to updates for admin.
+        This will send the request to a student without requiring approval
+        from the technical manager upon resubmission.
 
-        Expected input::
+        Expected Input :: 
 
             {
                 "_id": (string),
                 "comment": (string)
             }
+
+        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -977,16 +1004,19 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def procurementOrder(self):
         """
-        This REST endpoint changes the status of a procurement request
-        to reflect that its items have been ordered by an admin.
-        The shipping cost is also set.
+        Change the status of a procurement request to ordered. This
+        indicates that items have been purchased by the admin.
 
-        Expected input::
+        The shipping cost is set during this step.
+
+        Expected Input :: 
 
             {
                 "_id": (string),
                 "amount": (string)
             }
+
+        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -1062,15 +1092,17 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def procurementReady(self):
         """
-        This REST endpoint changes the status of a procurement request
-        to reflect that its items are ready to be picked up by the students
-        who requested them.
+        Change the status of a procurement request to ready for pickup. This
+        indicates that the purchased items are in the office and can be
+        picked up by the student.
 
-        Expected input::
+        Expected Input :: 
 
             {
                 "_id": (string)
             }
+
+        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -1132,15 +1164,17 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def procurementComplete(self):
         """
-        This REST endpoint changes the status of a procurement request
-        to reflect that its items have been picked up and no further
-        actions need to be taken.
+        Change the status of a procurement request to complete. This
+        indicates that items have been picked up by the student and
+        no further actions need to be taken.
 
-        Expected input::
+        Expected Input :: 
 
             {
                 "_id": (string)
             }
+
+        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -1202,16 +1236,19 @@ class ApiGateway(object):
     @authorizedRoles("manager")
     def procurementRejectManager(self):
         """
-        This REST endpoint changes the status of a procurement request
-        with the effect that a request is permanently rejected and unable
-        to be further edited or considered by any user.
+        Change the status of a procurement request to rejected,
+        initiated by the technical manager. This permanently rejects
+        a request such that a student can not edit for resubmission.
+        It can no longer be considered by any user.
 
-        Expected input::
+        Expected Input :: 
 
             {
                 "_id": (string),
                 "comment": (string)
             }
+
+        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -1288,16 +1325,19 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def procurementRejectAdmin(self):
         """
-        This REST endpoint changes the status of a procurement request
-        with the effect that a request is permanently rejected and unable
-        to be further edited or considered by any user.
+        Change the status of a procurement request to rejected,
+        initiated by the admin. This permanently rejects a request
+        such that a student can not edit for resubmission. It can
+        no longer be considered by any user.
 
-        Expected input::
+        Expected Input :: 
 
             {
                 "_id": (string),
                 "comment": (string)
             }
+
+        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -1364,7 +1404,10 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def getAdminList(self):
         """
-        This returns the emails of all admins in the system
+        Return the emails of all admins in the system.
+
+        :param:
+        :return: list of emails for all admins
         """
         if cherrypy.session['role'] == 'admin':
             results = []
@@ -1374,6 +1417,13 @@ class ApiGateway(object):
         raise cherrypy.HTTPError(400, "Unauthorized access")
 
     def calculateBudget(self, projectNumber):
+        """
+        Return the available and pending budget for the given project
+        number.
+
+        :param projectNumber: int.
+        :return: list containing available and pending budget
+        """
         res = list(self.colProjects.find({"projectNumber": projectNumber}))
         if len(res) <= 0:
             raise cherrypy.HTTPError(400, "Invalid project number")
@@ -1408,7 +1458,11 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def addCost(self):
         """
-        This adds a cost (refund, reimbursement, funding, or cut) to a project, and can only be done by the admin
+        Adds a cost (refund, reimbursement, funding, or cut) to a project.
+        Can only be done by the admin.
+
+        Expected Input ::
+
         {
             projectNumber: (int),
             type: (string: refund, reimbursement, new budget),
@@ -1416,6 +1470,8 @@ class ApiGateway(object):
             comment: (string),
             actor: (string, email of admin)
         }
+
+        :return:
         """
 
         # check that we actually have json
@@ -1459,10 +1515,13 @@ class ApiGateway(object):
     @authorizedRoles("student", "manager", "admin")
     def getCosts(self):
         """
-        This returns all the costs associated with project numbers.
+        Return all the costs associated with a list of project numbers.
+
         {
             projectNumbers: (list of ints, optional)
         }
+
+        :return: list of costs (refund, reimbursement, etc.)
         """
 
         # check that we actually have json
@@ -1510,20 +1569,24 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def projectAdd(self):
         """
-        This adds a project, and can only be done by an admin.
-        If the projectNumber is already in use, an error is thrown
+        Add a project. Can only be done by an admin.
+        If the projectNumber is already in use, throw an error.
 
-        Expected input:
+        Expected Input :: 
+
         {
             “projectNumber”: (int),
             “sponsorName”: (string),
             “projectName”: (string),
             “membersEmails: [(string), …], # list of strings
-            “defaultBudget”: (string) optional, # TODO not yet optional
-            “availableBudget”: (string) optional, # TODO not yet optional
-            “pendingBudget”: (string) optional # TODO not yet optional
+            “defaultBudget”: (string) optional,
+            “availableBudget”: (string) optional,
+            “pendingBudget”: (string) optional
         }
+
+        :return:
         """
+        # TODO defaultBudget, availableBudget, pendingBudget not yet optional
         # TODO default budget from value in database
         # TODO discuss available and pending budget
         # check that we actually have json
@@ -1581,11 +1644,14 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def projectInactivate(self):
         """
+        Change status of project to inactivate.
 
-        Expected input:
+        Expected Input :: 
+
         {
             "_id": (string)
         }
+
         :return:
         """
 
@@ -1621,11 +1687,15 @@ class ApiGateway(object):
     @authorizedRoles("student", "manager", "admin")
     def findProject(self):
         """
-        This finds all projects with the given project numbers and recalculates
-        their budget. If none given, then all authorized projects are returned.
+        Find all projects with the given project numbers and recalculate
+        their budget. If none given, then return all authorized projects.
+
+        Expected Input :: 
         {
             projectNumbers: (list of ints, optional)
         }
+
+        :return: list of projects
         """
 
         # check that we actually have json
@@ -1665,35 +1735,6 @@ class ApiGateway(object):
                     res['_id'] = str(res['_id'])
                     result.append(res)
                 #~ return result
-        '''
-        #~ print()
-        #~ print("calculating budget")
-        #calculate the budget
-        for res in result:
-            #~ print(res)
-            pendingCosts = 0
-            actualCosts = 0
-            #~ requests = self.procurementStatuses({"projectNumbers": res["projectNumber"]})
-            requests = self.colRequests.find({"projectNumber": res["projectNumber"]})
-            for req in requests:
-                #~ print(req)
-                if req["status"] in ["admin approved", "ordered", "ready for pickup", "complete"]:
-                    actualCosts += req["requestTotal"]
-                pendingCosts += req["requestTotal"]
-            #~ print(pendingCosts, actualCosts)
-
-            miscCosts = 0
-            addCosts = self.colCosts.find({"projectNumber": res["projectNumber"]})
-            for co in addCosts:
-                if co["type"] == "refund":
-                    miscCosts -= co["amount"]
-                elif co["type"] == "reimbursement":
-                    miscCosts += co["amount"]
-            res["availableBudget"] = res["defaultBudget"] - actualCosts - miscCosts
-            res["pendingBudget"] = res["defaultBudget"] - pendingCosts - miscCosts
-            #~ print(res)
-        #~ print()
-        '''
 
         for res in result:
             res = self.calculateBudget(res["projectNumber"])
@@ -1705,16 +1746,20 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def projectEdit(self):
         """
-        This changes a project's values. It can only be done by an admin.
-        The projectNumber is required, but its value cannot be changed.
-        projectNumber is used to specify which project will be edited,
-        while the other values are what the values in the database will be set to.
+        Change a project's attributes with the given project number. It
+        can only be done by an admin. Project number is required, but
+        its value cannot be changed.
+
+        Expected Input :: 
+
         {
             projectNumber: (int),
             sponsorName: (string, optional),
             projectName: (string, optional),
             membersEmails: [(string), …, optional]
         }
+
+        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -1769,10 +1814,9 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def userAdd(self):
         """
-        This REST endpoint takes in data for a new user and uses it to create
-        a new user in the database.
+        Add new user to the database with provided data.
 
-        Expected input::
+        Expected Input :: 
 
             {
                 "projectNumbers": (int or list of ints),
@@ -1784,6 +1828,7 @@ class ApiGateway(object):
                 "role": (string)
             }
 
+        :return:
         """
 
         # check that we actually have json
@@ -1847,18 +1892,17 @@ class ApiGateway(object):
     @cherrypy.tools.json_in()
     def userForgotPassword(self):
         """
-        This REST endpoint allows a user to change their password. It
-        takes in a user's email address and send that email address a
-        recovery link that will expire at some point in the near future.
-        This link will allow a user to set a new password through the
-        userVerify endpoint.
+        Allow a user to change their password. Send recovery link to user's
+        email address. Link allows a user to set a new password through the
+        userVerify endpoint, but will expire at some point in the near future.
 
-        Expected input::
+        Expected Input :: 
 
             {
                 "email": (string),
             }
 
+        :return:
         """
 
         # check that we actually have json
@@ -2073,7 +2117,7 @@ class ApiGateway(object):
         sorted by a key and ordered by ascending or descending, and the pageNumber
         decides which 10 users are returned. pageNumber must be a non-negative integer.
 
-        Incoming ::
+        Expected Input ::
         {
             "bulkStatus": (string, Optional, default "valid".
                 Whether these are the "valid", "invalid", "existing", or
@@ -2083,7 +2127,7 @@ class ApiGateway(object):
                 (Optional. Default: 0)
         }
 
-        Outgoing ::
+        Returns ::
         [
             {
                 “projectNumbers”: (list of ints),
@@ -2321,7 +2365,7 @@ class ApiGateway(object):
         sorted by a key and ordered by ascending or descending, and the pageNumber
         decides which 10 projects are returned. pageNumber must be a non-negative integer.
 
-        Incoming ::
+        Expected Input ::
         {
             "bulkStatus": (string, Optional, default "valid".
                 Whether these are the "valid", "invalid", "existing", or
@@ -2331,7 +2375,7 @@ class ApiGateway(object):
                 (Optional. Default: 0)
         }
 
-        Outgoing ::
+        Returns ::
         [
             {
                 “projectNumbers”: (list of ints),
@@ -2447,7 +2491,7 @@ class ApiGateway(object):
         used to identify the user whose information will be edited and the
         optional data is what the existing data will be changed to.
 
-        Expected input::
+        Expected Input :: 
 
             {
                 "_id": (string)
@@ -2511,7 +2555,7 @@ class ApiGateway(object):
         the effect that the user is no longer able to interact
         with the system. Doesn't delete the user from the database.
 
-        Expected input::
+        Expected Input :: 
 
             {
                 "_id": (string)
@@ -2561,7 +2605,7 @@ class ApiGateway(object):
         The UUID is a key in an invitation document. An invitation is created when
         a user is first invited to use the system and when a user forgets their password.
 
-        Expected input::
+        Expected Input :: 
 
             {
                 "uuid": (string),
@@ -2608,7 +2652,7 @@ class ApiGateway(object):
         Take an email and password, check if the password's hash
         is associated with the given email, and if so, log in a user.
 
-        Expected input::
+        Expected Input :: 
 
             {
                 "email": (string),
@@ -2645,7 +2689,7 @@ class ApiGateway(object):
         """
         Return true if the project number(s) exist in the database.
 
-        Incoming::
+        Expected Input :: 
         {
 
         }
@@ -2728,12 +2772,12 @@ class ApiGateway(object):
     def projectPages(self):
         """
         Return an int: the number of pages it would take to
-        display all current projects, filtered per the incoming JSON
+        display all current projects, filtered per the "Expected Input" JSON
         object described below, if 10 projects are displayed
         per page. At present time, the page size (number of
         projects per page, i.e. 10) cannot be configured.
 
-        Incoming ::
+        Expected Input ::
         {
             "projectNumber": (int),
             "sponsorName": (string, optional),
@@ -2771,7 +2815,7 @@ class ApiGateway(object):
         At present time, the page size (number of users per page, i.e. 10)
         cannot be configured.
 
-        Incoming ::
+        Expected Input ::
         {
             "projectNumbers": (int or list of ints, optional),
             "firstName": (string, optional),
@@ -2839,7 +2883,7 @@ class ApiGateway(object):
         sorted by a key and ordered by ascending or descending, and the pageNumber
         decides which 10 users are returned. pageNumber must be a non-negative integer.
 
-        Incoming ::
+        Expected Input ::
         {
             'sortBy': (string in 'projectNumbers', 'firstName', 'lastName', 'netID',
                 'email', 'course', 'role', 'status')
@@ -2857,7 +2901,7 @@ class ApiGateway(object):
                 }
         }
 
-        Outgoing ::
+        Returns ::
         [
             {
 
@@ -2927,7 +2971,7 @@ class ApiGateway(object):
         sorted by a key and ordered by ascending or descending, and the pageNumber
         decides which 10 projects are returned. pageNumber must be a non-negative integer.
 
-        Incoming ::
+        Expected Input ::
         {
             'sortBy': (string in 'projectNumber', 'sponsorName', 'projectName', 'membersEmails',
                 'defaultBudget')
@@ -2946,7 +2990,7 @@ class ApiGateway(object):
                 }
         }
 
-        Outgoing ::
+        Returns ::
         [
             {
                 “projectNumber”: (int),
@@ -3025,15 +3069,15 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def userSingleData(self):
         """
-        Return the data of a user in the database. See "Outgoing::" below for
+        Return the data of a user in the database. See "Returns" below for
         which data is returned. The user is found by their email.
 
-        Incoming::
+        Expected Input ::
         {
             'email': (int)
         }
 
-        Outgoing::
+        Returns ::
         {
             'projectNumbers':, (list of ints)
             'firstName':, (str)
@@ -3068,15 +3112,15 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def projectSingleData(self):
         """
-        Return the data of a project in the database. See "Outgoing" below for
+        Return the data of a project in the database. See "Returns" below for
         which data is returned. The project is found by its projectNumber.
 
-        Incoming::
+        Expected Input ::
         {
             'projectNumber': (int)
         }
 
-        Outgoing::
+        Returns ::
         {
             'projectNumber': (int),
             'sponsorName': (str),
@@ -3114,7 +3158,7 @@ class ApiGateway(object):
         sorted by a key and ordered ascending or descending, and the pageNumber
         decides which 10 users are returned. pageNumber must be a non-negative integer.
 
-        Incoming ::
+        Expected Input ::
         {
             'sortBy': (string in projectNumbers, firstName, lastName, netID,
                 email, course, role, status)
@@ -3135,7 +3179,7 @@ class ApiGateway(object):
                 }
         }
 
-        Outgoing ::
+        Returns ::
         [
             {
                 “projectNumbers”: (list of ints),
@@ -3233,7 +3277,6 @@ class ApiGateway(object):
 
         :return:
         """
-
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
@@ -3302,6 +3345,11 @@ class ApiGateway(object):
     @cherrypy.expose
     # @authorizedRoles("admin")
     def reportDownload(self, uuid):
+        """
+
+        :param uuid:
+        :return:
+        """
         # check that we actually have json
         if uuid in self.reportUUIDs:
             filename = uuid + '.xlsx'
@@ -3336,6 +3384,14 @@ class ApiGateway(object):
     # helper function, do not expose!
     # TODO edge cases?
     def getTeamEmails(self, projectNumber):
+        """
+        Take the projectNumber of a project and return a list of emails
+        of users associated with that project.
+
+
+        :param projectNumber: the projectNumber of a project
+        :return: list of emails of members of the specified project
+        """
         teamEmails = []
         for user in self.colUsers.find({'projectNumbers': projectNumber}):
             if user['role'] == 'student':
@@ -3345,6 +3401,10 @@ class ApiGateway(object):
     #helper function, do not expose
     # TODO check if redundant (getAdminList)
     def getAdminEmails(self):
+        """
+        Return a list of emails of all admins.
+        :return: a list of emails of all admins
+        """
         adminEmails = []
         for user in self.colUsers.find({'role': 'admin'}):
             adminEmails.append(user['email'])
