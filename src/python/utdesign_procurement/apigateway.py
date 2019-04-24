@@ -1939,10 +1939,25 @@ class ApiGateway(object):
         return {'uuid': myInvitation['uuid']}
 
     @cherrypy.expose
-    # @cherrypy.tools.json_out()
-    # @cherrypy.tools.json_in()
     @authorizedRoles("admin")
     def userSpreadsheetUpload(self, sheet):
+        """
+        Upload a spreadsheet to the server for bulk user adding. This bulk
+        user data will be stored until it is submitted.
+
+        Each user will be evaluated and sorted into four categories:
+        - valid - The user can be added without complication.
+        - invalid - The user has some invalid attribute.
+        - existing - A user with this email already exists, but can be updated
+            without problems.
+        - conflicting - A user with this email already exists, and its data
+            conflicts with the data given in the spreadsheet.
+
+        The data can be modified by /userSpreadsheetRevalidate and finally
+        submitted using /userSpreadsheetSubmit.
+
+        :param sheet: The spreadsheet file
+        """
 
         # get the whole file
         xlsx = bytearray()
@@ -2008,9 +2023,14 @@ class ApiGateway(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    # @cherrypy.tools.json_in()
     @authorizedRoles("admin")
     def userSpreadsheetSubmit(self):
+        """
+        If all of the bulk user data is valid, then all users will be added
+        to the database and invited by email.
+
+        Otherwise, a 400 error is returned.
+        """
 
         # check that we actually have bulk data
         if 'bulkUserData' in cherrypy.session:
@@ -2061,6 +2081,20 @@ class ApiGateway(object):
     @cherrypy.tools.json_out()
     @authorizedRoles("admin")
     def userSpreadsheetMetadata(self):
+        """
+        Returns a dict summarizing the current state of the bulk user data.
+
+        Returns ::
+
+            {
+                'valid': (int, number of valid users),
+                'invalid': (int, number of invalid users),
+                'existing': (int, number of existing users),
+                'conflicting': (int, number of conflicting users),
+            }
+
+        :return:
+        """
 
         # check that we actually have json
         if 'bulkUserData' in cherrypy.session:
@@ -2079,11 +2113,35 @@ class ApiGateway(object):
         per page. At present time, the page size (number of
         users per page) cannot be configured.
 
-        {
-            "bulkStatus": (string, Optional, default "valid".
-                Whether these are the "valid", "invalid", "existing", or
-                "conflicting" bulk users)
-        }
+        Expected Input ::
+
+            {
+                "bulkStatus": (string, Optional, default "valid".
+                    Whether these are the "valid", "invalid", "existing", or
+                    "conflicting" bulk users)
+            }
+
+        Returns ::
+
+            [
+                {
+                    “projectNumbers”: (list of ints),
+                    "firstName": (string),
+                    "lastName": (string),
+                    "netID": (string),
+                    "email": (string),
+                    "course": (string),
+                    “role”: “student”,
+                    "comment": {
+                        merge: (boolean, if a user with this email exists),
+                        invalidRole: (boolean)
+                        missingProjects: (list of ints)
+                        missingAttributes: (list of strings)
+                        conflictingAttributes: (list of strings),
+                    }
+                },
+                ...
+            ]
 
         """
 
@@ -2137,7 +2195,13 @@ class ApiGateway(object):
                 "email": (string),
                 "course": (string),
                 “role”: “student”,
-                “status”: (string), //”current” or “removed”
+                "comment": {
+                    merge: (boolean, if a user with this email exists),
+                    invalidRole: (boolean)
+                    missingProjects: (list of ints)
+                    missingAttributes: (list of strings)
+                    conflictingAttributes: (list of strings),
+                }
             }
         ]
 
@@ -2173,6 +2237,48 @@ class ApiGateway(object):
     @cherrypy.tools.json_in()
     @authorizedRoles("admin")
     def userSpreadsheetRevalidate(self):
+        """
+        Takes a dict of user information, a status, and an index within the
+        list of users with that status. The user at that index in that list
+        of users will be striken out, and the new user information will be
+        re-validated, and that validated information will be appended to the
+        end of whichever list is appropriate given its new validation
+        status.
+
+        Expected Input ::
+            {
+                "bulkStatus": (str. The status of the user being replaced.
+                    Either "valid", "invalid", "existing", or "conflicting")
+                "index": (int. The index within the list of users with
+                    the given status in the set of bulk user data)
+                "user" :  {
+                    “projectNumbers”: (list of ints),
+                    "firstName": (string),
+                    "lastName": (string),
+                    "netID": (string),
+                    "email": (string),
+                    "course": (string),
+                    “role”: “student”,
+                    "comment": {
+                        merge: (boolean, if a user with this email exists),
+                        invalidRole: (boolean)
+                        missingProjects: (list of ints)
+                        missingAttributes: (list of strings)
+                        conflictingAttributes: (list of strings),
+                    }
+                }
+            }
+
+        Returns ::
+            {
+                'user': (dict. The validated user, with the same schema as
+                    in the expected input),
+                'status': (str. The new status of the validated user. Either
+                    "valid", "invalid", "existing", or "conflicting")
+            }
+
+        :return:
+        """
 
         # check that we actually have json
         if 'bulkUserData' in cherrypy.session:
@@ -2221,10 +2327,23 @@ class ApiGateway(object):
 
 
     @cherrypy.expose
-    # @cherrypy.tools.json_out()
-    # @cherrypy.tools.json_in()
     @authorizedRoles("admin")
     def projectSpreadsheetUpload(self, sheet):
+        """
+        Upload a spreadsheet to the server for bulk project adding. This bulk
+        project data will be stored until it is submitted.
+
+        Each project will be evaluated and sorted into four categories:
+        - valid - The project can be added without complication.
+        - invalid - The project has some invalid attribute.
+        - conflicting - A project with this project number already exists,
+            and its data conflicts with the data given in the spreadsheet.
+
+        The data can be modified by /projectSpreadsheetRevalidate and finally
+        submitted using /projectSpreadsheetSubmit.
+
+        :param sheet: The spreadsheet file
+        """
 
         # get the whole file
         xlsx = bytearray()
@@ -2280,9 +2399,14 @@ class ApiGateway(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    # @cherrypy.tools.json_in()
     @authorizedRoles("admin")
     def projectSpreadsheetSubmit(self):
+        """
+        If all of the bulk project data is valid, then all projects will be added
+        to the database.
+
+        Otherwise, a 400 error is returned.
+        """
 
         # check that we actually have bulk data
         if 'bulkProjectData' in cherrypy.session:
@@ -2310,6 +2434,19 @@ class ApiGateway(object):
     @cherrypy.tools.json_out()
     @authorizedRoles("admin")
     def projectSpreadsheetMetadata(self):
+        """
+        Returns a dict summarizing the current state of the bulk project data.
+
+        Returns ::
+
+            {
+                'valid': (int, number of valid users),
+                'invalid': (int, number of invalid users),
+                'conflicting': (int, number of conflicting users),
+            }
+
+        :return:
+        """
 
         # check that we actually have json
         if 'bulkProjectData' in cherrypy.session:
@@ -2421,6 +2558,42 @@ class ApiGateway(object):
     @cherrypy.tools.json_in()
     @authorizedRoles("admin")
     def projectSpreadsheetRevalidate(self):
+        """
+        Takes a dict of project information, a status, and an index within the
+        list of projects with that status. The project at that index in that list
+        of projects will be striken out, and the new project information will be
+        re-validated, and that validated information will be appended to the
+        end of whichever list is appropriate given its new validation
+        status.
+
+        Expected Input ::
+            {
+                "bulkStatus": (str. The status of the user being replaced.
+                    Either "valid", "invalid", or "conflicting")
+                "index": (int. The index within the list of users with
+                    the given status in the set of bulk user data)
+                "project" :  {
+                    “projectNumbers”: (list of ints),
+                    "firstName": (string),
+                    "lastName": (string),
+                    "netID": (string),
+                    "email": (string),
+                    "course": (string),
+                    “role”: “student”,
+                    “status”: (string), //”current” or “removed”
+                }
+            }
+
+        Returns ::
+            {
+                'project': (dict. The validated user, with the same schema as
+                    in the expected input),
+                'status': (str. The new status of the validated project. Either
+                    "valid", "invalid", or "conflicting")
+            }
+
+        :return:
+        """
 
         # check that we actually have json
         if 'bulkProjectData' in cherrypy.session:
@@ -2465,6 +2638,13 @@ class ApiGateway(object):
     @cherrypy.tools.json_in()
     @authorizedRoles("admin")
     def projectSpreadsheetOverwrite(self):
+        """
+        Marks all projects with a given project number to be ignored in
+        the bulk project data list, so that they will not be uploaded
+        when projectSpreadsheetUpload is called.
+
+        :return:
+        """
 
         # check that we actually have json
         if 'bulkProjectData' in cherrypy.session:
