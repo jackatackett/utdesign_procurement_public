@@ -2704,6 +2704,11 @@ class ApiGateway(object):
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def userInfo(self):
+        """
+        This function is for debugging, and probably shouldn't be here.
+
+        :return: a variable called ret
+        """
         # auth/authenticated is helpful for debugging
         auth = 'role' in cherrypy.session
         ret =  {'authenticated': auth}
