@@ -40,6 +40,7 @@ class ApiGateway(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
     @authorizedRoles("student", "admin")
     def procurementSave(self):
         """
@@ -185,6 +186,11 @@ class ApiGateway(object):
                 'teamEmails': teamEmails,
                 'request': myRequest,
             })
+
+        return {
+            '_id': str((self.colRequests.find_one(query) or dict()).get('_id', '')),
+            'requestNumber': myRequestNumber
+        }
 
     def sequence(self):
         """
