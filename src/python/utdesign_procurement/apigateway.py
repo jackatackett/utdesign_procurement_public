@@ -2705,11 +2705,12 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def projectPages(self):
         """
-        Returns an int: the number of pages it would take to
+        Return an int: the number of pages it would take to
         display all current projects if 10 projects are displayed
         per page. At present time, the page size (number of
-        projects per page) cannot be configured.
+        projects per page, i.e. 10) cannot be configured.
 
+        Incoming ::
         {
             "projectNumber": (int),
             "sponsorName": (string, optional),
@@ -2807,17 +2808,17 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def requestData(self):
         """
-        This REST endpoint returns a list of 10 users from the database. The users may be
+        Return a list of at most 10 requests from the database. The requests may be
         sorted by a key and ordered by ascending or descending, and the pageNumber
         decides which 10 users are returned. pageNumber must be a non-negative integer.
 
         Incoming ::
         {
-            'sortBy': (string in projectNumbers, firstName, lastName, netID,
-                email, course, role, status)
+            'sortBy': (string in 'projectNumbers', 'firstName', 'lastName', 'netID',
+                'email', 'course', 'role', 'status')
                 (Optional. Default "email")
             'order': (string in 'ascending', 'descending')
-                (Optional. Default: "ascending")
+                (Optional. Default: 'ascending')
             'pageNumber': (int)
                 (Optional. Default: 0)
             'keywordSearch': (dict)
@@ -2830,7 +2831,14 @@ class ApiGateway(object):
         }
 
         Outgoing ::
+        [
+            {
 
+            }
+        ]
+
+
+        :return: a list of at most 10 requests
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -2888,14 +2896,14 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def projectData(self):
         """
-        This REST endpoint returns a list of 10 projects from the database. The projects may be
+        Return a list of at most 10 projects from the database. The projects may be
         sorted by a key and ordered by ascending or descending, and the pageNumber
         decides which 10 projects are returned. pageNumber must be a non-negative integer.
 
         Incoming ::
         {
-            'sortBy': (string in projectNumber, sponsorName, projectName, membersEmails,
-                defaultBudget)
+            'sortBy': (string in 'projectNumber', 'sponsorName', 'projectName', 'membersEmails',
+                'defaultBudget')
                 (Optional. Default "projectNumber")
             'order': (string in 'ascending', 'descending')
                 (Optional. Default: "ascending")
@@ -2922,6 +2930,7 @@ class ApiGateway(object):
             }
         ]
 
+        :return: a list of at most 10 projects
         """
 
         # check that we actually have json
@@ -2988,6 +2997,28 @@ class ApiGateway(object):
     @cherrypy.tools.json_out()
     @authorizedRoles("admin")
     def userSingleData(self):
+        """
+        Return the data of a user in the database. See "Outgoing::" below for
+        which data is returned. The user is found by their email.
+
+        Incoming::
+        {
+            'email': (int)
+        }
+
+        Outgoing::
+        {
+            'projectNumbers':, (list of ints)
+            'firstName':, (str)
+            'lastName':, (str)
+            'netID':, (str)
+            'course':, (str)
+            'email':, (str)
+            'role': (str)
+        }
+
+        :return: a dict containing a single project's data, as per above
+        """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
@@ -3009,6 +3040,26 @@ class ApiGateway(object):
     @cherrypy.tools.json_out()
     @authorizedRoles("admin")
     def projectSingleData(self):
+        """
+        Return the data of a project in the database. See "Outgoing" below for
+        which data is returned. The project is found by its projectNumber.
+
+        Incoming::
+        {
+            'projectNumber': (int)
+        }
+
+        Outgoing::
+        {
+            'projectNumber': (int),
+            'sponsorName': (str),
+            'projectName': (str),
+            'defaultBudget': (???),
+            'membersEmails': (list of str)
+        }
+
+        :return: a dict containing a single project's data, as per above
+        """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
@@ -3032,8 +3083,8 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def userData(self):
         """
-        This REST endpoint returns a list of 10 users from the database. The users may be
-        sorted by a key and ordered by ascending or descending, and the pageNumber
+        Return a list of at most 10 user documents from the database. The users may be
+        sorted by a key and ordered ascending or descending, and the pageNumber
         decides which 10 users are returned. pageNumber must be a non-negative integer.
 
         Incoming ::
@@ -3071,6 +3122,7 @@ class ApiGateway(object):
             }
         ]
 
+        :return: a list of at most 10 users
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -3140,6 +3192,8 @@ class ApiGateway(object):
     def userLogout(self):
         """
         Logs out a user by expiring their session.
+
+        :return:
         """
         cherrypy.lib.sessions.expire()
 
@@ -3148,6 +3202,10 @@ class ApiGateway(object):
     @cherrypy.tools.json_out()
     @authorizedRoles("admin")
     def reportGenerate(self):
+        """
+
+        :return:
+        """
 
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -3229,11 +3287,13 @@ class ApiGateway(object):
     # helper function, do not expose!
     def _updateDocument(self, findQuery, updateQuery, updateRule, collection=None):
         """
-        This function updates a document. It finds the document in the
-        database and updates it using the provided queries/rules.
+        Update a document. Find the document in the
+        database and updates it using the provided queries/rule.
 
-        :param myID: ID of document to be updated
-        :param findQuery: query to find document
+        If findQuery finds a document, then updateQuery is used to find
+        the document to be updated, which is updated by updateRule.
+
+        :param findQuery: query to find a document
         :param updateQuery: query to find document to update
         :param updateRule: rule to update document to update
         """
@@ -3266,7 +3326,7 @@ class ApiGateway(object):
     #helper function, do not expose
     def validateUser(self, data, comment=False):
         """
-        Validates a user to check for a role, firstName, lastName, email,
+        Validate a user to check for a role, firstName, lastName, email,
         and optional netID. Non-admin users are also checked for valid
         project numbers and courses.
 
@@ -3392,7 +3452,7 @@ class ApiGateway(object):
     #helper function, do not expose
     def validateProject(self, data, comment=False):
         """
-        Validates a project to check for a projectNumber, sponsorName, projectName,
+        Validate a project to check for a projectNumber, sponsorName, projectName,
         memberEmails, and defaultBudget. If types are wrong, things are coerced
         if possible.
 
