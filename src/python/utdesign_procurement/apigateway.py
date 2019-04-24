@@ -49,29 +49,28 @@ class ApiGateway(object):
         the TM.
 
         Expected Input ::
-
-            {
-                "submit": (Boolean) optional (not optional if submitted by student),
-                "adminEdit": (Boolean) optional (not optional if admin performs an edit),
-                "status": (string) optional (not optional if admin performs an edit),
-                "requestNumber": (int) optional,
-                "manager": (string), //email of manager who can approve this
-                "vendor": (string),
-                "projectNumber": (int),
-                "URL": (string),
-                "justification": (string) optional,
-                "additionalInfo": (string) optional,
-                "items": [
-                    {
-                    "description": (string),
-                    "partNo": (string),
-                    "itemURL": (string),
-                    "quantity": (integer),
-                    "unitCost": (string),
-                    "totalCost": (string)
-                    }
-                ]
-            }
+        {
+            "submit": (Boolean) optional (not optional if submitted by student),
+            "adminEdit": (Boolean) optional (not optional if admin performs an edit),
+            "status": (string) optional (not optional if admin performs an edit),
+            "requestNumber": (int) optional,
+            "manager": (string), //email of manager who can approve this
+            "vendor": (string),
+            "projectNumber": (int),
+            "URL": (string),
+            "justification": (string) optional,
+            "additionalInfo": (string) optional,
+            "items": [
+                {
+                "description": (string),
+                "partNo": (string),
+                "itemURL": (string),
+                "quantity": (integer),
+                "unitCost": (string),
+                "totalCost": (string)
+                }
+            ]
+        }
 
         :return:
         """
@@ -226,10 +225,14 @@ class ApiGateway(object):
         project number
 
         Expected Input ::
+        {
+            "projectNumber": (int)
+        }
 
-            {
-                "projectNumber": (int)
-            }
+        Returns::
+        [
+            (string)
+        ]
 
         :return: list of technical manager's emails
         """
@@ -270,16 +273,43 @@ class ApiGateway(object):
         which the user is authorized to view. Ignore projectNumbers that the
         user is not authorized to view.
 
-        If the user is a manager, they will not be able to see "saved" requests
+        If the user is a manager, they will not be able to see saved requests
 
         Expected Input ::
-
         {
-            vendor: (string, optional),
-            projectNumbers: (int or list of ints, optional),
-            URL: (string, optional),
-            statuses: (string or list of strings, optional)
+            "vendor": (string, optional),
+            "projectNumbers": (int or list of ints, optional),
+            "URL": (string, optional),
+            "statuses": (string or list of strings, optional)
         }
+
+        Returns::
+        [
+            {
+                "_id": ObjectId
+                "status": (string),
+                "requestNumber": (int) optional,
+                "manager": (string),
+                "vendor": (string),
+                "projectNumber": (int),
+                "URL": (string),
+                "justification": (string),
+                "additionalInfo": (string),
+                "items": [
+                    {
+                    "description": (string),
+                    "partNo": (string),
+                    "itemURL": (string),
+                    "quantity": (integer),
+                    "unitCost": (string),
+                    "totalCost": (string)
+                    }
+                ],
+                "requestSubtotal": (int),
+                "requestTotal": (int),
+                "history": (list of strings)
+            }
+        ]
 
         :return: list of requests matching filter
         """
@@ -360,21 +390,21 @@ class ApiGateway(object):
         """
         Edit procurement request. Only available to admin user.
 
-        Expected Input :: 
-            {
-                "vendor": (string) optional,
-                "URL": (string) optional,
-                "items": [
-                    {
-                    "description": (string) optional,
-                    "partNo": (string) optional,
-                    "itemURL": (string) optional,
-                    "quantity": (integer) optional,
-                    "unitCost": (string)optional ,
-                    "totalCost": (string) optional
-                    }
-                ]
-            }
+        Expected Input ::
+        {
+            "vendor": (string) optional,
+            "URL": (string) optional,
+            "items": [
+                {
+                "description": (string) optional,
+                "partNo": (string) optional,
+                "itemURL": (string) optional,
+                "quantity": (integer) optional,
+                "unitCost": (string)optional ,
+                "totalCost": (string) optional
+                }
+            ]
+        }
 
         :return:
         """
@@ -405,11 +435,10 @@ class ApiGateway(object):
         Change the status of a procurement request to cancelled. The
         request is then unable to be considered by any user.
 
-        Expected Input :: 
-
-            {
-                "_id": (string)
-            }
+        Expected Input ::
+        {
+            "_id": (string)
+        }
 
         :return:
         """
@@ -491,11 +520,10 @@ class ApiGateway(object):
         Change the status of a procurement request to manager approved.
         This in effect sends the request to the admin for review.
 
-        Expected Input :: 
-
-            {
-                "_id": (string)
-            }
+        Expected Input ::
+        {
+            "_id": (string)
+        }
 
         :return:
         """
@@ -576,12 +604,11 @@ class ApiGateway(object):
         This will allow the student who submitted the request to make changes
         or cancel it.
 
-        Expected Input :: 
-
-            {
-                "_id": (string),
-                "comment": (string)
-            }
+        Expected Input ::
+        {
+            "_id": (string),
+            "comment": (string)
+        }
 
         :return:
         """
@@ -657,12 +684,11 @@ class ApiGateway(object):
         Initiated by the admin. The request will go back to the student
         and once submitted, will again go to the technical manager.
 
-        Expected Input :: 
-
-            {
-                "_id": (string),
-                "comment": (string)
-            }
+        Expected Input ::
+        {
+            "_id": (string),
+            "comment": (string)
+        }
 
         :return:
         """
@@ -748,29 +774,28 @@ class ApiGateway(object):
         after a request was sent back to the student and has been submitted
         to the manager for reconsideration.
 
-        Expected Input :: 
+        Expected Input ::
+        {
+            "_id": (string),
 
-            {
-                "_id": (string),
-
-                "requestNumber": (int) optional,
-                "manager": (string), //email of manager who can approve this
-                "vendor": (string),
-                "projectNumber": (int),
-                "URL": (string),
-                "justification": (string) optional,
-                "additionalInfo": (string) optional,
-                "items": [
-                    {
-                    "description": (string),
-                    "partNo": (string),
-                    "itemURL": (string),
-                    "quantity": (integer),
-                    "unitCost": (string),
-                    "totalCost": (string)
-                    }
-                ]
-            }
+            "requestNumber": (int) optional,
+            "manager": (string), //email of manager who can approve this
+            "vendor": (string),
+            "projectNumber": (int),
+            "URL": (string),
+            "justification": (string) optional,
+            "additionalInfo": (string) optional,
+            "items": [
+                {
+                "description": (string),
+                "partNo": (string),
+                "itemURL": (string),
+                "quantity": (integer),
+                "unitCost": (string),
+                "totalCost": (string)
+                }
+            ]
+        }
 
         :return:
         """
@@ -837,29 +862,27 @@ class ApiGateway(object):
         happens after a request has been sent back to the students for updates
         and then submitted directly back to the admin for reconsideration.
 
-        Expected Input :: 
-
-             {
-                "_id": (string),
-
-                "requestNumber": (int) optional,
-                "manager": (string), //email of manager who can approve this
-                "vendor": (string),
-                "projectNumber": (int),
-                "URL": (string),
-                "justification": (string) optional,
-                "additionalInfo": (string) optional,
-                "items": [
-                    {
-                    "description": (string),
-                    "partNo": (string),
-                    "itemURL": (string),
-                    "quantity": (integer),
-                    "unitCost": (string),
-                    "totalCost": (string)
-                    }
-                ]
-            }
+        Expected Input ::
+        {
+            "_id": (string),
+            "requestNumber": (int) optional,
+            "manager": (string), //email of manager who can approve this
+            "vendor": (string),
+            "projectNumber": (int),
+            "URL": (string),
+            "justification": (string) optional,
+            "additionalInfo": (string) optional,
+            "items": [
+                {
+                "description": (string),
+                "partNo": (string),
+                "itemURL": (string),
+                "quantity": (integer),
+                "unitCost": (string),
+                "totalCost": (string)
+                }
+            ]
+        }
 
         :return:
         """
@@ -927,12 +950,11 @@ class ApiGateway(object):
         This will send the request to a student without requiring approval
         from the technical manager upon resubmission.
 
-        Expected Input :: 
-
-            {
-                "_id": (string),
-                "comment": (string)
-            }
+        Expected Input ::
+        {
+            "_id": (string),
+            "comment": (string)
+        }
 
         :return:
         """
@@ -1009,12 +1031,11 @@ class ApiGateway(object):
 
         The shipping cost is set during this step.
 
-        Expected Input :: 
-
-            {
-                "_id": (string),
-                "amount": (string)
-            }
+        Expected Input ::
+        {
+            "_id": (string),
+            "amount": (string)
+        }
 
         :return:
         """
@@ -1096,11 +1117,10 @@ class ApiGateway(object):
         indicates that the purchased items are in the office and can be
         picked up by the student.
 
-        Expected Input :: 
-
-            {
-                "_id": (string)
-            }
+        Expected Input ::
+        {
+            "_id": (string)
+        }
 
         :return:
         """
@@ -1168,11 +1188,10 @@ class ApiGateway(object):
         indicates that items have been picked up by the student and
         no further actions need to be taken.
 
-        Expected Input :: 
-
-            {
-                "_id": (string)
-            }
+        Expected Input ::
+        {
+            "_id": (string)
+        }
 
         :return:
         """
@@ -1241,12 +1260,11 @@ class ApiGateway(object):
         a request such that a student can not edit for resubmission.
         It can no longer be considered by any user.
 
-        Expected Input :: 
-
-            {
-                "_id": (string),
-                "comment": (string)
-            }
+        Expected Input ::
+        {
+            "_id": (string),
+            "comment": (string)
+        }
 
         :return:
         """
@@ -1330,12 +1348,11 @@ class ApiGateway(object):
         such that a student can not edit for resubmission. It can
         no longer be considered by any user.
 
-        Expected Input :: 
-
-            {
-                "_id": (string),
-                "comment": (string)
-            }
+        Expected Input ::
+        {
+            "_id": (string),
+            "comment": (string)
+        }
 
         :return:
         """
@@ -1406,7 +1423,11 @@ class ApiGateway(object):
         """
         Return the emails of all admins in the system.
 
-        :param:
+        Returns::
+        [
+            (string)
+        ]
+
         :return: list of emails for all admins
         """
         if cherrypy.session['role'] == 'admin':
@@ -1462,7 +1483,6 @@ class ApiGateway(object):
         Can only be done by the admin.
 
         Expected Input ::
-
         {
             projectNumber: (int),
             type: (string: refund, reimbursement, new budget),
@@ -1517,9 +1537,23 @@ class ApiGateway(object):
         """
         Return all the costs associated with a list of project numbers.
 
+        Expected input::
         {
             projectNumbers: (list of ints, optional)
         }
+
+        Returns::
+        [
+            {
+                "_id": ObjectId,
+                "type": (string),
+                "amount": (int),
+                "comment": (string),
+                "actor": (string) //email,
+                "projectNumber": (int),
+                "timestamp": (string)
+            }
+        ]
 
         :return: list of costs (refund, reimbursement, etc.)
         """
@@ -1572,8 +1606,7 @@ class ApiGateway(object):
         Add a project. Can only be done by an admin.
         If the projectNumber is already in use, throw an error.
 
-        Expected Input :: 
-
+        Expected Input ::
         {
             “projectNumber”: (int),
             “sponsorName”: (string),
@@ -1646,8 +1679,7 @@ class ApiGateway(object):
         """
         Change status of project to inactivate.
 
-        Expected Input :: 
-
+        Expected Input ::
         {
             "_id": (string)
         }
@@ -1694,6 +1726,21 @@ class ApiGateway(object):
         {
             projectNumbers: (list of ints, optional)
         }
+
+        Returns::
+        [
+            {
+                "_id": ObjectId,
+                "projectNumber": (int),
+                "sponsorName": (string),
+                "projectName": (string),
+                "membersEmails": (list of strings),
+                "defaultBudget": (int),
+                "availableBudget": (int),
+                "pendingBudget": (int),
+                "status": (string)
+            }
+        ]
 
         :return: list of projects
         """
@@ -1750,8 +1797,7 @@ class ApiGateway(object):
         can only be done by an admin. Project number is required, but
         its value cannot be changed.
 
-        Expected Input :: 
-
+        Expected Input ::
         {
             projectNumber: (int),
             sponsorName: (string, optional),
@@ -1816,17 +1862,16 @@ class ApiGateway(object):
         """
         Add new user to the database with provided data.
 
-        Expected Input :: 
-
-            {
-                "projectNumbers": (int or list of ints),
-                "firstName": (string),
-                "lastName": (string),
-                "netID": (string),
-                "email": (string),
-                "course": (string),
-                "role": (string)
-            }
+        Expected Input ::
+        {
+            "projectNumbers": (int or list of ints),
+            "firstName": (string),
+            "lastName": (string),
+            "netID": (string),
+            "email": (string),
+            "course": (string),
+            "role": (string)
+        }
 
         :return:
         """
@@ -1896,11 +1941,10 @@ class ApiGateway(object):
         email address. Link allows a user to set a new password through the
         userVerify endpoint, but will expire at some point in the near future.
 
-        Expected Input :: 
-
-            {
-                "email": (string),
-            }
+        Expected Input ::
+        {
+            "email": (string),
+        }
 
         :return:
         """
@@ -1943,6 +1987,11 @@ class ApiGateway(object):
     # @cherrypy.tools.json_in()
     @authorizedRoles("admin")
     def userSpreadsheetUpload(self, sheet):
+        """
+
+        :param sheet:
+        :return:
+        """
 
         # get the whole file
         xlsx = bytearray()
@@ -2011,6 +2060,10 @@ class ApiGateway(object):
     # @cherrypy.tools.json_in()
     @authorizedRoles("admin")
     def userSpreadsheetSubmit(self):
+        """
+
+        :return:
+        """
 
         # check that we actually have bulk data
         if 'bulkUserData' in cherrypy.session:
@@ -2061,6 +2114,10 @@ class ApiGateway(object):
     @cherrypy.tools.json_out()
     @authorizedRoles("admin")
     def userSpreadsheetMetadata(self):
+        """
+
+        :return:
+        """
 
         # check that we actually have json
         if 'bulkUserData' in cherrypy.session:
@@ -2079,6 +2136,7 @@ class ApiGateway(object):
         per page. At present time, the page size (number of
         users per page) cannot be configured.
 
+        Expected input::
         {
             "bulkStatus": (string, Optional, default "valid".
                 Whether these are the "valid", "invalid", "existing", or
