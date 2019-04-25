@@ -2288,36 +2288,36 @@ class ApiGateway(object):
         status.
 
         Expected Input ::
-            {
-                "bulkStatus": (str. The status of the user being replaced.
-                    Either "valid", "invalid", "existing", or "conflicting")
-                "index": (int. The index within the list of users with
-                    the given status in the set of bulk user data)
-                "user" :  {
-                    “projectNumbers”: (list of ints),
-                    "firstName": (string),
-                    "lastName": (string),
-                    "netID": (string),
-                    "email": (string),
-                    "course": (string),
-                    “role”: “student”,
-                    "comment": {
-                        merge: (boolean, if a user with this email exists),
-                        invalidRole: (boolean)
-                        missingProjects: (list of ints)
-                        missingAttributes: (list of strings)
-                        conflictingAttributes: (list of strings),
-                    }
+        {
+            "bulkStatus": (str. The status of the user being replaced.
+                Either "valid", "invalid", "existing", or "conflicting")
+            "index": (int. The index within the list of users with
+                the given status in the set of bulk user data)
+            "user" :  {
+                “projectNumbers”: (list of ints),
+                "firstName": (string),
+                "lastName": (string),
+                "netID": (string),
+                "email": (string),
+                "course": (string),
+                “role”: “student”,
+                "comment": {
+                    merge: (boolean, if a user with this email exists),
+                    invalidRole: (boolean)
+                    missingProjects: (list of ints)
+                    missingAttributes: (list of strings)
+                    conflictingAttributes: (list of strings),
                 }
             }
+        }
 
         Returns ::
-            {
-                'user': (dict. The validated user, with the same schema as
-                    in the expected input),
-                'status': (str. The new status of the validated user. Either
-                    "valid", "invalid", "existing", or "conflicting")
-            }
+        {
+            'user': (dict. The validated user, with the same schema as
+                in the expected input),
+            'status': (str. The new status of the validated user. Either
+                "valid", "invalid", "existing", or "conflicting")
+        }
 
         :return:
         """
@@ -2480,12 +2480,11 @@ class ApiGateway(object):
         Returns a dict summarizing the current state of the bulk project data.
 
         Returns ::
-
-            {
-                'valid': (int, number of valid users),
-                'invalid': (int, number of invalid users),
-                'conflicting': (int, number of conflicting users),
-            }
+        {
+            'valid': (int, number of valid users),
+            'invalid': (int, number of invalid users),
+            'conflicting': (int, number of conflicting users),
+        }
 
         :return:
         """
@@ -2507,6 +2506,7 @@ class ApiGateway(object):
         per page. At present time, the page size (number of
         projects per page) cannot be configured.
 
+        Expected input::
         {
             "bulkStatus": (string, Optional, default "valid".
                 Whether these are the "valid", "invalid", or "conflicting")
@@ -2609,30 +2609,30 @@ class ApiGateway(object):
         status.
 
         Expected Input ::
-            {
-                "bulkStatus": (str. The status of the user being replaced.
-                    Either "valid", "invalid", or "conflicting")
-                "index": (int. The index within the list of users with
-                    the given status in the set of bulk user data)
-                "project" :  {
-                    “projectNumbers”: (list of ints),
-                    "firstName": (string),
-                    "lastName": (string),
-                    "netID": (string),
-                    "email": (string),
-                    "course": (string),
-                    “role”: “student”,
-                    “status”: (string), //”current” or “removed”
-                }
+        {
+            "bulkStatus": (str. The status of the user being replaced.
+                Either "valid", "invalid", or "conflicting")
+            "index": (int. The index within the list of users with
+                the given status in the set of bulk user data)
+            "project" :  {
+                “projectNumbers”: (list of ints),
+                "firstName": (string),
+                "lastName": (string),
+                "netID": (string),
+                "email": (string),
+                "course": (string),
+                “role”: “student”,
+                “status”: (string), //”current” or “removed”
             }
+        }
 
         Returns ::
-            {
-                'project': (dict. The validated user, with the same schema as
-                    in the expected input),
-                'status': (str. The new status of the validated project. Either
-                    "valid", "invalid", or "conflicting")
-            }
+        {
+            'project': (dict. The validated user, with the same schema as
+                in the expected input),
+            'status': (str. The new status of the validated project. Either
+                "valid", "invalid", or "conflicting")
+        }
 
         :return:
         """
@@ -2713,16 +2713,15 @@ class ApiGateway(object):
         used to identify the user whose information will be edited and the
         optional data is what the existing data will be changed to.
 
-        Expected Input :: 
-
-            {
-                "_id": (string)
-                “projectNumbers”: (list of ints, optional),
-                "firstName": (string, optional),
-                "lastName": (string, optional),
-                "netID": (string, optional),
-                "course": (string, optional)
-            }
+        Expected Input ::
+        {
+            "_id": (string)
+            “projectNumbers”: (list of ints, optional),
+            "firstName": (string, optional),
+            "lastName": (string, optional),
+            "netID": (string, optional),
+            "course": (string, optional)
+        }
 
         :return:
         """
@@ -2777,11 +2776,10 @@ class ApiGateway(object):
         the effect that the user is no longer able to interact
         with the system. Doesn't delete the user from the database.
 
-        Expected Input :: 
-
-            {
-                "_id": (string)
-            }
+        Expected Input ::
+        {
+            "_id": (string)
+        }
 
         :return:
         """
@@ -2827,13 +2825,12 @@ class ApiGateway(object):
         The UUID is a key in an invitation document. An invitation is created when
         a user is first invited to use the system and when a user forgets their password.
 
-        Expected Input :: 
-
-            {
-                "uuid": (string),
-                "email": (string),
-                "password": (string)
-            }
+        Expected Input ::
+        {
+            "uuid": (string),
+            "email": (string),
+            "password": (string)
+        }
 
         :return:
         """
@@ -2874,12 +2871,11 @@ class ApiGateway(object):
         Take an email and password, check if the password's hash
         is associated with the given email, and if so, log in a user.
 
-        Expected Input :: 
-
-            {
-                "email": (string),
-                "password": (string)
-            }
+        Expected Input ::
+        {
+            "email": (string),
+            "password": (string)
+        }
 
         :return: A message if login is successful
         """
@@ -2917,10 +2913,9 @@ class ApiGateway(object):
         }
 
         Returns ::
-
-            {
-                "valid": boolean
-            }
+        {
+            "valid": boolean
+        }
 
         :return: a boolean, as per above
         """
@@ -2955,10 +2950,9 @@ class ApiGateway(object):
         who calls this function.
 
         Returns ::
-
-            {
-                'projectNumbers': (list of ints)
-            }
+        {
+            'projectNumbers': (list of ints)
+        }
 
         :return: a list of project numbers
         """
