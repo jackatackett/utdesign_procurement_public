@@ -1,3 +1,114 @@
 <div id="studentHelpDiv">
-    <p>This is the help page!</p>
-</div>
+<p>Student Help Page</p>
+
+<p>Greetings, student! Welcome to UTDesign GettIt, the fancy, new, and very sexy procurement system for UTDesign Projects. Allow me to acquaint you with it!</p>
+
+<p>The goal of this system is to help you, the student, to submit procurement requests so that they may be approved in a timely and orderly fashion. </p>
+
+<p>You will notice at the top of the interface a &ldquo;Logout&rdquo; button. Clicking on the logout button will log you out of the system. </p>
+
+<p>You will also notice four (4) tabs. You&rsquo;re currently viewing the &ldquo;About/Help&rdquo; tab. The other three (3) are:</p>
+
+<p>&ldquo;Request Dashboard&rdquo; <br />
+&ldquo;Create Request&rdquo; <br />
+&ldquo;Budget&rdquo; </p>
+
+<p>Let&rsquo;s discuss each of them.</p>
+
+<p>Request Dashboard</p>
+
+<p>The &ldquo;Request Dashboard&rdquo; view allows you to view a list of all requests you&rsquo;ve previously created, including requests that have been submitted, saved but not submitted, and cancelled. </p>
+
+<p>By default, you will see a table of requests that displays:<br />
+&ldquo;Request Number&rdquo;: a unique integer that differentiates your request from every other request in the system, including unsubmitted ones.<br />
+&ldquo;Project Number&rdquo;: the project number of the project this request is for; If you are working on only one project, this value will be the same for all of your requests.<br />
+&ldquo;Status&rdquo;: the status of your request<br />
+&ldquo;Vendor&rdquo;: name of vendor the items will be ordered from. Each procurement request may have only one vendor<br />
+&ldquo;URL&rdquo;: URL of the home page of the vendor&rsquo;s online storefront<br />
+&ldquo;Total Cost&rdquo;: total cost of all items plus shipping<br />
+&ldquo;Shipping Cost&rdquo;: the cost of shipping only; this will be set after your items have been ordered</p>
+
+<p>If you click on any of the white rows of this table, the row will expand, revealing gray rows, each corresponding to an item; and optionally buttons, depending on the status of the request.</p>
+
+<p>These buttons may include:<br />
+&ldquo;Clone&rdquo;: copies the data from this request into the &ldquo;Create Request&rdquo; form and allows you to create a new request with it</p>
+
+<p>&ldquo;Edit&rdquo;: copies the request into the &ldquo;Create Request&rdquo; form and allows you to edit it and save your changes</p>
+
+<p>This action is only possible if the request has not been submitted, or it has been rejected and sent back to you to make changes. </p>
+
+<p>You may stop editing the request by either saving it for later, submitting it, or selecting the &ldquo;Start New Request&rdquo; button.</p>
+
+<p>&ldquo;Cancel&rdquo;: allows you to cancel a request. After you cancel a request, it may no longer be edited or submitted.</p>
+
+<p>This action is only possible if the request has not been submitted, or it has been rejected and sent back to you to make changes. </p>
+
+<p>&ldquo;View History&rdquo;: brings up a table allowing you to view the history of the procurement request</p>
+
+<p>Create Request</p>
+
+<p>The Create Request view allows you to create, save, and submit procurement requests. It gives you a blank form. First, you must fill out each of the empty fields in the form with the required general information for your request.</p>
+
+<p>&ldquo;Project Number&rdquo;: which project the request is for; cannot be edited after submission<br />
+&ldquo;Manager Email&rdquo;: which technical manager your request will be submitted to for approval; cannot be edited after submission<br />
+&ldquo;Vendor&rdquo;: name of vendor your items will be ordered from. You may specify only one vendor per procurement request<br />
+&ldquo;Vendor URL&rdquo;: URL of the home page of the vendor&rsquo;s online storefront<br />
+&ldquo;Total Cost&rdquo;: total cost of all items plus shipping<br />
+&ldquo;Shipping Cost&rdquo;: the cost of shipping only; this will be set after your items have been ordered</p>
+
+<p>You may then give information for one or more items. There is no limit to the number of items per request, so long as each item is to be ordered from the same vendor. Each field for each item must be filled in.</p>
+
+<p>&ldquo;Description&rdquo;: a brief verbal description of what the item is, e.g. &ldquo;screws&rdquo;<br />
+&ldquo;Item URL&rdquo;: the URL of the item&rsquo;s online listing<br />
+&ldquo;Catalog Part Number&rdquo;: the catalog part number of the item<br />
+Quantity&rdquo;: how many of this item you wish to order; please give an integer<br />
+&ldquo;Estimated Unit Cost&rdquo;: how much one of this item costs<br />
+&ldquo;Total Cost&rdquo;: automatically figured out for you by the system</p>
+
+<p>The Justification and Additional Info boxes are both optional. Below these boxes, at the bottom of the form, are buttons that perform an action:</p>
+
+<p>The &ldquo;Submit Request&rdquo; button submits the request to the system, awaiting approval by the technical manager you specified in the &ldquo;Manager Email&rdquo; field. You cannot cancel requests you have submitted to the technical manager.</p>
+
+<p>The &ldquo;Save Request&rdquo; button saves the request to the database without submitting it to a technical manager. You will then be able to edit or cancel this request.</p>
+
+<p>The &ldquo;Start New Request&rdquo; button discards all data you&rsquo;ve written to the form. If you did not save the request you were working on before selecting the button, all changes you made will be permanently lost. If you were editing a saved request before selecting this button, you will no longer be doing so.</p>
+
+<p>Budget</p>
+
+<p>The budget interface allows you to review the budget for your project(s), including seeing how much money is remaining of the budget and what expenditures have been made.</p>
+
+<p>At the top of the view is at least one tab. Each tab corresponds to a project. If you&rsquo;re assigned to only one project, there will be only one tab.</p>
+
+<p>The remainder of the page is separated into three separate tables:</p>
+
+<p>The first table shows the following information:</p>
+
+<p>&ldquo;Budget Limit&rdquo;: The total budget of the project<br />
+&ldquo;Available Budget Remaining&rdquo;: how much money is left after all completed expenditures are taken into account, i.e. only ordered items<br />
+&ldquo;Pending Budget Remaining&rdquo;: how much money is left after all completed and uncompleted expenditures are taken into account, i.e. both ordered items and unordered items</p>
+
+<p>The second table shows how much has been spent or will be spent per procurement request. Each row of the table is one procurement request.</p>
+
+<p>The following information is shown for each row:</p>
+
+<p>&ldquo;Status&rdquo;: the status of the request. <br />
+&ldquo;Vendor&rdquo;: name of vendor the items will be ordered from. Each procurement request may have only one vendor<br />
+&ldquo;Subtotal&rdquo;: the total cost of all items in the request<br />
+&ldquo;Shipping&rdquo;: the total cost of shipping<br />
+&ldquo;Total Cost&rdquo;: the total cost of all items plus shipping</p>
+
+<p>The third table shows all remaining costs tied to the project. Each row shows information about these costs. These costs come in three types:</p>
+
+<p>&ldquo;Refund&rdquo;: money is returned to the project&rsquo;s budget<br />
+&ldquo;Reimbursement&rdquo;: money is taken from the project&rsquo;s budget to reimburse a student who spent their own money on items<br />
+&ldquo;New Budget&rdquo;: the total budget of the project is set to a new value</p>
+
+<p>Each row of the table shows the following information about each cost:</p>
+
+<p>&ldquo;Timestamp&rdquo;: what time and date the cost was applied to the project<br />
+&ldquo;Type&rdquo;: see above<br />
+&ldquo;Comment&rdquo;: any comment made by the admin who applied the cost will display here<br />
+&ldquo;Amount&rdquo;: how much money the cost is. Negative means this cost returns money to the project&rsquo;s budget. </p>
+
+<p>If the type of the cost is &ldquo;New Budget&rdquo;, the &ldquo;amount&rdquo; of the cost is the new budget of the project and not the change in the budget. For example, if a project whose budget was $2000 had its budget increased by $1000, the &ldquo;amount&rdquo; of the new budget would be $3000.<br />
+</p></div>
