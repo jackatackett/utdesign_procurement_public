@@ -8,7 +8,7 @@ app.controller('ManagerNavCtrl', ['$scope', '$location', '$window', '$http', fun
         $scope.activeTab = "";
 
         if (hash == 'help') {
-            //show status
+            //show help
             $scope.activeTab = 'help';
             $("#viewRequestsCtrlDiv").hide();
             $("#viewBudgetDiv").hide();
