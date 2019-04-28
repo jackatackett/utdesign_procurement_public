@@ -1612,9 +1612,9 @@ class ApiGateway(object):
             “sponsorName”: (string),
             “projectName”: (string),
             “membersEmails: [(string), …], # list of strings
-            “defaultBudget”: (string) optional,
-            “availableBudget”: (string) optional,
-            “pendingBudget”: (string) optional
+            “defaultBudget”: (string),
+            “availableBudget”: (string),
+            “pendingBudget”: (string)
         }
 
         :return:
@@ -1660,6 +1660,10 @@ class ApiGateway(object):
 
         # insert the data into the database
         self.colProjects.insert(myProject)
+
+        # insert the project into each user's data
+        for user in myProject["membersEmails"]:
+            self.colUsers.update_one({"email": user}, {"$push": {"projectNumbers": myProject["projectNumber"]}})
 
         # TODO send confirmation email to admin? maybe not
 

@@ -8,8 +8,12 @@ import math
 
 from unittest import TestCase
 
+import sys
+sys.path.insert(0, '../utdesign_procurement')
+from utils import lenientConvertToCents
+
 class ProjectTester(TestCase):
-    def test_project:
+    def test_project(self):
         """
         Test the process of adding a project
         """
@@ -27,8 +31,10 @@ class ProjectTester(TestCase):
         adminCookie = self.do_admin_login()
 
         # add a project to an existing user
+        self.add_project(adminCookie, "student1@utdallas.edu", "manager@utdallas.edu", 1, "2500.50")
 
-        # login as the user and check projects
+        # login as the users and check projects
+        self.verify_projects(["student1@utdallas.edu", "manager@utdallas.edu"], 1)
 
     def do_admin_login(self):
         """
@@ -57,7 +63,7 @@ class ProjectTester(TestCase):
         # save our cookies for later
         return response.cookies
 
-    def add_project(self, cookies, student, manager, projectNumber, budget=None):
+    def add_project(self, cookies, student, manager, projectNumber, budget="2000.00"):
         """
         Adds a project. Must be performed by an admin.
         Tests the /addProject endpoint
@@ -75,14 +81,14 @@ class ProjectTester(TestCase):
             "projectNumber": projectNumber,
             "sponsorName": "sponsor",
             "projectName": "test project",
-            "membersEmails": [student, manager]
+            "membersEmails": [student, manager],
+            "defaultBudget": budget,
+            "availableBudget": budget,
+            "pendingBudget": budget
         }
 
-        if budget is not None:
-            data["defaultBudget"] = budget
-
         response = requests.post(
-            '%s/userLogin' % self.domain,
+            '%s/projectAdd' % self.domain,
             cookies = cookies,
             headers = {
                 'Content-type': 'application/json'
@@ -98,13 +104,59 @@ class ProjectTester(TestCase):
             "projectNumber": projectNumber,
             "sponsorName": "sponsor",
             "projectName": "test project",
-            "membersEmails": [student, manager]
+            "membersEmails": [student, manager],
+            "defaultBudget": lenientConvertToCents(budget),
+            "availableBudget": lenientConvertToCents(budget),
+            "pendingBudget": lenientConvertToCents(budget)
         }
 
-        if budget is not None:
-            postCondition["defaultBudget"] = budget #convert
-
-        costDoc = self.colCosts.find_one(postCondition)
+        costDoc = self.colProjects.find_one(postCondition)
         for key, val in postCondition.items():
             self.assertIn(key, costDoc)
             self.assertEqual(val, costDoc[key])
+
+        return postCondition
+
+    def verify_projects(self, userList, projectNumber):
+        """
+        Logins as each user in the userList, and verifies that projectNumber is in their projects
+
+        :param userList: array of user emails
+        :param projectNumber: projectNumber to test for
+        """
+        for user in userList:
+            response = requests.post(
+                '%s/userLogin' % self.domain,
+                headers = {
+                    'Content-type': 'application/json'
+                },
+                data = json.dumps({
+                    "email": user,
+                    "password": "oddrun",
+                })
+            )
+
+            # see if the response comes back okay
+            if not (200 <= response.status_code <= 300):
+                raise ValueError(response.content.decode("utf-8"))
+
+            # save our cookies for later
+            authCookie = response.cookies
+
+            # look up with request to API the projects assigned to the user
+            response = requests.post(
+                '%s/findProject' % self.domain,
+                cookies = authCookie,
+                headers = {
+                    'Content-type': 'application/json'
+                },
+                data = json.dumps({})
+            )
+
+            if not (200 <= response.status_code <= 300):
+                raise ValueError(response.content.decode("utf-8"))
+
+            self.assertIn(projectNumber, [apiResp["projectNumber"] for apiResp in json.loads(response.content.decode("utf-8"))])
+
+            # look up in database to verify
+            self.assertIn(projectNumber, list(self.colUsers.find({"email": user}))[0]["projectNumbers"])

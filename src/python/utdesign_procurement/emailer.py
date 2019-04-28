@@ -274,10 +274,10 @@ class EmailHandler(object):
         renderArgs = {
             'domain': self.domain,
             'projectNumber': int(projectNumber),
-            'projectName': int(projectName),
+            'projectName': str(projectName),
         }
         subject = "You Have Been Added to Project %s" % (int(projectNumber))
-        template = self.templateLookup.get_template('notifyUpdateManager.html')
+        template = self.templateLookup.get_template('notifyProjectAdd.html')
         body = template.render(**renderArgs)
         self.send(teamEmails, subject, body)
 
