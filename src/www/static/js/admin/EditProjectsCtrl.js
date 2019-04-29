@@ -2,8 +2,8 @@ app.controller('EditProjectsCtrl', ['$scope', '$location', '$http', 'dispatcher'
 
     $scope.fieldKeys = ["projectNumber", "sponsorName", "projectName", "membersEmails", "defaultBudget"];
     $scope.fields = ["Project Number", "Sponsor Name", "Project Name", "Members Emails", "Budget"];
-    $scope.editableKeys = ["sponsorName", "projectName", "membersEmails", "defaultBudget"];
-    $scope.editableFields = ["Sponsor Name", "Project Name", "Members Emails", "Budget"];
+    $scope.editableKeys = ["sponsorName", "projectName", "membersEmails"];
+    $scope.editableFields = ["Sponsor Name", "Project Name", "Members Emails"];
     $scope.grid = [];
     $scope.columns = ["Project Number", "Sponsor Name", "Project Name", "Members Emails", "Budget"];
     $scope.sortTableBy = 'projectNumber';
@@ -57,7 +57,9 @@ app.controller('EditProjectsCtrl', ['$scope', '$location', '$http', 'dispatcher'
     };
 
     $scope.saveProjectEdit = function() {
-        $http.post('/projectEdit', {'projectNumber': Number($scope.selectedProject.projectNumber), 'sponsorName':$scope.selectedProject.sponsorName, 'projectName':$scope.selectedProject.projectName, 'membersEmails':$scope.selectedProject.membersEmails}).then(function(resp) {
+        //console.log($scope.selectedProject.membersEmails);
+        $http.post('/projectEdit', {'projectNumber': Number($scope.selectedProject.projectNumber), 'sponsorName':$scope.selectedProject.sponsorName, 'projectName':$scope.selectedProject.projectName, 'membersEmails':$scope.selectedProject.membersEmails.split(",")}).then(function(resp) {
+            alert("Success!");
         }, function(err) {
             console.error("Error", err.data);
         });

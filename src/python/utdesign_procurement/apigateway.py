@@ -1663,7 +1663,7 @@ class ApiGateway(object):
 
         # insert the project into each user's data
         for user in myProject["membersEmails"]:
-            self.colUsers.update_one({"email": user}, {"$push": {"projectNumbers": myProject["projectNumber"]}})
+            self.colUsers.update_one({"email": user}, {"$addToSet": {"projectNumbers": myProject["projectNumber"]}})
 
         # TODO send confirmation email to admin? maybe not
 
@@ -1845,6 +1845,15 @@ class ApiGateway(object):
                 'membersEmails': myProject['membersEmails']
             }
         }
+
+        # remove users from the project: first find the current users and remove them
+        oldUsers = [oldProject["membersEmails"] for oldProject in self.colProjects.find(findQuery)]
+        for user in oldUsers:
+            self.colUsers.update_one({"email": user}, {"$pull": {"projectNumbers": myProject["projectNumber"]}})
+
+        # add users from the project
+        for user in myProject["membersEmails"]:
+            self.colUsers.update_one({"email": user}, {"$addToSet": {"projectNumbers": myProject["projectNumber"]}})
 
         self._updateDocument(findQuery, findQuery, updateRule, collection=self.colProjects)
 

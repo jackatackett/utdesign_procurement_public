@@ -296,7 +296,7 @@ class EmailHandler(object):
         renderArgs = {
             'domain': self.domain,
             'projectNumber': int(projectNumber),
-            'projectName': int(projectName),
+            'projectName': str(projectName),
             'membersEmails': membersEmails,
             'sponsorName': sponsorName
         }

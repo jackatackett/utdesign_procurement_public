@@ -36,6 +36,14 @@ class ProjectTester(TestCase):
         # login as the users and check projects
         self.verify_projects(["student1@utdallas.edu", "manager@utdallas.edu"], 1)
 
+        # edit the project
+        self.modify_project(adminCookie, 1, "new project test", "new sponsor", ["student2@utdallas.edu"])
+
+        # check if still can login
+        self.verify_projects(["student1@utdallas.edu", "student2@utdallas.edu", "manager@utdallas.edu"], 1)
+
+        # deactivate the project
+
     def do_admin_login(self):
         """
         Login as the admin.
@@ -160,3 +168,74 @@ class ProjectTester(TestCase):
 
             # look up in database to verify
             self.assertIn(projectNumber, list(self.colUsers.find({"email": user}))[0]["projectNumbers"])
+
+    def modify_project(self, authCookie, projectNumber, projectName, projectSponsor, userList):
+        """
+        Modifies a project.
+
+        :param authCookie: admin cookie
+        :param projectNumber: projectNumber to modify
+        :param projectName: new name of project
+        :param projectSponsor: new sponsor of project
+        :param userList: list of users to add
+
+        :return: new project data
+        """
+        response = requests.post(
+            '%s/projectEdit' % self.domain,
+            cookies = authCookie,
+            headers = {
+                'Content-type': 'application/json'
+            },
+            data = json.dumps({
+                "projectNumber": projectNumber,
+                "projectName": projectName,
+                "sponsorName": projectSponsor,
+                "membersEmails": userList
+                }
+            )
+        )
+
+        if not (200 <= response.status_code <= 300):
+            raise ValueError(response.content.decode("utf-8"))
+
+        # check database
+        postCondition = {
+            "projectNumber": projectNumber,
+            "projectName": projectName,
+            "sponsorName": projectSponsor,
+            "membersEmails": userList
+        }
+
+        dbData = list(self.colProjects.find({"projectNumber": projectNumber}))[0]
+        for key, val in postCondition.items():
+            self.assertIn(key, dbData)
+            self.assertEqual(val, dbData[key])
+
+        return postCondition
+
+    def deactivate_project(self, authCookie, projectNumber):
+        """
+        Deactivates the project
+
+        :param authCookie: admin cookie
+        :param projectNumber: project number
+        """
+        # find the _id of the project number
+        projectID = list(self.colProjects.find({"projectNumber": projectNumber}))[0]["_id"]
+        response = requests.post(
+             '%s/projectInactivate' % self.domain,
+            cookies = authCookie,
+            headers = {
+                'Content-type': 'application/json'
+            },
+            data = json.dumps({
+                "_id": projectID
+                }
+            )
+        )
+        if not (200 <= response.status_code <= 300):
+            raise ValueError(response.content.decode("utf-8"))
+
+        # check database
+        self.assertEqual("inactive", list(self.colProjects.find({"_id": projectID}))[0]["status"])
