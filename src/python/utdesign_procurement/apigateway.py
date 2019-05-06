@@ -48,7 +48,7 @@ class ApiGateway(object):
         and save it to the database. If the submit flag is true, submit the request to
         the TM.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "submit": (Boolean) optional (not optional if submitted by student),
@@ -73,7 +73,7 @@ class ApiGateway(object):
                 ]
             }
 
-        Returns ::
+        Returns::
 
             {
                 "_id": (string),
@@ -230,13 +230,13 @@ class ApiGateway(object):
         Return a list of technical managers who are associated to the given
         project number
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "projectNumber": (int)
             }
 
-        Returns ::
+        Returns::
 
             [
                 (string)
@@ -283,7 +283,7 @@ class ApiGateway(object):
 
         If the user is a manager, they will not be able to see saved requests
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "vendor": (string, optional),
@@ -292,7 +292,7 @@ class ApiGateway(object):
                 "statuses": (string or list of strings, optional)
             }
 
-        Returns ::
+        Returns::
 
             [
                 {
@@ -400,7 +400,7 @@ class ApiGateway(object):
         Change the status of a procurement request to cancelled. The
         request is then unable to be considered by any user.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "_id": (string)
@@ -484,7 +484,7 @@ class ApiGateway(object):
         Change the status of a procurement request to manager approved.
         This in effect sends the request to the admin for review.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "_id": (string)
@@ -567,7 +567,7 @@ class ApiGateway(object):
         This will allow the student who submitted the request to make changes
         or cancel it.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "_id": (string),
@@ -646,7 +646,7 @@ class ApiGateway(object):
         Initiated by the admin. The request will go back to the student
         and once submitted, will again go to the technical manager.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "_id": (string),
@@ -735,7 +735,7 @@ class ApiGateway(object):
         after a request was sent back to the student and has been submitted
         to the manager for reconsideration.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "_id": (string),
@@ -822,7 +822,7 @@ class ApiGateway(object):
         happens after a request has been sent back to the students for updates
         and then submitted directly back to the admin for reconsideration.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "_id": (string),
@@ -909,7 +909,7 @@ class ApiGateway(object):
         This will send the request to a student without requiring approval
         from the technical manager upon resubmission.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "_id": (string),
@@ -989,7 +989,7 @@ class ApiGateway(object):
 
         The shipping cost is set during this step.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "_id": (string),
@@ -1074,7 +1074,7 @@ class ApiGateway(object):
         indicates that the purchased items are in the office and can be
         picked up by the student.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "_id": (string)
@@ -1144,7 +1144,7 @@ class ApiGateway(object):
         indicates that items have been picked up by the student and
         no further actions need to be taken.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "_id": (string)
@@ -1215,7 +1215,7 @@ class ApiGateway(object):
         a request such that a student can not edit for resubmission.
         It can no longer be considered by any user.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "_id": (string),
@@ -1302,7 +1302,7 @@ class ApiGateway(object):
         such that a student can not edit for resubmission. It can
         no longer be considered by any user.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "_id": (string),
@@ -1376,7 +1376,7 @@ class ApiGateway(object):
         """
         Return the emails of all admins in the system.
 
-        Returns ::
+        Returns::
 
             [
                 (string)
@@ -1435,7 +1435,7 @@ class ApiGateway(object):
         Adds a cost (refund, reimbursement, or new project) to a project.
         Can only be done by the admin.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 projectNumber: (int),
@@ -1495,7 +1495,7 @@ class ApiGateway(object):
                 projectNumbers: (list of ints, optional)
             }
 
-        Returns ::
+        Returns::
 
             [
                 {
@@ -1560,7 +1560,7 @@ class ApiGateway(object):
         Add a project. Can only be done by an admin.
         If the projectNumber is already in use, throw an error.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 “projectNumber”: (int),
@@ -1636,7 +1636,7 @@ class ApiGateway(object):
         """
         Change status of project to inactivate.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "_id": (string)
@@ -1678,13 +1678,13 @@ class ApiGateway(object):
         Find all projects with the given project numbers and recalculate
         their budget. If none given, then return all authorized projects.
 
-        Expected Input :: 
+        Expected Input::
 
             {
                 projectNumbers: (list of ints, optional)
             }
 
-        Returns ::
+        Returns::
 
             [
                 {
@@ -1755,7 +1755,7 @@ class ApiGateway(object):
         can only be done by an admin. Project number is required, but
         its value cannot be changed.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 projectNumber: (int),
@@ -1828,7 +1828,7 @@ class ApiGateway(object):
         """
         Add new user to the database with provided data.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "projectNumbers": (int or list of ints),
@@ -1908,7 +1908,7 @@ class ApiGateway(object):
         email address. Link allows a user to set a new password through the
         userVerify endpoint, but will expire at some point in the near future.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "email": (string),
@@ -2097,7 +2097,7 @@ class ApiGateway(object):
         """
         Returns a dict summarizing the current state of the bulk user data.
 
-        Returns ::
+        Returns::
 
             {
                 'valid': (int, number of valid users),
@@ -2134,7 +2134,7 @@ class ApiGateway(object):
                     "conflicting" bulk users)
             }
 
-        Returns ::
+        Returns::
 
             [
                 {
@@ -2187,7 +2187,7 @@ class ApiGateway(object):
         sorted by a key and ordered by ascending or descending, and the pageNumber
         decides which 10 users are returned. pageNumber must be a non-negative integer.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "bulkStatus": (string, Optional, default "valid".
@@ -2198,7 +2198,7 @@ class ApiGateway(object):
                     (Optional. Default: 0)
             }
 
-        Returns ::
+        Returns::
 
             [
                 {
@@ -2259,7 +2259,7 @@ class ApiGateway(object):
         end of whichever list is appropriate given its new validation
         status.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "bulkStatus": (str. The status of the user being replaced.
@@ -2284,7 +2284,7 @@ class ApiGateway(object):
                 }
             }
 
-        Returns ::
+        Returns::
 
             {
                 'user': (dict. The validated user, with the same schema as
@@ -2454,7 +2454,7 @@ class ApiGateway(object):
         """
         Returns a dict summarizing the current state of the bulk project data.
 
-        Returns ::
+        Returns::
 
             {
                 'valid': (int, number of valid users),
@@ -2522,7 +2522,7 @@ class ApiGateway(object):
         sorted by a key and ordered by ascending or descending, and the pageNumber
         decides which 10 projects are returned. pageNumber must be a non-negative integer.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "bulkStatus": (string, Optional, default "valid".
@@ -2533,7 +2533,7 @@ class ApiGateway(object):
                     (Optional. Default: 0)
             }
 
-        Returns ::
+        Returns::
 
             [
                 {
@@ -2588,7 +2588,7 @@ class ApiGateway(object):
         end of whichever list is appropriate given its new validation
         status.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "bulkStatus": (str. The status of the user being replaced.
@@ -2607,7 +2607,7 @@ class ApiGateway(object):
                 }
             }
 
-        Returns ::
+        Returns::
 
             {
                 'project': (dict. The validated user, with the same schema as
@@ -2693,7 +2693,7 @@ class ApiGateway(object):
         used to identify the user whose information will be edited and the
         optional data is what the existing data will be changed to.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "_id": (string)
@@ -2755,7 +2755,7 @@ class ApiGateway(object):
         the effect that the user is no longer able to interact
         with the system. Doesn't delete the user from the database.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "_id": (string)
@@ -2803,7 +2803,7 @@ class ApiGateway(object):
         The UUID is a key in an invitation document. An invitation is created when
         a user is first invited to use the system and when a user forgets their password.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "uuid": (string),
@@ -2848,7 +2848,7 @@ class ApiGateway(object):
         Take an email and password, check if the password's hash
         is associated with the given email, and if so, log in a user.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "email": (string),
@@ -2885,12 +2885,12 @@ class ApiGateway(object):
         """
         Return true if the project number(s) exist in the database.
 
-        Expected Input :: 
+        Expected Input::
 
             {
             }
 
-        Returns ::
+        Returns::
 
             {
                 "valid": boolean
@@ -2928,7 +2928,7 @@ class ApiGateway(object):
         Will only return the projects associated with the user
         who calls this function.
 
-        Returns ::
+        Returns::
 
             {
                 'projectNumbers': (list of ints)
@@ -2973,7 +2973,7 @@ class ApiGateway(object):
         per page. At present time, the page size (number of
         projects per page, i.e. 10) cannot be configured.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "projectNumber": (int),
@@ -3012,7 +3012,7 @@ class ApiGateway(object):
         At present time, the page size (number of users per page, i.e. 10)
         cannot be configured.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 "projectNumbers": (int or list of ints, optional),
@@ -3048,7 +3048,7 @@ class ApiGateway(object):
     def requestPages(self):
         """
 
-        Expected Input ::
+        Expected Input::
 
             {
                 primaryFilter: {
@@ -3083,7 +3083,7 @@ class ApiGateway(object):
         sorted by a key and ordered by ascending or descending, and the pageNumber
         decides which 10 users are returned. pageNumber must be a non-negative integer.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 'sortBy': (string in 'projectNumbers', 'firstName', 'lastName', 'netID',
@@ -3099,7 +3099,7 @@ class ApiGateway(object):
                 }
             }
 
-        Returns ::
+        Returns::
 
             [
                 {
@@ -3170,7 +3170,7 @@ class ApiGateway(object):
         sorted by a key and ordered by ascending or descending, and the pageNumber
         decides which 10 projects are returned. pageNumber must be a non-negative integer.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 'sortBy': (string in 'projectNumber', 'sponsorName', 'projectName', 'membersEmails',
@@ -3190,7 +3190,7 @@ class ApiGateway(object):
                     }
             }
 
-        Returns ::
+        Returns::
 
             [
                 {
@@ -3273,13 +3273,13 @@ class ApiGateway(object):
         Return the data of a user in the database. See "Returns" below for
         which data is returned. The user is found by their email.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 'email': (int)
             }
 
-        Returns ::
+        Returns::
 
             {
                 'projectNumbers':, (list of ints)
@@ -3318,13 +3318,13 @@ class ApiGateway(object):
         Return the data of a project in the database. See "Returns" below for
         which data is returned. The project is found by its projectNumber.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 'projectNumber': (int)
             }
 
-        Returns ::
+        Returns::
 
             {
                 'projectNumber': (int),
@@ -3363,7 +3363,7 @@ class ApiGateway(object):
         sorted by a key and ordered ascending or descending, and the pageNumber
         decides which 10 users are returned. pageNumber must be a non-negative integer.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 'sortBy': (string in projectNumbers, firstName, lastName, netID,
@@ -3385,7 +3385,7 @@ class ApiGateway(object):
                     }
             }
 
-        Returns ::
+        Returns::
 
             [
                 {
@@ -3481,7 +3481,7 @@ class ApiGateway(object):
         """
         Generate a report and return a UUID for the report.
 
-        Expected Input ::
+        Expected Input::
 
             {
                 'sortBy': (string in projectNumbers, firstName, lastName, netID,
