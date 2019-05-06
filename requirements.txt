@@ -4,3 +4,5 @@ pymongo
 pandas
 xlrd>=1.0.0
 XlsxWriter
+requests
+sphinx
