@@ -388,52 +388,6 @@ class ApiGateway(object):
         return listRequests
 
     @cherrypy.expose
-    @cherrypy.tools.json_out()
-    @cherrypy.tools.json_in()
-    @authorizedRoles("admin")
-    def procurementEditAdmin(self):
-        """
-        Edit procurement request. Only available to admin user.
-
-        Expected Input ::
-
-            {
-                "vendor": (string) optional,
-                "URL": (string) optional,
-                "items": [
-                    {
-                    "description": (string) optional,
-                    "partNo": (string) optional,
-                    "itemURL": (string) optional,
-                    "quantity": (integer) optional,
-                    "unitCost": (string)optional ,
-                    "totalCost": (string) optional
-                    }
-                ]
-            }
-
-        :return:
-        """
-        # check that we actually have json
-        if hasattr(cherrypy.request, 'json'):
-            data = cherrypy.request.json
-        else:
-            data = dict()
-
-        requestChanges = dict()
-
-        for key in ("vendor", "URL"):
-            if data[key]:
-                requestChanges[key] = checkValidData(key, data, str)
-
-
-
-        # TODO validate inputs
-        # TODO add history
-        # TODO send confirmation email to admin
-        # TODO send notification emails to students
-
-    @cherrypy.expose
     @cherrypy.tools.json_in()
     @authorizedRoles("student")
     def procurementCancel(self):
@@ -3130,7 +3084,7 @@ class ApiGateway(object):
     def requestPages(self):
         """
 
-        ::
+        Expected Input ::
 
             {
                 primaryFilter: {
@@ -3195,6 +3149,7 @@ class ApiGateway(object):
 
         :return: a list of at most 10 requests
         """
+        #TODO finish docstring
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
@@ -3568,6 +3523,23 @@ class ApiGateway(object):
         """
         Generate a report and return a UUID for the report.
 
+        Expected Input ::
+
+            {
+                'sortBy': (string in projectNumbers, firstName, lastName, netID,
+                    email, course, role, status)
+                    (Optional. Default "email")
+                'order': (string in 'ascending', 'descending')
+                    (Optional. Default: "ascending")
+                'keywordSearch': (dict)
+                    {
+                        primaryFilter: {
+                        },
+                        secondaryFilter: {
+                        }
+                    }
+            }
+
         :return: a uuid for the generated report
         """
         # check that we actually have json
@@ -3641,7 +3613,7 @@ class ApiGateway(object):
         """
         Download a report, specified by a UUID.
 
-        :param uuid:
+        :param uuid: specifies which report will be downloaded
         :return: an .xlsx file
         """
         # check that we actually have json
