@@ -1492,8 +1492,8 @@ class ApiGateway(object):
 
         return res
 
-    # @cherrypy.expose
-    # @cherrypy.tools.json_in()
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
     @authorizedRoles("admin")
     def addCost(self):
         """

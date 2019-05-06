@@ -9,8 +9,8 @@ import math
 from unittest import TestCase
 
 import sys
-sys.path.insert(0, '../utdesign_procurement')
-from utils import lenientConvertToCents
+# sys.path.insert(0, '../utdesign_procurement')
+from utdesign_procurement.utils import lenientConvertToCents
 
 def convertToDollarStr(cents):
     cents = int(cents)

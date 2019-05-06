@@ -397,7 +397,7 @@ class EmailHandler(object):
             'projectNumber': int(projectNumber),
             'requestNumber': int(requestNumber)
         }
-        subject = "Request #% Has Been Sent For Updates!" % (requestNumber)
+        subject = "Request #%d Has Been Sent For Updates!" % (requestNumber)
         template = self.templateLookup.get_template('notifyUpdateManager.html')
         body = template.render(**renderArgs)
         self.send(email, subject, body)
