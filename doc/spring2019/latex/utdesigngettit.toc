@@ -1,0 +1,12 @@
+\select@language {english}
+\contentsline {chapter}{\numberline {1}utdesign\_procurement}{1}{chapter.1}
+\contentsline {section}{\numberline {1.1}utdesign\_procurement package}{1}{section.1.1}
+\contentsline {subsection}{\numberline {1.1.1}Submodules}{1}{subsection.1.1.1}
+\contentsline {subsection}{\numberline {1.1.2}utdesign\_procurement.apigateway module}{1}{subsection.1.1.2}
+\contentsline {subsection}{\numberline {1.1.3}utdesign\_procurement.emailer module}{20}{subsection.1.1.3}
+\contentsline {subsection}{\numberline {1.1.4}utdesign\_procurement.server module}{24}{subsection.1.1.4}
+\contentsline {subsection}{\numberline {1.1.5}utdesign\_procurement.utils module}{25}{subsection.1.1.5}
+\contentsline {subsection}{\numberline {1.1.6}Module contents}{27}{subsection.1.1.6}
+\contentsline {chapter}{\numberline {2}Indices and tables}{29}{chapter.2}
+\contentsline {chapter}{Python Module Index}{31}{section*.113}
+\contentsline {chapter}{Index}{33}{section*.114}

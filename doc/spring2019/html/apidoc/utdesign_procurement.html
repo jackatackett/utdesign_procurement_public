@@ -1,0 +1,2292 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>utdesign_procurement package &#8212; UTDesign GettIt 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="utdesign_procurement" href="modules.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="utdesign-procurement-package">
+<h1>utdesign_procurement package<a class="headerlink" href="#utdesign-procurement-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-utdesign_procurement.apigateway">
+<span id="utdesign-procurement-apigateway-module"></span><h2>utdesign_procurement.apigateway module<a class="headerlink" href="#module-utdesign_procurement.apigateway" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="utdesign_procurement.apigateway.ApiGateway">
+<em class="property">class </em><code class="descclassname">utdesign_procurement.apigateway.</code><code class="descname">ApiGateway</code><span class="sig-paren">(</span><em>email_handler</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.addCost">
+<code class="descname">addCost</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.addCost" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a cost (refund, reimbursement, or new project) to a project.
+Can only be done by the admin.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="n">projectNumber</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">),</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="n">refund</span><span class="p">,</span> <span class="n">reimbursement</span><span class="p">,</span> <span class="n">new</span> <span class="n">budget</span><span class="p">),</span>
+    <span class="n">amount</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">dollar</span> <span class="n">amount</span><span class="p">),</span>
+    <span class="n">comment</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+    <span class="n">actor</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">email</span> <span class="n">of</span> <span class="n">admin</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.calculateBudget">
+<code class="descname">calculateBudget</code><span class="sig-paren">(</span><em>projectNumber</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.calculateBudget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the available and pending budget for the given project
+number.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>projectNumber</strong> – int.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list containing available and pending budget</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.findProject">
+<code class="descname">findProject</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.findProject" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all projects with the given project numbers and recalculate
+their budget. If none given, then return all authorized projects.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="n">projectNumbers</span><span class="p">:</span> <span class="p">(</span><span class="nb">list</span> <span class="n">of</span> <span class="n">ints</span><span class="p">,</span> <span class="n">optional</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Returns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="n">ObjectId</span><span class="p">,</span>
+        <span class="s2">&quot;projectNumber&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s2">&quot;sponsorName&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;projectName&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;membersEmails&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">list</span> <span class="n">of</span> <span class="n">strings</span><span class="p">),</span>
+        <span class="s2">&quot;defaultBudget&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s2">&quot;availableBudget&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s2">&quot;pendingBudget&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list of projects</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.getAdminEmails">
+<code class="descname">getAdminEmails</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.getAdminEmails" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of emails of all admins.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a list of emails of all admins</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.getAdminList">
+<code class="descname">getAdminList</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.getAdminList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the emails of all admins in the system.</p>
+<p>Returns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+    <span class="p">(</span><span class="n">string</span><span class="p">)</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list of emails for all admins</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.getCosts">
+<code class="descname">getCosts</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.getCosts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all the costs associated with a list of project numbers.</p>
+<p>Expected input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="n">projectNumbers</span><span class="p">:</span> <span class="p">(</span><span class="nb">list</span> <span class="n">of</span> <span class="n">ints</span><span class="p">,</span> <span class="n">optional</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Returns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="n">ObjectId</span><span class="p">,</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;amount&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s2">&quot;comment&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;actor&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span> <span class="o">//</span><span class="n">email</span><span class="p">,</span>
+        <span class="s2">&quot;projectNumber&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list of costs (refund, reimbursement, etc.)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.getTeamEmails">
+<code class="descname">getTeamEmails</code><span class="sig-paren">(</span><em>projectNumber</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.getTeamEmails" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take the projectNumber of a project and return a list of emails
+of users associated with that project.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>projectNumber</strong> – the projectNumber of a project</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of emails of members of the specified project</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.managerList">
+<code class="descname">managerList</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.managerList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of technical managers who are associated to the given
+project number</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;projectNumber&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Returns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+    <span class="p">(</span><span class="n">string</span><span class="p">)</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list of technical manager’s emails</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.procurementApproveManager">
+<code class="descname">procurementApproveManager</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.procurementApproveManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the status of a procurement request to manager approved.
+This in effect sends the request to the admin for review.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.procurementCancel">
+<code class="descname">procurementCancel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.procurementCancel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the status of a procurement request to cancelled. The
+request is then unable to be considered by any user.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.procurementComplete">
+<code class="descname">procurementComplete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.procurementComplete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the status of a procurement request to complete. This
+indicates that items have been picked up by the student and
+no further actions need to be taken.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.procurementOrder">
+<code class="descname">procurementOrder</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.procurementOrder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the status of a procurement request to ordered. This
+indicates that items have been purchased by the admin.</p>
+<p>The shipping cost is set during this step.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+    <span class="s2">&quot;amount&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.procurementReady">
+<code class="descname">procurementReady</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.procurementReady" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the status of a procurement request to ready for pickup. This
+indicates that the purchased items are in the office and can be
+picked up by the student.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.procurementRejectAdmin">
+<code class="descname">procurementRejectAdmin</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.procurementRejectAdmin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the status of a procurement request to rejected,
+initiated by the admin. This permanently rejects a request
+such that a student can not edit for resubmission. It can
+no longer be considered by any user.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+    <span class="s2">&quot;comment&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.procurementRejectManager">
+<code class="descname">procurementRejectManager</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.procurementRejectManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the status of a procurement request to rejected,
+initiated by the technical manager. This permanently rejects
+a request such that a student can not edit for resubmission.
+It can no longer be considered by any user.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+    <span class="s2">&quot;comment&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.procurementResubmitToAdmin">
+<code class="descname">procurementResubmitToAdmin</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.procurementResubmitToAdmin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the status of a procurement request to manager approved. This
+happens after a request has been sent back to the students for updates
+and then submitted directly back to the admin for reconsideration.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+    <span class="s2">&quot;requestNumber&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="n">optional</span><span class="p">,</span>
+    <span class="s2">&quot;manager&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span> <span class="o">//</span><span class="n">email</span> <span class="n">of</span> <span class="n">manager</span> <span class="n">who</span> <span class="n">can</span> <span class="n">approve</span> <span class="n">this</span>
+    <span class="s2">&quot;vendor&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+    <span class="s2">&quot;projectNumber&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">),</span>
+    <span class="s2">&quot;URL&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+    <span class="s2">&quot;justification&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span> <span class="n">optional</span><span class="p">,</span>
+    <span class="s2">&quot;additionalInfo&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span> <span class="n">optional</span><span class="p">,</span>
+    <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;partNo&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;itemURL&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;quantity&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">integer</span><span class="p">),</span>
+        <span class="s2">&quot;unitCost&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;totalCost&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.procurementResubmitToManager">
+<code class="descname">procurementResubmitToManager</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.procurementResubmitToManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the status of a procurement request to pending. This happens
+after a request was sent back to the student and has been submitted
+to the manager for reconsideration.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+
+    <span class="s2">&quot;requestNumber&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="n">optional</span><span class="p">,</span>
+    <span class="s2">&quot;manager&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span> <span class="o">//</span><span class="n">email</span> <span class="n">of</span> <span class="n">manager</span> <span class="n">who</span> <span class="n">can</span> <span class="n">approve</span> <span class="n">this</span>
+    <span class="s2">&quot;vendor&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+    <span class="s2">&quot;projectNumber&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">),</span>
+    <span class="s2">&quot;URL&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+    <span class="s2">&quot;justification&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span> <span class="n">optional</span><span class="p">,</span>
+    <span class="s2">&quot;additionalInfo&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span> <span class="n">optional</span><span class="p">,</span>
+    <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;partNo&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;itemURL&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;quantity&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">integer</span><span class="p">),</span>
+        <span class="s2">&quot;unitCost&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;totalCost&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.procurementSave">
+<code class="descname">procurementSave</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.procurementSave" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a procurement request. Take data as input and use it to create the request
+and save it to the database. If the submit flag is true, submit the request to
+the TM.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;submit&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">Boolean</span><span class="p">)</span> <span class="n">optional</span> <span class="p">(</span><span class="ow">not</span> <span class="n">optional</span> <span class="k">if</span> <span class="n">submitted</span> <span class="n">by</span> <span class="n">student</span><span class="p">),</span>
+    <span class="s2">&quot;adminEdit&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">Boolean</span><span class="p">)</span> <span class="n">optional</span> <span class="p">(</span><span class="ow">not</span> <span class="n">optional</span> <span class="k">if</span> <span class="n">admin</span> <span class="n">performs</span> <span class="n">an</span> <span class="n">edit</span><span class="p">),</span>
+    <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span> <span class="n">optional</span> <span class="p">(</span><span class="ow">not</span> <span class="n">optional</span> <span class="k">if</span> <span class="n">admin</span> <span class="n">performs</span> <span class="n">an</span> <span class="n">edit</span><span class="p">),</span>
+    <span class="s2">&quot;requestNumber&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="n">optional</span><span class="p">,</span>
+    <span class="s2">&quot;manager&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span> <span class="o">//</span><span class="n">email</span> <span class="n">of</span> <span class="n">manager</span> <span class="n">who</span> <span class="n">can</span> <span class="n">approve</span> <span class="n">this</span>
+    <span class="s2">&quot;vendor&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+    <span class="s2">&quot;projectNumber&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">),</span>
+    <span class="s2">&quot;URL&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+    <span class="s2">&quot;justification&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span> <span class="n">optional</span><span class="p">,</span>
+    <span class="s2">&quot;additionalInfo&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span> <span class="n">optional</span><span class="p">,</span>
+    <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;partNo&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;itemURL&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;quantity&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">integer</span><span class="p">),</span>
+        <span class="s2">&quot;unitCost&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;totalCost&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Returns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+    <span class="s2">&quot;requestNumber&quot;</span> <span class="p">(</span><span class="nb">int</span><span class="p">):</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a dict containing the MongoDB objectId of the request and the request number</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.procurementStatuses">
+<code class="descname">procurementStatuses</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.procurementStatuses" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of procurement requests matching all provided filters.
+Match with any combination of vendor, projectNumbers, and URL. For
+non-admin users, restrict projectNumbers to only those projectNumbers
+which the user is authorized to view. Ignore projectNumbers that the
+user is not authorized to view.</p>
+<p>If the user is a manager, they will not be able to see saved requests</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;vendor&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">optional</span><span class="p">),</span>
+    <span class="s2">&quot;projectNumbers&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span> <span class="ow">or</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">ints</span><span class="p">,</span> <span class="n">optional</span><span class="p">),</span>
+    <span class="s2">&quot;URL&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">optional</span><span class="p">),</span>
+    <span class="s2">&quot;statuses&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span> <span class="ow">or</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">strings</span><span class="p">,</span> <span class="n">optional</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Returns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="n">ObjectId</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;requestNumber&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="n">optional</span><span class="p">,</span>
+        <span class="s2">&quot;manager&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;vendor&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;projectNumber&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s2">&quot;URL&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;justification&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;additionalInfo&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+            <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+            <span class="s2">&quot;partNo&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+            <span class="s2">&quot;itemURL&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+            <span class="s2">&quot;quantity&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">integer</span><span class="p">),</span>
+            <span class="s2">&quot;unitCost&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+            <span class="s2">&quot;totalCost&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;requestSubtotal&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s2">&quot;requestTotal&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s2">&quot;history&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">list</span> <span class="n">of</span> <span class="n">strings</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>list of requests matching filter</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.procurementUpdateAdmin">
+<code class="descname">procurementUpdateAdmin</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.procurementUpdateAdmin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the status of a procurement request to updates for admin.
+This will send the request to a student without requiring approval
+from the technical manager upon resubmission.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+    <span class="s2">&quot;comment&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.procurementUpdateManager">
+<code class="descname">procurementUpdateManager</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.procurementUpdateManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the status of a procurement request to updates for manager.
+This will allow the student who submitted the request to make changes
+or cancel it.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+    <span class="s2">&quot;comment&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.procurementUpdateManagerAdmin">
+<code class="descname">procurementUpdateManagerAdmin</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.procurementUpdateManagerAdmin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the status of a procurement request to updates for manager.
+Initiated by the admin. The request will go back to the student
+and once submitted, will again go to the technical manager.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+    <span class="s2">&quot;comment&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.projectAdd">
+<code class="descname">projectAdd</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.projectAdd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a project. Can only be done by an admin.
+If the projectNumber is already in use, throw an error.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>{
+    “projectNumber”: (int),
+    “sponsorName”: (string),
+    “projectName”: (string),
+    “membersEmails: [(string), …], # list of strings
+    “defaultBudget”: (string),
+    “availableBudget”: (string),
+    “pendingBudget”: (string)
+}
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.projectData">
+<code class="descname">projectData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.projectData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of at most 10 projects from the database. The projects may be
+sorted by a key and ordered by ascending or descending, and the pageNumber
+decides which 10 projects are returned. pageNumber must be a non-negative integer.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;sortBy&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span> <span class="ow">in</span> <span class="s1">&#39;projectNumber&#39;</span><span class="p">,</span> <span class="s1">&#39;sponsorName&#39;</span><span class="p">,</span> <span class="s1">&#39;projectName&#39;</span><span class="p">,</span> <span class="s1">&#39;membersEmails&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;defaultBudget&#39;</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">Optional</span><span class="o">.</span> <span class="n">Default</span> <span class="s2">&quot;projectNumber&quot;</span><span class="p">)</span>
+    <span class="s1">&#39;order&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span> <span class="ow">in</span> <span class="s1">&#39;ascending&#39;</span><span class="p">,</span> <span class="s1">&#39;descending&#39;</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">Optional</span><span class="o">.</span> <span class="n">Default</span><span class="p">:</span> <span class="s2">&quot;ascending&quot;</span><span class="p">)</span>
+    <span class="s1">&#39;pageNumber&#39;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">Optional</span><span class="o">.</span> <span class="n">Default</span><span class="p">:</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="s1">&#39;keywordSearch&#39;</span><span class="p">:</span> <span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;projectNumber&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">optional</span><span class="p">),</span>
+            <span class="s2">&quot;sponsorName&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">optional</span><span class="p">),</span>
+            <span class="s2">&quot;projectName&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">optional</span><span class="p">),</span>
+            <span class="s2">&quot;membersEmails&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">optional</span><span class="p">),</span>
+            <span class="s2">&quot;defaultBudget&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">optional</span><span class="p">)</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Returns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[
+    {
+        “projectNumber”: (int),
+        &quot;sponsorName&quot;: (string),
+        &quot;projectName&quot;: (string),
+        &quot;membersEmails&quot;: (string),
+        &quot;defaultBudget&quot;: (string)
+    }
+]
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a list of at most 10 projects</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.projectEdit">
+<code class="descname">projectEdit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.projectEdit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change a project’s attributes with the given project number. It
+can only be done by an admin. Project number is required, but
+its value cannot be changed.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>{
+    projectNumber: (int),
+    sponsorName: (string, optional),
+    projectName: (string, optional),
+    membersEmails: [(string), …, optional]
+}
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.projectInactivate">
+<code class="descname">projectInactivate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.projectInactivate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change status of project to inactivate.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.projectPages">
+<code class="descname">projectPages</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.projectPages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an int: the number of pages it would take to
+display all current projects, filtered per the “Expected Input” JSON
+object described below, if 10 projects are displayed
+per page. At present time, the page size (number of
+projects per page, i.e. 10) cannot be configured.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;projectNumber&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">),</span>
+    <span class="s2">&quot;sponsorName&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">optional</span><span class="p">),</span>
+    <span class="s2">&quot;projectName&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">optional</span><span class="p">),</span>
+    <span class="s2">&quot;membersEmails&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">optional</span><span class="p">),</span>
+    <span class="s2">&quot;defaultBudget&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">optional</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the number of pages it would take to display all specified projects</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.projectSingleData">
+<code class="descname">projectSingleData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.projectSingleData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the data of a project in the database. See “Returns” below for
+which data is returned. The project is found by its projectNumber.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;projectNumber&#39;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Returns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>{
+    &#39;projectNumber&#39;: (int),
+    &#39;sponsorName&#39;: (str),
+    &#39;projectName&#39;: (str),
+    &#39;defaultBudget&#39;: (???),
+    &#39;membersEmails&#39;: (list of str)
+}
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a dict containing a single project’s data, as per above</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.projectSpreadsheetData">
+<code class="descname">projectSpreadsheetData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.projectSpreadsheetData" title="Permalink to this definition">¶</a></dt>
+<dd><p>This REST endpoint returns a list of 10 projects from the database. The projects may be
+sorted by a key and ordered by ascending or descending, and the pageNumber
+decides which 10 projects are returned. pageNumber must be a non-negative integer.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;bulkStatus&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">default</span> <span class="s2">&quot;valid&quot;</span><span class="o">.</span>
+        <span class="n">Whether</span> <span class="n">these</span> <span class="n">are</span> <span class="n">the</span> <span class="s2">&quot;valid&quot;</span><span class="p">,</span> <span class="s2">&quot;invalid&quot;</span><span class="p">,</span> <span class="s2">&quot;existing&quot;</span><span class="p">,</span> <span class="ow">or</span>
+        <span class="s2">&quot;conflicting&quot;</span> <span class="n">bulk</span> <span class="n">projects</span><span class="p">)</span>
+
+    <span class="s1">&#39;pageNumber&#39;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">Optional</span><span class="o">.</span> <span class="n">Default</span><span class="p">:</span> <span class="mi">0</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Returns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[
+    {
+        “projectNumbers”: (list of ints),
+        &quot;firstName&quot;: (string),
+        &quot;lastName&quot;: (string),
+        &quot;netID&quot;: (string),
+        &quot;email&quot;: (string),
+        &quot;course&quot;: (string),
+        “role”: “student”,
+        “status”: (string), //”current” or “removed”
+    }
+]
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.projectSpreadsheetMetadata">
+<code class="descname">projectSpreadsheetMetadata</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.projectSpreadsheetMetadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dict summarizing the current state of the bulk project data.</p>
+<p>Returns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;valid&#39;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">number</span> <span class="n">of</span> <span class="n">valid</span> <span class="n">users</span><span class="p">),</span>
+    <span class="s1">&#39;invalid&#39;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">number</span> <span class="n">of</span> <span class="n">invalid</span> <span class="n">users</span><span class="p">),</span>
+    <span class="s1">&#39;conflicting&#39;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">number</span> <span class="n">of</span> <span class="n">conflicting</span> <span class="n">users</span><span class="p">),</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a dict summarizing the current state of the bulk project dataa</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.projectSpreadsheetOverwrite">
+<code class="descname">projectSpreadsheetOverwrite</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.projectSpreadsheetOverwrite" title="Permalink to this definition">¶</a></dt>
+<dd><p>Marks all projects with a given project number to be ignored in
+the bulk project data list, so that they will not be uploaded
+when projectSpreadsheetUpload is called.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.projectSpreadsheetPages">
+<code class="descname">projectSpreadsheetPages</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.projectSpreadsheetPages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an int: the number of pages it would take to
+display all current projects if 10 projects are displayed
+per page. At present time, the page size (number of
+projects per page) cannot be configured.</p>
+<p>Expected input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;bulkStatus&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">default</span> <span class="s2">&quot;valid&quot;</span><span class="o">.</span>
+        <span class="n">Whether</span> <span class="n">these</span> <span class="n">are</span> <span class="n">the</span> <span class="s2">&quot;valid&quot;</span><span class="p">,</span> <span class="s2">&quot;invalid&quot;</span><span class="p">,</span> <span class="ow">or</span> <span class="s2">&quot;conflicting&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>number of pages required to display all current projects</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.projectSpreadsheetRevalidate">
+<code class="descname">projectSpreadsheetRevalidate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.projectSpreadsheetRevalidate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a dict of project information, a status, and an index within the
+list of projects with that status. The project at that index in that list
+of projects will be striken out, and the new project information will be
+re-validated, and that validated information will be appended to the
+end of whichever list is appropriate given its new validation
+status.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>{
+    &quot;bulkStatus&quot;: (str. The status of the user being replaced.
+        Either &quot;valid&quot;, &quot;invalid&quot;, or &quot;conflicting&quot;)
+    &quot;index&quot;: (int. The index within the list of users with
+        the given status in the set of bulk user data)
+    &quot;project&quot; :  {
+        “projectNumbers”: (list of ints),
+        &quot;firstName&quot;: (string),
+        &quot;lastName&quot;: (string),
+        &quot;netID&quot;: (string),
+        &quot;email&quot;: (string),
+        &quot;course&quot;: (string),
+        “role”: “student”,
+        “status”: (string), //”current” or “removed”
+    }
+}
+</pre></div>
+</div>
+<p>Returns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;project&#39;</span><span class="p">:</span> <span class="p">(</span><span class="nb">dict</span><span class="o">.</span> <span class="n">The</span> <span class="n">validated</span> <span class="n">user</span><span class="p">,</span> <span class="k">with</span> <span class="n">the</span> <span class="n">same</span> <span class="n">schema</span> <span class="k">as</span>
+        <span class="ow">in</span> <span class="n">the</span> <span class="n">expected</span> <span class="nb">input</span><span class="p">),</span>
+    <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="p">(</span><span class="nb">str</span><span class="o">.</span> <span class="n">The</span> <span class="n">new</span> <span class="n">status</span> <span class="n">of</span> <span class="n">the</span> <span class="n">validated</span> <span class="n">project</span><span class="o">.</span> <span class="n">Either</span>
+        <span class="s2">&quot;valid&quot;</span><span class="p">,</span> <span class="s2">&quot;invalid&quot;</span><span class="p">,</span> <span class="ow">or</span> <span class="s2">&quot;conflicting&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.projectSpreadsheetSubmit">
+<code class="descname">projectSpreadsheetSubmit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.projectSpreadsheetSubmit" title="Permalink to this definition">¶</a></dt>
+<dd><p>If all of the bulk project data is valid, then all projects will be added
+to the database.</p>
+<p>Otherwise, a 400 error is returned.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.projectSpreadsheetUpload">
+<code class="descname">projectSpreadsheetUpload</code><span class="sig-paren">(</span><em>sheet</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.projectSpreadsheetUpload" title="Permalink to this definition">¶</a></dt>
+<dd><p>Upload a spreadsheet to the server for bulk project adding. This bulk
+project data will be stored until it is submitted.</p>
+<p>Each project will be evaluated and sorted into four categories:</p>
+<ul class="simple">
+<li><p>valid - The project can be added without complication.</p></li>
+<li><p>invalid - The project has some invalid attribute.</p></li>
+<li><dl class="simple">
+<dt>conflicting - A project with this project number already exists,</dt><dd><p>and its data conflicts with the data given in the spreadsheet.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>The data can be modified by /projectSpreadsheetRevalidate and finally
+submitted using /projectSpreadsheetSubmit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sheet</strong> – The spreadsheet file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.projectValidate">
+<code class="descname">projectValidate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.projectValidate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return true if the project number(s) exist in the database.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Returns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;valid&quot;</span><span class="p">:</span> <span class="n">boolean</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a boolean, as per above</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.reportDownload">
+<code class="descname">reportDownload</code><span class="sig-paren">(</span><em>uuid</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.reportDownload" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download a report, specified by a UUID.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>uuid</strong> – specifies which report will be downloaded</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>an .xlsx file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.reportGenerate">
+<code class="descname">reportGenerate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.reportGenerate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a report and return a UUID for the report.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;sortBy&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span> <span class="ow">in</span> <span class="n">projectNumbers</span><span class="p">,</span> <span class="n">firstName</span><span class="p">,</span> <span class="n">lastName</span><span class="p">,</span> <span class="n">netID</span><span class="p">,</span>
+        <span class="n">email</span><span class="p">,</span> <span class="n">course</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span> <span class="n">status</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">Optional</span><span class="o">.</span> <span class="n">Default</span> <span class="s2">&quot;email&quot;</span><span class="p">)</span>
+    <span class="s1">&#39;order&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span> <span class="ow">in</span> <span class="s1">&#39;ascending&#39;</span><span class="p">,</span> <span class="s1">&#39;descending&#39;</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">Optional</span><span class="o">.</span> <span class="n">Default</span><span class="p">:</span> <span class="s2">&quot;ascending&quot;</span><span class="p">)</span>
+    <span class="n">primaryFilter</span><span class="p">:</span> <span class="p">{</span>
+    <span class="p">},</span>
+    <span class="n">secondaryFilter</span><span class="p">:</span> <span class="p">{</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a uuid for the generated report</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.requestData">
+<code class="descname">requestData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.requestData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of at most 10 requests from the database. The requests may be
+sorted by a key and ordered by ascending or descending, and the pageNumber
+decides which 10 users are returned. pageNumber must be a non-negative integer.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;sortBy&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span> <span class="ow">in</span> <span class="s1">&#39;projectNumbers&#39;</span><span class="p">,</span> <span class="s1">&#39;firstName&#39;</span><span class="p">,</span> <span class="s1">&#39;lastName&#39;</span><span class="p">,</span> <span class="s1">&#39;netID&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;email&#39;</span><span class="p">,</span> <span class="s1">&#39;course&#39;</span><span class="p">,</span> <span class="s1">&#39;role&#39;</span><span class="p">,</span> <span class="s1">&#39;status&#39;</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">Optional</span><span class="o">.</span> <span class="n">Default</span> <span class="s2">&quot;email&quot;</span><span class="p">)</span>
+    <span class="s1">&#39;order&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span> <span class="ow">in</span> <span class="s1">&#39;ascending&#39;</span><span class="p">,</span> <span class="s1">&#39;descending&#39;</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">Optional</span><span class="o">.</span> <span class="n">Default</span><span class="p">:</span> <span class="s1">&#39;ascending&#39;</span><span class="p">)</span>
+    <span class="s1">&#39;pageNumber&#39;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">Optional</span><span class="o">.</span> <span class="n">Default</span><span class="p">:</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">primaryFilter</span><span class="p">:</span> <span class="p">{</span>
+    <span class="p">},</span>
+    <span class="n">secondaryFilter</span><span class="p">:</span> <span class="p">{</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a list of at most 10 requests</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.requestPages">
+<code class="descname">requestPages</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.requestPages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes as input filters. Determines how many pages, each displaying
+10 requests, it would take to show all procurement requests.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="n">primaryFilter</span><span class="p">:</span> <span class="p">{</span>
+    <span class="p">},</span>
+    <span class="n">secondaryFilter</span><span class="p">:</span> <span class="p">{</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the number of pages it would take to display all filtered requests</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.sequence">
+<code class="descname">sequence</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.sequence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check the current sequence value of requests, return it,
+and increment the value.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.userAdd">
+<code class="descname">userAdd</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.userAdd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add new user to the database with provided data.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;projectNumbers&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span> <span class="ow">or</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">ints</span><span class="p">),</span>
+    <span class="s2">&quot;firstName&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+    <span class="s2">&quot;lastName&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+    <span class="s2">&quot;netID&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+    <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+    <span class="s2">&quot;course&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+    <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uuid of invitation for new user</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.userData">
+<code class="descname">userData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.userData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of at most 10 user documents from the database. The users may be
+sorted by a key and ordered ascending or descending, and the pageNumber
+decides which 10 users are returned. pageNumber must be a non-negative integer.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;sortBy&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span> <span class="ow">in</span> <span class="n">projectNumbers</span><span class="p">,</span> <span class="n">firstName</span><span class="p">,</span> <span class="n">lastName</span><span class="p">,</span> <span class="n">netID</span><span class="p">,</span>
+        <span class="n">email</span><span class="p">,</span> <span class="n">course</span><span class="p">,</span> <span class="n">role</span><span class="p">,</span> <span class="n">status</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">Optional</span><span class="o">.</span> <span class="n">Default</span> <span class="s2">&quot;email&quot;</span><span class="p">)</span>
+    <span class="s1">&#39;order&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span> <span class="ow">in</span> <span class="s1">&#39;ascending&#39;</span><span class="p">,</span> <span class="s1">&#39;descending&#39;</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">Optional</span><span class="o">.</span> <span class="n">Default</span><span class="p">:</span> <span class="s2">&quot;ascending&quot;</span><span class="p">)</span>
+    <span class="s1">&#39;pageNumber&#39;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">Optional</span><span class="o">.</span> <span class="n">Default</span><span class="p">:</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="s1">&#39;keywordSearch&#39;</span><span class="p">:</span> <span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;projectNumbers&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span> <span class="ow">or</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">ints</span><span class="p">,</span> <span class="n">optional</span><span class="p">),</span>
+            <span class="s2">&quot;firstName&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">optional</span><span class="p">),</span>
+            <span class="s2">&quot;lastName&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">optional</span><span class="p">),</span>
+            <span class="s2">&quot;netID&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">optional</span><span class="p">),</span>
+            <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">optional</span><span class="p">),</span>
+            <span class="s2">&quot;course&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">optional</span><span class="p">),</span>
+            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">optional</span><span class="p">)</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Returns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[
+    {
+        “projectNumbers”: (list of ints),
+        &quot;firstName&quot;: (string),
+        &quot;lastName&quot;: (string),
+        &quot;netID&quot;: (string),
+        &quot;email&quot;: (string),
+        &quot;course&quot;: (string),
+        “role”: “student”,
+        “status”: (string), //”current” or “removed”
+    }
+]
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a list of at most 10 users</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.userEdit">
+<code class="descname">userEdit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.userEdit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Edit a user document in the databse. Takes a
+MongoDB ObjectID and optional data fields for a user. The ObjectID is
+used to identify the user whose information will be edited and the
+optional data is what the existing data will be changed to.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>{
+    &quot;_id&quot;: (string)
+    “projectNumbers”: (list of ints, optional),
+    &quot;firstName&quot;: (string, optional),
+    &quot;lastName&quot;: (string, optional),
+    &quot;netID&quot;: (string, optional),
+    &quot;course&quot;: (string, optional)
+}
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.userForgotPassword">
+<code class="descname">userForgotPassword</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.userForgotPassword" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allow a user to change their password. Send recovery link to user’s
+email address. Link allows a user to set a new password through the
+userVerify endpoint, but will expire at some point in the near future.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uuid of invitation for forgot password form</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.userInfo">
+<code class="descname">userInfo</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.userInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function is for debugging, and probably shouldn’t be here.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a variable called ret</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.userLogin">
+<code class="descname">userLogin</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.userLogin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take an email and password, check if the password’s hash
+is associated with the given email, and if so, log in a user.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+    <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A message if login is successful</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.userLogout">
+<code class="descname">userLogout</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.userLogout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Logs out a user by expiring their session.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.userPages">
+<code class="descname">userPages</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.userPages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an int: the number of pages it would take to
+display all current users, filtered per the incoming JSON
+object described below, if 10 users are displayed per page.
+At present time, the page size (number of users per page, i.e. 10)
+cannot be configured.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;projectNumbers&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span> <span class="ow">or</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">ints</span><span class="p">,</span> <span class="n">optional</span><span class="p">),</span>
+    <span class="s2">&quot;firstName&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">optional</span><span class="p">),</span>
+    <span class="s2">&quot;lastName&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">optional</span><span class="p">),</span>
+    <span class="s2">&quot;netID&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">optional</span><span class="p">),</span>
+    <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">optional</span><span class="p">),</span>
+    <span class="s2">&quot;course&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">optional</span><span class="p">),</span>
+    <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">optional</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the total number of pages required to display all specified users</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.userProjects">
+<code class="descname">userProjects</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.userProjects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of projectNumbers associated with
+the authenticated user.</p>
+<p>Will only return the projects associated with the user
+who calls this function.</p>
+<p>Returns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;projectNumbers&#39;</span><span class="p">:</span> <span class="p">(</span><span class="nb">list</span> <span class="n">of</span> <span class="n">ints</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a list of project numbers</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.userRemove">
+<code class="descname">userRemove</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.userRemove" title="Permalink to this definition">¶</a></dt>
+<dd><p>“Remove” a user from the system. Changes the
+status of a user from “current” to “removed”, which has
+the effect that the user is no longer able to interact
+with the system. Doesn’t delete the user from the database.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.userSingleData">
+<code class="descname">userSingleData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.userSingleData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the data of a user in the database. See “Returns” below for
+which data is returned. The user is found by their email.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;email&#39;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Returns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;projectNumbers&#39;</span><span class="p">:,</span> <span class="p">(</span><span class="nb">list</span> <span class="n">of</span> <span class="n">ints</span><span class="p">)</span>
+    <span class="s1">&#39;firstName&#39;</span><span class="p">:,</span> <span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    <span class="s1">&#39;lastName&#39;</span><span class="p">:,</span> <span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    <span class="s1">&#39;netID&#39;</span><span class="p">:,</span> <span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    <span class="s1">&#39;course&#39;</span><span class="p">:,</span> <span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    <span class="s1">&#39;email&#39;</span><span class="p">:,</span> <span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    <span class="s1">&#39;role&#39;</span><span class="p">:</span> <span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a dict containing a single project’s data, as per above</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.userSpreadsheetData">
+<code class="descname">userSpreadsheetData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.userSpreadsheetData" title="Permalink to this definition">¶</a></dt>
+<dd><p>This REST endpoint returns a list of 10 users from the database. The users may be
+sorted by a key and ordered by ascending or descending, and the pageNumber
+decides which 10 users are returned. pageNumber must be a non-negative integer.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;bulkStatus&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">default</span> <span class="s2">&quot;valid&quot;</span><span class="o">.</span>
+        <span class="n">Whether</span> <span class="n">these</span> <span class="n">are</span> <span class="n">the</span> <span class="s2">&quot;valid&quot;</span><span class="p">,</span> <span class="s2">&quot;invalid&quot;</span><span class="p">,</span> <span class="s2">&quot;existing&quot;</span><span class="p">,</span> <span class="ow">or</span>
+        <span class="s2">&quot;conflicting&quot;</span> <span class="n">bulk</span> <span class="n">users</span><span class="p">)</span>
+
+    <span class="s1">&#39;pageNumber&#39;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">Optional</span><span class="o">.</span> <span class="n">Default</span><span class="p">:</span> <span class="mi">0</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Returns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[
+    {
+        “projectNumbers”: (list of ints),
+        &quot;firstName&quot;: (string),
+        &quot;lastName&quot;: (string),
+        &quot;netID&quot;: (string),
+        &quot;email&quot;: (string),
+        &quot;course&quot;: (string),
+        “role”: “student”,
+        &quot;comment&quot;: {
+            merge: (boolean, if a user with this email exists),
+            invalidRole: (boolean)
+            missingProjects: (list of ints)
+            missingAttributes: (list of strings)
+            conflictingAttributes: (list of strings),
+        }
+    }
+]
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.userSpreadsheetMetadata">
+<code class="descname">userSpreadsheetMetadata</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.userSpreadsheetMetadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dict summarizing the current state of the bulk user data.</p>
+<p>Returns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;valid&#39;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">number</span> <span class="n">of</span> <span class="n">valid</span> <span class="n">users</span><span class="p">),</span>
+    <span class="s1">&#39;invalid&#39;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">number</span> <span class="n">of</span> <span class="n">invalid</span> <span class="n">users</span><span class="p">),</span>
+    <span class="s1">&#39;existing&#39;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">number</span> <span class="n">of</span> <span class="n">existing</span> <span class="n">users</span><span class="p">),</span>
+    <span class="s1">&#39;conflicting&#39;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">number</span> <span class="n">of</span> <span class="n">conflicting</span> <span class="n">users</span><span class="p">),</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a dict summarizing the current state of the bulk user data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.userSpreadsheetPages">
+<code class="descname">userSpreadsheetPages</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.userSpreadsheetPages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an int: the number of pages it would take to
+display all current users if 10 users are displayed
+per page. At present time, the page size (number of
+users per page) cannot be configured.</p>
+<p>Expected input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;bulkStatus&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">default</span> <span class="s2">&quot;valid&quot;</span><span class="o">.</span>
+        <span class="n">Whether</span> <span class="n">these</span> <span class="n">are</span> <span class="n">the</span> <span class="s2">&quot;valid&quot;</span><span class="p">,</span> <span class="s2">&quot;invalid&quot;</span><span class="p">,</span> <span class="s2">&quot;existing&quot;</span><span class="p">,</span> <span class="ow">or</span>
+        <span class="s2">&quot;conflicting&quot;</span> <span class="n">bulk</span> <span class="n">users</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Returns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[
+    {
+        “projectNumbers”: (list of ints),
+        &quot;firstName&quot;: (string),
+        &quot;lastName&quot;: (string),
+        &quot;netID&quot;: (string),
+        &quot;email&quot;: (string),
+        &quot;course&quot;: (string),
+        “role”: “student”,
+        &quot;comment&quot;: {
+            merge: (boolean, if a user with this email exists),
+            invalidRole: (boolean)
+            missingProjects: (list of ints)
+            missingAttributes: (list of strings)
+            conflictingAttributes: (list of strings),
+        }
+    },
+    ...
+]
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.userSpreadsheetRevalidate">
+<code class="descname">userSpreadsheetRevalidate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.userSpreadsheetRevalidate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a dict of user information, a status, and an index within the
+list of users with that status. The user at that index in that list
+of users will be striken out, and the new user information will be
+re-validated, and that validated information will be appended to the
+end of whichever list is appropriate given its new validation
+status.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>{
+    &quot;bulkStatus&quot;: (str. The status of the user being replaced.
+        Either &quot;valid&quot;, &quot;invalid&quot;, &quot;existing&quot;, or &quot;conflicting&quot;)
+    &quot;index&quot;: (int. The index within the list of users with
+        the given status in the set of bulk user data)
+    &quot;user&quot; :  {
+        “projectNumbers”: (list of ints),
+        &quot;firstName&quot;: (string),
+        &quot;lastName&quot;: (string),
+        &quot;netID&quot;: (string),
+        &quot;email&quot;: (string),
+        &quot;course&quot;: (string),
+        “role”: “student”,
+        &quot;comment&quot;: {
+            merge: (boolean, if a user with this email exists),
+            invalidRole: (boolean)
+            missingProjects: (list of ints)
+            missingAttributes: (list of strings)
+            conflictingAttributes: (list of strings),
+        }
+    }
+}
+</pre></div>
+</div>
+<p>Returns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="p">(</span><span class="nb">dict</span><span class="o">.</span> <span class="n">The</span> <span class="n">validated</span> <span class="n">user</span><span class="p">,</span> <span class="k">with</span> <span class="n">the</span> <span class="n">same</span> <span class="n">schema</span> <span class="k">as</span>
+        <span class="ow">in</span> <span class="n">the</span> <span class="n">expected</span> <span class="nb">input</span><span class="p">),</span>
+    <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="p">(</span><span class="nb">str</span><span class="o">.</span> <span class="n">The</span> <span class="n">new</span> <span class="n">status</span> <span class="n">of</span> <span class="n">the</span> <span class="n">validated</span> <span class="n">user</span><span class="o">.</span> <span class="n">Either</span>
+        <span class="s2">&quot;valid&quot;</span><span class="p">,</span> <span class="s2">&quot;invalid&quot;</span><span class="p">,</span> <span class="s2">&quot;existing&quot;</span><span class="p">,</span> <span class="ow">or</span> <span class="s2">&quot;conflicting&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.userSpreadsheetSubmit">
+<code class="descname">userSpreadsheetSubmit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.userSpreadsheetSubmit" title="Permalink to this definition">¶</a></dt>
+<dd><p>If all of the bulk user data is valid, then all users will be added
+to the database and invited by email.</p>
+<p>Otherwise, a 400 error is returned.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.userSpreadsheetUpload">
+<code class="descname">userSpreadsheetUpload</code><span class="sig-paren">(</span><em>sheet</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.userSpreadsheetUpload" title="Permalink to this definition">¶</a></dt>
+<dd><p>Upload a spreadsheet to the server for bulk user adding. This bulk
+user data will be stored until it is submitted.</p>
+<p>Each user will be evaluated and sorted into four categories:</p>
+<ul class="simple">
+<li><p>valid - The user can be added without complication.</p></li>
+<li><p>invalid - The user has some invalid attribute.</p></li>
+<li><p>existing - A user with this email already exists, but can be updated
+without problems.</p></li>
+<li><p>conflicting - A user with this email already exists, and its data
+conflicts with the data given in the spreadsheet.</p></li>
+</ul>
+<p>The data can be modified by /userSpreadsheetRevalidate and finally
+submitted using /userSpreadsheetSubmit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sheet</strong> – The spreadsheet file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.userVerify">
+<code class="descname">userVerify</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.userVerify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the password of a new user. Checks that a provided email is
+matched in the database to a provided UUID. If so, creates and
+stores a password hash and salt for the user.</p>
+<p>The UUID is a key in an invitation document. An invitation is created when
+a user is first invited to use the system and when a user forgets their password.</p>
+<p>Expected Input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;uuid&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+    <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+    <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.validateProject">
+<code class="descname">validateProject</code><span class="sig-paren">(</span><em>data</em>, <em>comment=False</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.validateProject" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validate a project to check for a projectNumber, sponsorName, projectName,
+memberEmails, and defaultBudget. If types are wrong, things are coerced
+if possible.</p>
+<p>A sanitized version of the project dict is returned.</p>
+<p>If comment is True, then the project also has a ‘comment’ attribute</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">comment</span><span class="p">:</span> <span class="p">{</span>
+    <span class="n">missingAttributes</span><span class="p">:</span> <span class="p">(</span><span class="nb">list</span> <span class="n">of</span> <span class="n">strings</span><span class="p">)</span>
+    <span class="n">existingNumber</span><span class="p">:</span> <span class="p">(</span><span class="n">boolean</span><span class="p">,</span> <span class="n">true</span> <span class="k">if</span> <span class="n">a</span> <span class="n">project</span> <span class="k">with</span> <span class="n">this</span> <span class="n">projectNumber</span> <span class="n">exists</span><span class="p">),</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – dict. The project to be validated.</p></li>
+<li><p><strong>myComment</strong> – bool. As described above.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>sanitized version of the project dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.apigateway.ApiGateway.validateUser">
+<code class="descname">validateUser</code><span class="sig-paren">(</span><em>data</em>, <em>comment=False</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.apigateway.ApiGateway.validateUser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validate a user to check for a role, firstName, lastName, email,
+and optional netID. Non-admin users are also checked for valid
+project numbers and courses.</p>
+<p>A sanitized version of the user dict is returned, or None if anything
+was wrong with the dict.</p>
+<p>If comment is True, then the user also has a ‘comment’ attribute</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">comment</span><span class="p">:</span> <span class="p">{</span>
+    <span class="n">merge</span><span class="p">:</span> <span class="p">(</span><span class="n">boolean</span><span class="p">,</span> <span class="k">if</span> <span class="n">a</span> <span class="n">user</span> <span class="k">with</span> <span class="n">this</span> <span class="n">email</span> <span class="n">exists</span><span class="p">),</span>
+    <span class="n">invalidRole</span><span class="p">:</span> <span class="p">(</span><span class="n">boolean</span><span class="p">)</span>
+    <span class="n">missingProjects</span><span class="p">:</span> <span class="p">(</span><span class="nb">list</span> <span class="n">of</span> <span class="n">ints</span><span class="p">)</span>
+    <span class="n">missingAttributes</span><span class="p">:</span> <span class="p">(</span><span class="nb">list</span> <span class="n">of</span> <span class="n">strings</span><span class="p">)</span>
+    <span class="n">conflictingAttributes</span><span class="p">:</span> <span class="p">(</span><span class="nb">list</span> <span class="n">of</span> <span class="n">strings</span><span class="p">),</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – dict. The user to be validated.</p></li>
+<li><p><strong>myComment</strong> – bool. As described above.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>sanitized version of the user dict, or None if anything was wrong with the dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-utdesign_procurement.emailer">
+<span id="utdesign-procurement-emailer-module"></span><h2>utdesign_procurement.emailer module<a class="headerlink" href="#module-utdesign_procurement.emailer" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="utdesign_procurement.emailer.EmailHandler">
+<em class="property">class </em><code class="descclassname">utdesign_procurement.emailer.</code><code class="descname">EmailHandler</code><span class="sig-paren">(</span><em>email_user</em>, <em>email_password</em>, <em>email_inwardly</em>, <em>template_dir</em>, <em>domain='utdprocure.utdallas.edu'</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.emailer.EmailHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Fills templates and sends emails using an Emailer in a separate thread.</p>
+<p>In the various function names “confirm” refers to confirming that an
+action taken by a user has in fact been completed successfully.
+On the other hand “notify” is to notify the user that a different
+user has taken some action relevant to them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>email_user</strong> – (str). Gmail username of the email account to be used</p></li>
+<li><p><strong>email_password</strong> – (str). Password for the gmail account to be used</p></li>
+<li><p><strong>email_inwardly</strong> – (bool). If True, emails are sent to the email_user
+and not to their intended recipient. Good for debugging.</p></li>
+<li><p><strong>template_dir</strong> – (str). The directory for the mako templates.</p></li>
+<li><p><strong>domain</strong> – (str). The domain name of the system. This will be used
+to populate URLs in templates.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="utdesign_procurement.emailer.EmailHandler.confirmRequestManagerAdmin">
+<code class="descname">confirmRequestManagerAdmin</code><span class="sig-paren">(</span><em>email</em>, <em>requestNumber</em>, <em>projectNumber</em>, <em>action</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.emailer.EmailHandler.confirmRequestManagerAdmin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends an email to some email address confirming that some
+action has happened to some request.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>email</strong> – </p></li>
+<li><p><strong>requestNumber</strong> – </p></li>
+<li><p><strong>projectNumber</strong> – </p></li>
+<li><p><strong>action</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.emailer.EmailHandler.confirmStudent">
+<code class="descname">confirmStudent</code><span class="sig-paren">(</span><em>teamEmails</em>, <em>requestNumber</em>, <em>projectNumber</em>, <em>action</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.emailer.EmailHandler.confirmStudent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends an email to all members of a team confirming that some
+action has happened to some request.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Param</dt>
+<dd class="field-odd"><p>teamEmails: (list of str). The email addresses of the users</p>
+</dd>
+<dt class="field-even">Param</dt>
+<dd class="field-even"><p>requestNumber: (dict). The request being notified about.</p>
+</dd>
+<dt class="field-odd">Param</dt>
+<dd class="field-odd"><p>projectNumber: (dict). The project whose members are being notified.</p>
+</dd>
+<dt class="field-even">Param</dt>
+<dd class="field-even"><p>action: (dict). The action happening to the request.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.emailer.EmailHandler.die">
+<code class="descname">die</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.emailer.EmailHandler.die" title="Permalink to this definition">¶</a></dt>
+<dd><p>End the email queue listening process gracefully</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.emailer.EmailHandler.notifyCancelled">
+<code class="descname">notifyCancelled</code><span class="sig-paren">(</span><em>email</em>, <em>projectNumber</em>, <em>requestNumber</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.emailer.EmailHandler.notifyCancelled" title="Permalink to this definition">¶</a></dt>
+<dd><p>Notify some user about the cancellation of a request.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>email</strong> – </p></li>
+<li><p><strong>projectNumber</strong> – </p></li>
+<li><p><strong>requestNumber</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.emailer.EmailHandler.notifyProjectAdd">
+<code class="descname">notifyProjectAdd</code><span class="sig-paren">(</span><em>teamEmails</em>, <em>projectNumber</em>, <em>projectName</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.emailer.EmailHandler.notifyProjectAdd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Notify a user that they have been added to a project.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>teamEmails</strong> – </p></li>
+<li><p><strong>projectNumber</strong> – </p></li>
+<li><p><strong>projectName</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.emailer.EmailHandler.notifyProjectEdit">
+<code class="descname">notifyProjectEdit</code><span class="sig-paren">(</span><em>membersEmails</em>, <em>projectNumber</em>, <em>projectName</em>, <em>sponsorName</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.emailer.EmailHandler.notifyProjectEdit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Notify a user that a project that they were a member of has been edit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>teamEmails</strong> – </p></li>
+<li><p><strong>projectNumber</strong> – </p></li>
+<li><p><strong>projectName</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.emailer.EmailHandler.notifyProjectInactivate">
+<code class="descname">notifyProjectInactivate</code><span class="sig-paren">(</span><em>teamEmails</em>, <em>projectNumber</em>, <em>projectName</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.emailer.EmailHandler.notifyProjectInactivate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Notify a user that a project that they were a member of has been deactivated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>teamEmails</strong> – </p></li>
+<li><p><strong>projectNumber</strong> – </p></li>
+<li><p><strong>projectName</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.emailer.EmailHandler.notifyRejectedAdmin">
+<code class="descname">notifyRejectedAdmin</code><span class="sig-paren">(</span><em>adminEmails</em>, <em>projectNumber</em>, <em>requestNumber</em>, <em>manager</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.emailer.EmailHandler.notifyRejectedAdmin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Notify some users that the admin has rejected a request.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>adminEmails</strong> – </p></li>
+<li><p><strong>projectNumber</strong> – </p></li>
+<li><p><strong>requestNumber</strong> – </p></li>
+<li><p><strong>manager</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.emailer.EmailHandler.notifyRequestAdmin">
+<code class="descname">notifyRequestAdmin</code><span class="sig-paren">(</span><em>adminEmails</em>, <em>projectNumber</em>, <em>requestNumber</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.emailer.EmailHandler.notifyRequestAdmin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends a notification about a request to the admins.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>adminEmails</strong> – </p></li>
+<li><p><strong>projectNumber</strong> – </p></li>
+<li><p><strong>requestNumber</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.emailer.EmailHandler.notifyRequestManager">
+<code class="descname">notifyRequestManager</code><span class="sig-paren">(</span><em>email</em>, <em>projectNumber</em>, <em>requestNumber</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.emailer.EmailHandler.notifyRequestManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends a notification about a request to a manager.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>email</strong> – </p></li>
+<li><p><strong>projectNumber</strong> – </p></li>
+<li><p><strong>requestNumber</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.emailer.EmailHandler.notifyStudent">
+<code class="descname">notifyStudent</code><span class="sig-paren">(</span><em>teamEmails</em>, <em>requestNumber</em>, <em>projectNumber</em>, <em>action</em>, <em>user</em>, <em>role</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.emailer.EmailHandler.notifyStudent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends a notification about a request to some students.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>teamEmails</strong> – </p></li>
+<li><p><strong>requestNumber</strong> – </p></li>
+<li><p><strong>projectNumber</strong> – </p></li>
+<li><p><strong>action</strong> – </p></li>
+<li><p><strong>user</strong> – </p></li>
+<li><p><strong>role</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.emailer.EmailHandler.notifyStudentRejected">
+<code class="descname">notifyStudentRejected</code><span class="sig-paren">(</span><em>teamEmails</em>, <em>requestNumber</em>, <em>projectNumber</em>, <em>action</em>, <em>user</em>, <em>role</em>, <em>comment</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.emailer.EmailHandler.notifyStudentRejected" title="Permalink to this definition">¶</a></dt>
+<dd><p>Notify a user that a request has been rejected.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>teamEmails</strong> – </p></li>
+<li><p><strong>projectNumber</strong> – </p></li>
+<li><p><strong>projectName</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.emailer.EmailHandler.notifyUpdateManager">
+<code class="descname">notifyUpdateManager</code><span class="sig-paren">(</span><em>email</em>, <em>projectNumber</em>, <em>requestNumber</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.emailer.EmailHandler.notifyUpdateManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Notify some user that the manager has requested updates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>email</strong> – </p></li>
+<li><p><strong>projectNumber</strong> – </p></li>
+<li><p><strong>requestNumber</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.emailer.EmailHandler.notifyUserEdit">
+<code class="descname">notifyUserEdit</code><span class="sig-paren">(</span><em>email</em>, <em>projectNumbers</em>, <em>firstName</em>, <em>lastName</em>, <em>netID</em>, <em>course</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.emailer.EmailHandler.notifyUserEdit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Notify some users that a user has edited a request.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>email</strong> – </p></li>
+<li><p><strong>projectNumbers</strong> – </p></li>
+<li><p><strong>firstName</strong> – </p></li>
+<li><p><strong>lastName</strong> – </p></li>
+<li><p><strong>netID</strong> – </p></li>
+<li><p><strong>course</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.emailer.EmailHandler.notifyUserRemove">
+<code class="descname">notifyUserRemove</code><span class="sig-paren">(</span><em>email</em>, <em>firstName</em>, <em>lastName</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.emailer.EmailHandler.notifyUserRemove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Notify a user that their account has been deactivated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>email</strong> – </p></li>
+<li><p><strong>firstName</strong> – </p></li>
+<li><p><strong>lastName</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.emailer.EmailHandler.procurementEditAdmin">
+<code class="descname">procurementEditAdmin</code><span class="sig-paren">(</span><em>teamEmails=None</em>, <em>request=None</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.emailer.EmailHandler.procurementEditAdmin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alerts team members that a procurement request has been submitted.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Param</dt>
+<dd class="field-odd"><p>teamEmails: (list of str). The email addresses of the users</p>
+</dd>
+<dt class="field-even">Param</dt>
+<dd class="field-even"><p>request: (dict). The request being notified about.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.emailer.EmailHandler.procurementSave">
+<code class="descname">procurementSave</code><span class="sig-paren">(</span><em>teamEmails=None</em>, <em>request=None</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.emailer.EmailHandler.procurementSave" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alerts team members that a procurement request has been submitted.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Param</dt>
+<dd class="field-odd"><p>teamEmails: (list of str). The email addresses of the users</p>
+</dd>
+<dt class="field-even">Param</dt>
+<dd class="field-even"><p>request: (dict). The request being notified about.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.emailer.EmailHandler.send">
+<code class="descname">send</code><span class="sig-paren">(</span><em>to</em>, <em>subject</em>, <em>body</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.emailer.EmailHandler.send" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send an email to an address, with a subject, with a given body.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>to</strong> – (str). The recipient email address.</p></li>
+<li><p><strong>subject</strong> – (str). The subject of the email.</p></li>
+<li><p><strong>body</strong> – (str). The HTML content of the message to send.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.emailer.EmailHandler.start">
+<code class="descname">start</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.emailer.EmailHandler.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the email queue listening process</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.emailer.EmailHandler.userAdd">
+<code class="descname">userAdd</code><span class="sig-paren">(</span><em>email=None</em>, <em>uuid=None</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.emailer.EmailHandler.userAdd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends an invitation for a new user to set up their password for the
+first time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>email</strong> – The email of the user</p></li>
+<li><p><strong>uuid</strong> – The uuid used for the invitation</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.emailer.EmailHandler.userForgotPassword">
+<code class="descname">userForgotPassword</code><span class="sig-paren">(</span><em>email=None</em>, <em>uuid=None</em>, <em>expiration=None</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.emailer.EmailHandler.userForgotPassword" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends a recovery link for an existing user to reset their password.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>email</strong> – </p></li>
+<li><p><strong>uuid</strong> – </p></li>
+<li><p><strong>expiration</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="utdesign_procurement.emailer.Emailer">
+<em class="property">class </em><code class="descclassname">utdesign_procurement.emailer.</code><code class="descname">Emailer</code><span class="sig-paren">(</span><em>email_queue</em>, <em>email_user</em>, <em>email_password</em>, <em>email_inwardly</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.emailer.Emailer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Manages email connections and sends HTML emails in MIMEMultipart messages</p>
+<dl class="method">
+<dt id="utdesign_procurement.emailer.Emailer.emailSend">
+<code class="descname">emailSend</code><span class="sig-paren">(</span><em>to=None</em>, <em>subject=None</em>, <em>html=None</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.emailer.Emailer.emailSend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send an email with some HTML content to some email address with some
+subject.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>to</strong> – (str). An email address to send to.</p></li>
+<li><p><strong>subject</strong> – (str). A subject for the email.</p></li>
+<li><p><strong>html</strong> – (str). An HTML content to send in the email.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="utdesign_procurement.emailer.email_listen">
+<code class="descclassname">utdesign_procurement.emailer.</code><code class="descname">email_listen</code><span class="sig-paren">(</span><em>emailer</em>, <em>queue</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.emailer.email_listen" title="Permalink to this definition">¶</a></dt>
+<dd><p>Listens for any messages that come through the queue and calls the
+emailer’s send function appropriately</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>emailer</strong> – </p></li>
+<li><p><strong>queue</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-utdesign_procurement.server">
+<span id="utdesign-procurement-server-module"></span><h2>utdesign_procurement.server module<a class="headerlink" href="#module-utdesign_procurement.server" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="utdesign_procurement.server.Root">
+<em class="property">class </em><code class="descclassname">utdesign_procurement.server.</code><code class="descname">Root</code><span class="sig-paren">(</span><em>email_handler</em>, <em>show_debugger</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.server.Root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#utdesign_procurement.apigateway.ApiGateway" title="utdesign_procurement.apigateway.ApiGateway"><code class="xref py py-class docutils literal notranslate"><span class="pre">utdesign_procurement.apigateway.ApiGateway</span></code></a></p>
+<dl class="method">
+<dt id="utdesign_procurement.server.Root.admin">
+<code class="descname">admin</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.server.Root.admin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the admin view.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.server.Root.debug">
+<code class="descname">debug</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.server.Root.debug" title="Permalink to this definition">¶</a></dt>
+<dd><p>Debugging view. Allows random rest endpoints to be tested.
+TODO Disable this interface in production</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.server.Root.index">
+<code class="descname">index</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.server.Root.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>This will redirect users to the proper view</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.server.Root.login">
+<code class="descname">login</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.server.Root.login" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the login page / login view.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.server.Root.manager">
+<code class="descname">manager</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.server.Root.manager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the manager view.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.server.Root.student">
+<code class="descname">student</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.server.Root.student" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the student view.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="utdesign_procurement.server.Root.verify">
+<code class="descname">verify</code><span class="sig-paren">(</span><em>id</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.server.Root.verify" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the account setup page. Here, a user can set their password
+for the first time.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-utdesign_procurement.utils">
+<span id="utdesign-procurement-utils-module"></span><h2>utdesign_procurement.utils module<a class="headerlink" href="#module-utdesign_procurement.utils" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="utdesign_procurement.utils.authorizedRoles">
+<code class="descclassname">utdesign_procurement.utils.</code><code class="descname">authorizedRoles</code><span class="sig-paren">(</span><em>*acceptableRoles</em>, <em>redirect=False</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.utils.authorizedRoles" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is a decorator factory which checks the role of a user by their
+session information. If their role is not in the given list of
+authorized roles, then they are denied access.</p>
+<p>If redirect=True, and the user isn’t logged in at all, then they are
+redirected to the login page. If redirect=False (default), then they
+are denied access with a 403 error.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="utdesign_procurement.utils.checkProjectNumbers">
+<code class="descclassname">utdesign_procurement.utils.</code><code class="descname">checkProjectNumbers</code><span class="sig-paren">(</span><em>data</em>, <em>default=None</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.utils.checkProjectNumbers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of project numbers from the given dict if possible.
+If not found, return a default value if given, else raise a 400 error.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – The dict from which to obtain project numbers</p></li>
+<li><p><strong>default</strong> – A default value to return if no project numbers are
+found.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="utdesign_procurement.utils.checkValidData">
+<code class="descclassname">utdesign_procurement.utils.</code><code class="descname">checkValidData</code><span class="sig-paren">(</span><em>key</em>, <em>data</em>, <em>dataType</em>, <em>optional=False</em>, <em>default=''</em>, <em>coerce=False</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.utils.checkValidData" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function takes a data dict, determines whether a key value exists
+and is the right data type. Returns the data if it is, raises an
+HTTP error if it isn’t.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – the key of the data dict</p></li>
+<li><p><strong>data</strong> – a dict of data</p></li>
+<li><p><strong>dataType</strong> – a data type</p></li>
+<li><p><strong>optional</strong> – True if the data did not need to be provided</p></li>
+<li><p><strong>default</strong> – default string is “”</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>data, if conditions are met</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="utdesign_procurement.utils.checkValidID">
+<code class="descclassname">utdesign_procurement.utils.</code><code class="descname">checkValidID</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.utils.checkValidID" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function takes a data dict, determines whether it has a MongoDB
+ObjectId and that the ID is valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> – data dict</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>data, if conditions are met</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="utdesign_procurement.utils.checkValidNumber">
+<code class="descclassname">utdesign_procurement.utils.</code><code class="descname">checkValidNumber</code><span class="sig-paren">(</span><em>key</em>, <em>data</em>, <em>optional=False</em>, <em>default=''</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.utils.checkValidNumber" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function takes a data dict, determines whether a key value exists
+and is a number. Returns the data if it is, raises an
+HTTP error if it isn’t.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – </p></li>
+<li><p><strong>data</strong> – </p></li>
+<li><p><strong>optional</strong> – </p></li>
+<li><p><strong>default</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="utdesign_procurement.utils.convertToCents">
+<code class="descclassname">utdesign_procurement.utils.</code><code class="descname">convertToCents</code><span class="sig-paren">(</span><em>dollarAmt</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.utils.convertToCents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a string dollar amount to an int cents amount.
+Strings must have two digits after the .</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dollarAmt</strong> – the string dollar amount, does not have $ sign</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>cents in int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="utdesign_procurement.utils.convertToDollarStr">
+<code class="descclassname">utdesign_procurement.utils.</code><code class="descname">convertToDollarStr</code><span class="sig-paren">(</span><em>cents</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.utils.convertToDollarStr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Concerts a number of cents to a string with a dollar sign.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cents</strong> – (int). A number of cents</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="utdesign_procurement.utils.generateSalt">
+<code class="descclassname">utdesign_procurement.utils.</code><code class="descname">generateSalt</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.utils.generateSalt" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function generates a random salt.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>random salt</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="utdesign_procurement.utils.getKeywords">
+<code class="descclassname">utdesign_procurement.utils.</code><code class="descname">getKeywords</code><span class="sig-paren">(</span><em>keywords</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.utils.getKeywords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse and sanitize a dict of keywords to be used in filtering the
+various users in the users collection in mongo.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>keywords</strong> – (dict).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="utdesign_procurement.utils.getProjectKeywords">
+<code class="descclassname">utdesign_procurement.utils.</code><code class="descname">getProjectKeywords</code><span class="sig-paren">(</span><em>keywords</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.utils.getProjectKeywords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse and sanitize a dict of keywords to be used in filtering the
+various projects in the projects collection in mongo.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>keywords</strong> – (dict).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="utdesign_procurement.utils.getRequestKeywords">
+<code class="descclassname">utdesign_procurement.utils.</code><code class="descname">getRequestKeywords</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.utils.getRequestKeywords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse and sanitize a dict of keywords to be used in filtering the
+various requests in the requests collection in mongo.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>keywords</strong> – (dict).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="utdesign_procurement.utils.hashPassword">
+<code class="descclassname">utdesign_procurement.utils.</code><code class="descname">hashPassword</code><span class="sig-paren">(</span><em>password</em>, <em>salt</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.utils.hashPassword" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function hashes a password with a given salt.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>password</strong> – a plaintext password</p></li>
+<li><p><strong>salt</strong> – a random salt</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the hashed password</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="utdesign_procurement.utils.lenientConvertToCents">
+<code class="descclassname">utdesign_procurement.utils.</code><code class="descname">lenientConvertToCents</code><span class="sig-paren">(</span><em>dollarAmt</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.utils.lenientConvertToCents" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a string dollar amount to an int cents amount.
+Strings can have 1 or 2 digits after the . or just be an integer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dollarAmt</strong> – the string dollar amount, does not have $ sign</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>cents in int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="utdesign_procurement.utils.requestCreate">
+<code class="descclassname">utdesign_procurement.utils.</code><code class="descname">requestCreate</code><span class="sig-paren">(</span><em>data</em>, <em>status</em>, <em>optional=False</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.utils.requestCreate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes data as an input as uses the data to create
+a procurement request (dict).</p>
+<p>Expected input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;manager&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span> <span class="o">//</span><span class="n">email</span> <span class="n">of</span> <span class="n">manager</span> <span class="n">who</span> <span class="n">can</span> <span class="n">approve</span> <span class="n">this</span>
+    <span class="s2">&quot;vendor&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+    <span class="s2">&quot;projectNumber&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span> <span class="ow">or</span> <span class="nb">list</span> <span class="n">of</span> <span class="nb">int</span><span class="p">),</span>
+    <span class="s2">&quot;URL&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+    <span class="s2">&quot;justification&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span> <span class="n">optional</span><span class="p">,</span>
+    <span class="s2">&quot;additionalInfo&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span> <span class="n">optional</span><span class="p">,</span>
+    <span class="s2">&quot;items&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+        <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;partNo&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;itemURL&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;quantity&quot;</span><span class="p">:</span> <span class="p">(</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s2">&quot;unitCost&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">),</span>
+        <span class="s2">&quot;totalCost&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">string</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – a dict containing data to be stored in the request</p></li>
+<li><p><strong>status</strong> – what will be the initial status of the request?</p></li>
+<li><p><strong>optional</strong> – if True, all fields of data except procjectNumber will be optional</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>procurement request, stored as a dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="utdesign_procurement.utils.verifyPassword">
+<code class="descclassname">utdesign_procurement.utils.</code><code class="descname">verifyPassword</code><span class="sig-paren">(</span><em>user</em>, <em>password</em><span class="sig-paren">)</span><a class="headerlink" href="#utdesign_procurement.utils.verifyPassword" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function hashes a password and checks if it matches the hash of
+a given user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>user</strong> – a user document from database</p></li>
+<li><p><strong>password</strong> – a hashed password</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-utdesign_procurement">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-utdesign_procurement" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">UTDesign GettIt</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">utdesign_procurement</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">utdesign_procurement package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-utdesign_procurement.apigateway">utdesign_procurement.apigateway module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-utdesign_procurement.emailer">utdesign_procurement.emailer module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-utdesign_procurement.server">utdesign_procurement.server module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-utdesign_procurement.utils">utdesign_procurement.utils module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-utdesign_procurement">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">utdesign_procurement</a><ul>
+      <li>Previous: <a href="modules.html" title="previous chapter">utdesign_procurement</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Marcus Deng, Monica Neivandt, Jack Tackett, Xander Wong.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/apidoc/utdesign_procurement.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,115 @@
+\indexentry{utdesign\_procurement.apigateway (module)@\spxentry{utdesign\_procurement.apigateway}\spxextra{module}|hyperpage}{1}
+\indexentry{ApiGateway (class in utdesign\_procurement.apigateway)@\spxentry{ApiGateway}\spxextra{class in utdesign\_procurement.apigateway}|hyperpage}{1}
+\indexentry{addCost() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{addCost()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{1}
+\indexentry{calculateBudget() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{calculateBudget()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{1}
+\indexentry{findProject() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{findProject()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{1}
+\indexentry{getAdminEmails() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{getAdminEmails()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{2}
+\indexentry{getAdminList() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{getAdminList()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{2}
+\indexentry{getCosts() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{getCosts()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{2}
+\indexentry{getTeamEmails() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{getTeamEmails()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{2}
+\indexentry{managerList() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{managerList()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{3}
+\indexentry{procurementApproveManager() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{procurementApproveManager()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{3}
+\indexentry{procurementCancel() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{procurementCancel()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{3}
+\indexentry{procurementComplete() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{procurementComplete()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{3}
+\indexentry{procurementOrder() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{procurementOrder()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{3}
+\indexentry{procurementReady() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{procurementReady()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{4}
+\indexentry{procurementRejectAdmin() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{procurementRejectAdmin()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{4}
+\indexentry{procurementRejectManager() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{procurementRejectManager()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{4}
+\indexentry{procurementResubmitToAdmin() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{procurementResubmitToAdmin()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{4}
+\indexentry{procurementResubmitToManager() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{procurementResubmitToManager()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{5}
+\indexentry{procurementSave() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{procurementSave()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{5}
+\indexentry{procurementStatuses() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{procurementStatuses()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{6}
+\indexentry{procurementUpdateAdmin() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{procurementUpdateAdmin()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{7}
+\indexentry{procurementUpdateManager() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{procurementUpdateManager()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{7}
+\indexentry{procurementUpdateManagerAdmin() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{procurementUpdateManagerAdmin()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{7}
+\indexentry{projectAdd() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{projectAdd()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{7}
+\indexentry{projectData() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{projectData()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{7}
+\indexentry{projectEdit() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{projectEdit()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{8}
+\indexentry{projectInactivate() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{projectInactivate()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{8}
+\indexentry{projectPages() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{projectPages()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{9}
+\indexentry{projectSingleData() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{projectSingleData()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{9}
+\indexentry{projectSpreadsheetData() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{projectSpreadsheetData()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{9}
+\indexentry{projectSpreadsheetMetadata() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{projectSpreadsheetMetadata()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{10}
+\indexentry{projectSpreadsheetOverwrite() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{projectSpreadsheetOverwrite()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{10}
+\indexentry{projectSpreadsheetPages() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{projectSpreadsheetPages()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{10}
+\indexentry{projectSpreadsheetRevalidate() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{projectSpreadsheetRevalidate()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{10}
+\indexentry{projectSpreadsheetSubmit() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{projectSpreadsheetSubmit()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{11}
+\indexentry{projectSpreadsheetUpload() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{projectSpreadsheetUpload()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{11}
+\indexentry{projectValidate() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{projectValidate()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{11}
+\indexentry{reportDownload() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{reportDownload()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{12}
+\indexentry{reportGenerate() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{reportGenerate()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{12}
+\indexentry{requestData() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{requestData()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{12}
+\indexentry{requestPages() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{requestPages()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{12}
+\indexentry{sequence() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{sequence()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{13}
+\indexentry{userAdd() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{userAdd()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{13}
+\indexentry{userData() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{userData()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{13}
+\indexentry{userEdit() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{userEdit()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{14}
+\indexentry{userForgotPassword() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{userForgotPassword()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{14}
+\indexentry{userInfo() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{userInfo()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{14}
+\indexentry{userLogin() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{userLogin()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{14}
+\indexentry{userLogout() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{userLogout()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{15}
+\indexentry{userPages() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{userPages()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{15}
+\indexentry{userProjects() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{userProjects()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{15}
+\indexentry{userRemove() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{userRemove()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{15}
+\indexentry{userSingleData() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{userSingleData()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{15}
+\indexentry{userSpreadsheetData() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{userSpreadsheetData()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{16}
+\indexentry{userSpreadsheetMetadata() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{userSpreadsheetMetadata()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{17}
+\indexentry{userSpreadsheetPages() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{userSpreadsheetPages()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{17}
+\indexentry{userSpreadsheetRevalidate() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{userSpreadsheetRevalidate()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{17}
+\indexentry{userSpreadsheetSubmit() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{userSpreadsheetSubmit()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{18}
+\indexentry{userSpreadsheetUpload() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{userSpreadsheetUpload()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{18}
+\indexentry{userVerify() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{userVerify()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{18}
+\indexentry{validateProject() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{validateProject()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{19}
+\indexentry{validateUser() (utdesign\_procurement.apigateway.ApiGateway method)@\spxentry{validateUser()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}|hyperpage}{19}
+\indexentry{utdesign\_procurement.emailer (module)@\spxentry{utdesign\_procurement.emailer}\spxextra{module}|hyperpage}{20}
+\indexentry{EmailHandler (class in utdesign\_procurement.emailer)@\spxentry{EmailHandler}\spxextra{class in utdesign\_procurement.emailer}|hyperpage}{20}
+\indexentry{confirmRequestManagerAdmin() (utdesign\_procurement.emailer.EmailHandler method)@\spxentry{confirmRequestManagerAdmin()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}|hyperpage}{20}
+\indexentry{confirmStudent() (utdesign\_procurement.emailer.EmailHandler method)@\spxentry{confirmStudent()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}|hyperpage}{20}
+\indexentry{die() (utdesign\_procurement.emailer.EmailHandler method)@\spxentry{die()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}|hyperpage}{20}
+\indexentry{notifyCancelled() (utdesign\_procurement.emailer.EmailHandler method)@\spxentry{notifyCancelled()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}|hyperpage}{20}
+\indexentry{notifyProjectAdd() (utdesign\_procurement.emailer.EmailHandler method)@\spxentry{notifyProjectAdd()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}|hyperpage}{21}
+\indexentry{notifyProjectEdit() (utdesign\_procurement.emailer.EmailHandler method)@\spxentry{notifyProjectEdit()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}|hyperpage}{21}
+\indexentry{notifyProjectInactivate() (utdesign\_procurement.emailer.EmailHandler method)@\spxentry{notifyProjectInactivate()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}|hyperpage}{21}
+\indexentry{notifyRejectedAdmin() (utdesign\_procurement.emailer.EmailHandler method)@\spxentry{notifyRejectedAdmin()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}|hyperpage}{21}
+\indexentry{notifyRequestAdmin() (utdesign\_procurement.emailer.EmailHandler method)@\spxentry{notifyRequestAdmin()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}|hyperpage}{21}
+\indexentry{notifyRequestManager() (utdesign\_procurement.emailer.EmailHandler method)@\spxentry{notifyRequestManager()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}|hyperpage}{21}
+\indexentry{notifyStudent() (utdesign\_procurement.emailer.EmailHandler method)@\spxentry{notifyStudent()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}|hyperpage}{22}
+\indexentry{notifyStudentRejected() (utdesign\_procurement.emailer.EmailHandler method)@\spxentry{notifyStudentRejected()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}|hyperpage}{22}
+\indexentry{notifyUpdateManager() (utdesign\_procurement.emailer.EmailHandler method)@\spxentry{notifyUpdateManager()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}|hyperpage}{22}
+\indexentry{notifyUserEdit() (utdesign\_procurement.emailer.EmailHandler method)@\spxentry{notifyUserEdit()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}|hyperpage}{22}
+\indexentry{notifyUserRemove() (utdesign\_procurement.emailer.EmailHandler method)@\spxentry{notifyUserRemove()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}|hyperpage}{23}
+\indexentry{procurementEditAdmin() (utdesign\_procurement.emailer.EmailHandler method)@\spxentry{procurementEditAdmin()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}|hyperpage}{23}
+\indexentry{procurementSave() (utdesign\_procurement.emailer.EmailHandler method)@\spxentry{procurementSave()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}|hyperpage}{23}
+\indexentry{send() (utdesign\_procurement.emailer.EmailHandler method)@\spxentry{send()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}|hyperpage}{23}
+\indexentry{start() (utdesign\_procurement.emailer.EmailHandler method)@\spxentry{start()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}|hyperpage}{23}
+\indexentry{userAdd() (utdesign\_procurement.emailer.EmailHandler method)@\spxentry{userAdd()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}|hyperpage}{23}
+\indexentry{userForgotPassword() (utdesign\_procurement.emailer.EmailHandler method)@\spxentry{userForgotPassword()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}|hyperpage}{23}
+\indexentry{Emailer (class in utdesign\_procurement.emailer)@\spxentry{Emailer}\spxextra{class in utdesign\_procurement.emailer}|hyperpage}{24}
+\indexentry{emailSend() (utdesign\_procurement.emailer.Emailer method)@\spxentry{emailSend()}\spxextra{utdesign\_procurement.emailer.Emailer method}|hyperpage}{24}
+\indexentry{email\_listen() (in module utdesign\_procurement.emailer)@\spxentry{email\_listen()}\spxextra{in module utdesign\_procurement.emailer}|hyperpage}{24}
+\indexentry{utdesign\_procurement.server (module)@\spxentry{utdesign\_procurement.server}\spxextra{module}|hyperpage}{24}
+\indexentry{Root (class in utdesign\_procurement.server)@\spxentry{Root}\spxextra{class in utdesign\_procurement.server}|hyperpage}{24}
+\indexentry{admin() (utdesign\_procurement.server.Root method)@\spxentry{admin()}\spxextra{utdesign\_procurement.server.Root method}|hyperpage}{24}
+\indexentry{debug() (utdesign\_procurement.server.Root method)@\spxentry{debug()}\spxextra{utdesign\_procurement.server.Root method}|hyperpage}{24}
+\indexentry{index() (utdesign\_procurement.server.Root method)@\spxentry{index()}\spxextra{utdesign\_procurement.server.Root method}|hyperpage}{24}
+\indexentry{login() (utdesign\_procurement.server.Root method)@\spxentry{login()}\spxextra{utdesign\_procurement.server.Root method}|hyperpage}{24}
+\indexentry{manager() (utdesign\_procurement.server.Root method)@\spxentry{manager()}\spxextra{utdesign\_procurement.server.Root method}|hyperpage}{24}
+\indexentry{student() (utdesign\_procurement.server.Root method)@\spxentry{student()}\spxextra{utdesign\_procurement.server.Root method}|hyperpage}{24}
+\indexentry{verify() (utdesign\_procurement.server.Root method)@\spxentry{verify()}\spxextra{utdesign\_procurement.server.Root method}|hyperpage}{25}
+\indexentry{utdesign\_procurement.utils (module)@\spxentry{utdesign\_procurement.utils}\spxextra{module}|hyperpage}{25}
+\indexentry{authorizedRoles() (in module utdesign\_procurement.utils)@\spxentry{authorizedRoles()}\spxextra{in module utdesign\_procurement.utils}|hyperpage}{25}
+\indexentry{checkProjectNumbers() (in module utdesign\_procurement.utils)@\spxentry{checkProjectNumbers()}\spxextra{in module utdesign\_procurement.utils}|hyperpage}{25}
+\indexentry{checkValidData() (in module utdesign\_procurement.utils)@\spxentry{checkValidData()}\spxextra{in module utdesign\_procurement.utils}|hyperpage}{25}
+\indexentry{checkValidID() (in module utdesign\_procurement.utils)@\spxentry{checkValidID()}\spxextra{in module utdesign\_procurement.utils}|hyperpage}{25}
+\indexentry{checkValidNumber() (in module utdesign\_procurement.utils)@\spxentry{checkValidNumber()}\spxextra{in module utdesign\_procurement.utils}|hyperpage}{25}
+\indexentry{convertToCents() (in module utdesign\_procurement.utils)@\spxentry{convertToCents()}\spxextra{in module utdesign\_procurement.utils}|hyperpage}{26}
+\indexentry{convertToDollarStr() (in module utdesign\_procurement.utils)@\spxentry{convertToDollarStr()}\spxextra{in module utdesign\_procurement.utils}|hyperpage}{26}
+\indexentry{generateSalt() (in module utdesign\_procurement.utils)@\spxentry{generateSalt()}\spxextra{in module utdesign\_procurement.utils}|hyperpage}{26}
+\indexentry{getKeywords() (in module utdesign\_procurement.utils)@\spxentry{getKeywords()}\spxextra{in module utdesign\_procurement.utils}|hyperpage}{26}
+\indexentry{getProjectKeywords() (in module utdesign\_procurement.utils)@\spxentry{getProjectKeywords()}\spxextra{in module utdesign\_procurement.utils}|hyperpage}{26}
+\indexentry{getRequestKeywords() (in module utdesign\_procurement.utils)@\spxentry{getRequestKeywords()}\spxextra{in module utdesign\_procurement.utils}|hyperpage}{26}
+\indexentry{hashPassword() (in module utdesign\_procurement.utils)@\spxentry{hashPassword()}\spxextra{in module utdesign\_procurement.utils}|hyperpage}{26}
+\indexentry{lenientConvertToCents() (in module utdesign\_procurement.utils)@\spxentry{lenientConvertToCents()}\spxextra{in module utdesign\_procurement.utils}|hyperpage}{26}
+\indexentry{requestCreate() (in module utdesign\_procurement.utils)@\spxentry{requestCreate()}\spxextra{in module utdesign\_procurement.utils}|hyperpage}{26}
+\indexentry{verifyPassword() (in module utdesign\_procurement.utils)@\spxentry{verifyPassword()}\spxextra{in module utdesign\_procurement.utils}|hyperpage}{27}
+\indexentry{utdesign\_procurement (module)@\spxentry{utdesign\_procurement}\spxextra{module}|hyperpage}{27}

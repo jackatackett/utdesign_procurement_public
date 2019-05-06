@@ -1,0 +1,260 @@
+\begin{sphinxtheindex}
+\let\bigletter\sphinxstyleindexlettergroup
+\let\spxpagem \sphinxstyleindexpagemain
+\let\spxentry \sphinxstyleindexentry
+\let\spxextra \sphinxstyleindexextra
+
+  \bigletter A
+  \item \spxentry{addCost()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{1}
+  \item \spxentry{admin()}\spxextra{utdesign\_procurement.server.Root method}, \hyperpage{24}
+  \item \spxentry{ApiGateway}\spxextra{class in utdesign\_procurement.apigateway}, \hyperpage{1}
+  \item \spxentry{authorizedRoles()}\spxextra{in module utdesign\_procurement.utils}, 
+		\hyperpage{25}
+
+  \indexspace
+  \bigletter C
+  \item \spxentry{calculateBudget()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{1}
+  \item \spxentry{checkProjectNumbers()}\spxextra{in module utdesign\_procurement.utils}, 
+		\hyperpage{25}
+  \item \spxentry{checkValidData()}\spxextra{in module utdesign\_procurement.utils}, \hyperpage{25}
+  \item \spxentry{checkValidID()}\spxextra{in module utdesign\_procurement.utils}, \hyperpage{25}
+  \item \spxentry{checkValidNumber()}\spxextra{in module utdesign\_procurement.utils}, 
+		\hyperpage{25}
+  \item \spxentry{confirmRequestManagerAdmin()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}, 
+		\hyperpage{20}
+  \item \spxentry{confirmStudent()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}, 
+		\hyperpage{20}
+  \item \spxentry{convertToCents()}\spxextra{in module utdesign\_procurement.utils}, \hyperpage{26}
+  \item \spxentry{convertToDollarStr()}\spxextra{in module utdesign\_procurement.utils}, 
+		\hyperpage{26}
+
+  \indexspace
+  \bigletter D
+  \item \spxentry{debug()}\spxextra{utdesign\_procurement.server.Root method}, \hyperpage{24}
+  \item \spxentry{die()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}, 
+		\hyperpage{20}
+
+  \indexspace
+  \bigletter E
+  \item \spxentry{email\_listen()}\spxextra{in module utdesign\_procurement.emailer}, 
+		\hyperpage{24}
+  \item \spxentry{Emailer}\spxextra{class in utdesign\_procurement.emailer}, \hyperpage{24}
+  \item \spxentry{EmailHandler}\spxextra{class in utdesign\_procurement.emailer}, \hyperpage{20}
+  \item \spxentry{emailSend()}\spxextra{utdesign\_procurement.emailer.Emailer method}, 
+		\hyperpage{24}
+
+  \indexspace
+  \bigletter F
+  \item \spxentry{findProject()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{1}
+
+  \indexspace
+  \bigletter G
+  \item \spxentry{generateSalt()}\spxextra{in module utdesign\_procurement.utils}, \hyperpage{26}
+  \item \spxentry{getAdminEmails()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{2}
+  \item \spxentry{getAdminList()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{2}
+  \item \spxentry{getCosts()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{2}
+  \item \spxentry{getKeywords()}\spxextra{in module utdesign\_procurement.utils}, \hyperpage{26}
+  \item \spxentry{getProjectKeywords()}\spxextra{in module utdesign\_procurement.utils}, 
+		\hyperpage{26}
+  \item \spxentry{getRequestKeywords()}\spxextra{in module utdesign\_procurement.utils}, 
+		\hyperpage{26}
+  \item \spxentry{getTeamEmails()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{2}
+
+  \indexspace
+  \bigletter H
+  \item \spxentry{hashPassword()}\spxextra{in module utdesign\_procurement.utils}, \hyperpage{26}
+
+  \indexspace
+  \bigletter I
+  \item \spxentry{index()}\spxextra{utdesign\_procurement.server.Root method}, \hyperpage{24}
+
+  \indexspace
+  \bigletter L
+  \item \spxentry{lenientConvertToCents()}\spxextra{in module utdesign\_procurement.utils}, 
+		\hyperpage{26}
+  \item \spxentry{login()}\spxextra{utdesign\_procurement.server.Root method}, \hyperpage{24}
+
+  \indexspace
+  \bigletter M
+  \item \spxentry{manager()}\spxextra{utdesign\_procurement.server.Root method}, \hyperpage{24}
+  \item \spxentry{managerList()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{3}
+
+  \indexspace
+  \bigletter N
+  \item \spxentry{notifyCancelled()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}, 
+		\hyperpage{20}
+  \item \spxentry{notifyProjectAdd()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}, 
+		\hyperpage{21}
+  \item \spxentry{notifyProjectEdit()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}, 
+		\hyperpage{21}
+  \item \spxentry{notifyProjectInactivate()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}, 
+		\hyperpage{21}
+  \item \spxentry{notifyRejectedAdmin()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}, 
+		\hyperpage{21}
+  \item \spxentry{notifyRequestAdmin()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}, 
+		\hyperpage{21}
+  \item \spxentry{notifyRequestManager()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}, 
+		\hyperpage{21}
+  \item \spxentry{notifyStudent()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}, 
+		\hyperpage{22}
+  \item \spxentry{notifyStudentRejected()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}, 
+		\hyperpage{22}
+  \item \spxentry{notifyUpdateManager()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}, 
+		\hyperpage{22}
+  \item \spxentry{notifyUserEdit()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}, 
+		\hyperpage{22}
+  \item \spxentry{notifyUserRemove()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}, 
+		\hyperpage{23}
+
+  \indexspace
+  \bigletter P
+  \item \spxentry{procurementApproveManager()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{3}
+  \item \spxentry{procurementCancel()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{3}
+  \item \spxentry{procurementComplete()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{3}
+  \item \spxentry{procurementEditAdmin()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}, 
+		\hyperpage{23}
+  \item \spxentry{procurementOrder()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{3}
+  \item \spxentry{procurementReady()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{4}
+  \item \spxentry{procurementRejectAdmin()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{4}
+  \item \spxentry{procurementRejectManager()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{4}
+  \item \spxentry{procurementResubmitToAdmin()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{4}
+  \item \spxentry{procurementResubmitToManager()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{5}
+  \item \spxentry{procurementSave()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{5}
+  \item \spxentry{procurementSave()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}, 
+		\hyperpage{23}
+  \item \spxentry{procurementStatuses()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{6}
+  \item \spxentry{procurementUpdateAdmin()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{7}
+  \item \spxentry{procurementUpdateManager()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{7}
+  \item \spxentry{procurementUpdateManagerAdmin()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{7}
+  \item \spxentry{projectAdd()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{7}
+  \item \spxentry{projectData()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{7}
+  \item \spxentry{projectEdit()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{8}
+  \item \spxentry{projectInactivate()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{8}
+  \item \spxentry{projectPages()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{9}
+  \item \spxentry{projectSingleData()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{9}
+  \item \spxentry{projectSpreadsheetData()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{9}
+  \item \spxentry{projectSpreadsheetMetadata()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{10}
+  \item \spxentry{projectSpreadsheetOverwrite()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{10}
+  \item \spxentry{projectSpreadsheetPages()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{10}
+  \item \spxentry{projectSpreadsheetRevalidate()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{10}
+  \item \spxentry{projectSpreadsheetSubmit()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{11}
+  \item \spxentry{projectSpreadsheetUpload()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{11}
+  \item \spxentry{projectValidate()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{11}
+
+  \indexspace
+  \bigletter R
+  \item \spxentry{reportDownload()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{12}
+  \item \spxentry{reportGenerate()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{12}
+  \item \spxentry{requestCreate()}\spxextra{in module utdesign\_procurement.utils}, \hyperpage{26}
+  \item \spxentry{requestData()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{12}
+  \item \spxentry{requestPages()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{12}
+  \item \spxentry{Root}\spxextra{class in utdesign\_procurement.server}, \hyperpage{24}
+
+  \indexspace
+  \bigletter S
+  \item \spxentry{send()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}, 
+		\hyperpage{23}
+  \item \spxentry{sequence()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{13}
+  \item \spxentry{start()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}, 
+		\hyperpage{23}
+  \item \spxentry{student()}\spxextra{utdesign\_procurement.server.Root method}, \hyperpage{24}
+
+  \indexspace
+  \bigletter U
+  \item \spxentry{userAdd()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{13}
+  \item \spxentry{userAdd()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}, 
+		\hyperpage{23}
+  \item \spxentry{userData()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{13}
+  \item \spxentry{userEdit()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{14}
+  \item \spxentry{userForgotPassword()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{14}
+  \item \spxentry{userForgotPassword()}\spxextra{utdesign\_procurement.emailer.EmailHandler method}, 
+		\hyperpage{23}
+  \item \spxentry{userInfo()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{14}
+  \item \spxentry{userLogin()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{14}
+  \item \spxentry{userLogout()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{15}
+  \item \spxentry{userPages()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{15}
+  \item \spxentry{userProjects()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{15}
+  \item \spxentry{userRemove()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{15}
+  \item \spxentry{userSingleData()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{15}
+  \item \spxentry{userSpreadsheetData()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{16}
+  \item \spxentry{userSpreadsheetMetadata()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{17}
+  \item \spxentry{userSpreadsheetPages()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{17}
+  \item \spxentry{userSpreadsheetRevalidate()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{17}
+  \item \spxentry{userSpreadsheetSubmit()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{18}
+  \item \spxentry{userSpreadsheetUpload()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{18}
+  \item \spxentry{userVerify()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{18}
+  \item \spxentry{utdesign\_procurement}\spxextra{module}, \hyperpage{27}
+  \item \spxentry{utdesign\_procurement.apigateway}\spxextra{module}, \hyperpage{1}
+  \item \spxentry{utdesign\_procurement.emailer}\spxextra{module}, \hyperpage{20}
+  \item \spxentry{utdesign\_procurement.server}\spxextra{module}, \hyperpage{24}
+  \item \spxentry{utdesign\_procurement.utils}\spxextra{module}, \hyperpage{25}
+
+  \indexspace
+  \bigletter V
+  \item \spxentry{validateProject()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{19}
+  \item \spxentry{validateUser()}\spxextra{utdesign\_procurement.apigateway.ApiGateway method}, 
+		\hyperpage{19}
+  \item \spxentry{verify()}\spxextra{utdesign\_procurement.server.Root method}, \hyperpage{25}
+  \item \spxentry{verifyPassword()}\spxextra{in module utdesign\_procurement.utils}, \hyperpage{27}
+
+\end{sphinxtheindex}
