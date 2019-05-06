@@ -3566,8 +3566,9 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def reportGenerate(self):
         """
+        Generate a report and return a UUID for the report.
 
-        :return:
+        :return: a uuid for the generated report
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -3638,9 +3639,10 @@ class ApiGateway(object):
     # @authorizedRoles("admin")
     def reportDownload(self, uuid):
         """
+        Download a report, specified by a UUID.
 
         :param uuid:
-        :return:
+        :return: an .xlsx file
         """
         # check that we actually have json
         if uuid in self.reportUUIDs:
