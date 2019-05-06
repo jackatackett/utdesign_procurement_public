@@ -44,7 +44,7 @@ class Root(ApiGateway):
     @cherrypy.expose
     def login(self):
         """
-        This is the login view.
+        Return the login page / login view.
         """
 
         role = cherrypy.session.get('role', None)
@@ -73,6 +73,9 @@ class Root(ApiGateway):
     @cherrypy.expose
     @authorizedRoles("student", redirect=True)
     def student(self):
+        """
+        Return the student view.
+        """
         template = self.templateLookup.get_template('student/StudentApp.html')
         ret = template.render()
         return ret
@@ -80,6 +83,10 @@ class Root(ApiGateway):
     @cherrypy.expose
     @authorizedRoles("manager", redirect=True)
     def manager(self):
+        """
+        Return the manager view.
+        """
+
         template = self.templateLookup.get_template('manager/ManagerApp.html')
         ret = template.render()
         return ret
@@ -87,6 +94,10 @@ class Root(ApiGateway):
     @cherrypy.expose
     @authorizedRoles("admin", redirect=True)
     def admin(self):
+        """
+        Return the admin view.
+        """
+
         template = self.templateLookup.get_template('admin/AdminApp.html')
         ret = template.render()
         return ret
@@ -94,7 +105,10 @@ class Root(ApiGateway):
     # no authorization needed, because this should be removed in production
     @cherrypy.expose
     def debug(self):
-        #disable this interface in production
+        """
+        Debugging view. Allows random rest endpoints to be tested.
+        TODO Disable this interface in production
+        """
         if not self.show_debugger:
             raise cherrypy.HTTPError(404)
 

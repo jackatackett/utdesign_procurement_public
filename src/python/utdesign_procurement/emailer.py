@@ -12,6 +12,15 @@ from string import capwords
 from utdesign_procurement.utils import convertToDollarStr
 
 def email_listen(emailer, queue):
+    """
+    Listens for any messages that come through the queue and calls the
+    emailer's send function appropriately
+
+    :param emailer:
+    :param queue:
+    :return:
+    """
+
     function_lut = {
         'send': emailer.emailSend,
     }
@@ -36,7 +45,20 @@ def email_listen(emailer, queue):
 
 class EmailHandler(object):
     """
-    Fills templates and sends emails using an Emailer in a separate thread
+    Fills templates and sends emails using an Emailer in a separate thread.
+
+    In the various function names "confirm" refers to confirming that an
+    action taken by a user has in fact been completed successfully.
+    On the other hand "notify" is to notify the user that a different
+    user has taken some action relevant to them.
+
+    :param email_user: (str). Gmail username of the email account to be used
+    :param email_password: (str). Password for the gmail account to be used
+    :param email_inwardly: (bool). If True, emails are sent to the email_user
+        and not to their intended recipient. Good for debugging.
+    :param template_dir: (str). The directory for the mako templates.
+    :param domain: (str). The domain name of the system. This will be used
+        to populate URLs in templates.
     """
 
     def __init__(self, email_user, email_password, email_inwardly,
@@ -51,15 +73,35 @@ class EmailHandler(object):
         self._started = False
 
     def start(self):
+        """
+        Start the email queue listening process
+
+        :return:
+        """
         self.process.start()
         self._started = True
 
     def die(self):
+        """
+        End the email queue listening process gracefully
+
+        :return:
+        """
+
         if self._started:
             self.queue.put(('die', {}))
             self.process.join()
 
     def send(self, to, subject, body):
+        """
+        Send an email to an address, with a subject, with a given body.
+
+        :param to: (str). The recipient email address.
+        :param subject: (str). The subject of the email.
+        :param body: (str). The HTML content of the message to send.
+        :return:
+        """
+
         self.queue.put(('send', {
             'to': to,
             'subject': subject,
@@ -96,10 +138,13 @@ class EmailHandler(object):
 
     def procurementSave(self, teamEmails=None, request=None):
         """
+        Alerts team members that a procurement request has been submitted.
 
-        :param request:
+        :param: teamEmails: (list of str). The email addresses of the users
+        :param: request: (dict). The request being notified about.
         :return:
         """
+
         # TODO cast to int
         renderArgs = {
             'domain': self.domain,
@@ -126,6 +171,14 @@ class EmailHandler(object):
         self.send(request['manager'], subject, body)
 
     def procurementEditAdmin(self, teamEmails=None, request=None):
+        """
+        Alerts team members that a procurement request has been submitted.
+
+        :param: teamEmails: (list of str). The email addresses of the users
+        :param: request: (dict). The request being notified about.
+        :return:
+        """
+
         renderArgs = {
 
             # TODO cast to int
@@ -148,6 +201,17 @@ class EmailHandler(object):
         self.send(request['manager'], subject, body)
 
     def confirmStudent(self, teamEmails, requestNumber, projectNumber, action):
+        """
+        Sends an email to all members of a team confirming that some
+        action has happened to some request.
+
+        :param: teamEmails: (list of str). The email addresses of the users
+        :param: requestNumber: (dict). The request being notified about.
+        :param: projectNumber: (dict). The project whose members are being notified.
+        :param: action: (dict). The action happening to the request.
+        :return:
+        """
+
         renderArgs = {
             'domain': self.domain,
             'requestNumber': int(requestNumber),
@@ -161,6 +225,16 @@ class EmailHandler(object):
         self.send(teamEmails, subject, body)
 
     def confirmRequestManagerAdmin(self, email, requestNumber, projectNumber, action):
+        """
+        Sends an email to some email address confirming that some
+        action has happened to some request.
+
+        :param email:
+        :param requestNumber:
+        :param projectNumber:
+        :param action:
+        :return:
+        """
         renderArgs = {
             'domain': self.domain,
             'requestNumber': int(requestNumber),
@@ -175,6 +249,17 @@ class EmailHandler(object):
 
     def notifyStudent(self, teamEmails, requestNumber, projectNumber, action,
                       user, role):
+        """
+        Sends a notification about a request to some students.
+
+        :param teamEmails:
+        :param requestNumber:
+        :param projectNumber:
+        :param action:
+        :param user:
+        :param role:
+        :return:
+        """
         renderArgs = {
             'domain': self.domain,
             'requestNumber': int(requestNumber),
@@ -190,6 +275,15 @@ class EmailHandler(object):
         self.send(teamEmails, subject, body)
 
     def notifyRequestManager(self, email, projectNumber, requestNumber):
+        """
+        Sends a notification about a request to a manager.
+
+        :param email:
+        :param projectNumber:
+        :param requestNumber:
+        :return:
+        """
+
         renderArgs = {
             'domain': self.domain,
             'requestNumber': int(requestNumber),
@@ -201,6 +295,15 @@ class EmailHandler(object):
         self.send(email, subject, body)
 
     def notifyRequestAdmin(self, adminEmails, projectNumber, requestNumber):
+        """
+        Sends a notification about a request to the admins.
+
+        :param adminEmails:
+        :param projectNumber:
+        :param requestNumber:
+        :return:
+        """
+
         renderArgs = {
             'domain': self.domain,
             'requestNumber': int(requestNumber),
@@ -212,6 +315,15 @@ class EmailHandler(object):
         self.send(adminEmails, subject, body)
 
     def notifyCancelled(self, email, projectNumber, requestNumber):
+        """
+        Notify some user about the cancellation of a request.
+
+        :param email:
+        :param projectNumber:
+        :param requestNumber:
+        :return:
+        """
+
         renderArgs = {
             'domain': self.domain,
             'requestNumber': int(requestNumber),
@@ -223,6 +335,16 @@ class EmailHandler(object):
         self.send(email, subject, body)
 
     def notifyRejectedAdmin(self, adminEmails, projectNumber, requestNumber, manager):
+        """
+        Notify some users that the admin has rejected a request.
+
+        :param adminEmails:
+        :param projectNumber:
+        :param requestNumber:
+        :param manager:
+        :return:
+        """
+
         renderArgs = {
             'domain': self.domain,
             'requestNumber': int(requestNumber),
@@ -235,6 +357,18 @@ class EmailHandler(object):
         self.send(adminEmails, subject, body)
 
     def notifyUserEdit(self, email, projectNumbers, firstName, lastName, netID, course):
+        """
+        Notify some users that a user has edited a request.
+
+        :param email:
+        :param projectNumbers:
+        :param firstName:
+        :param lastName:
+        :param netID:
+        :param course:
+        :return:
+        """
+
         renderArgs = {
             'domain': self.domain,
             'projectNumbers': projectNumbers,
@@ -249,6 +383,15 @@ class EmailHandler(object):
         self.send(email, subject, body)
 
     def notifyUpdateManager(self, email, projectNumber, requestNumber):
+        """
+        Notify some user that the manager has requested updates.
+
+        :param email:
+        :param projectNumber:
+        :param requestNumber:
+        :return:
+        """
+
         renderArgs = {
             'domain': self.domain,
             'projectNumber': int(projectNumber),
@@ -260,6 +403,15 @@ class EmailHandler(object):
         self.send(email, subject, body)
 
     def notifyUserRemove(self, email, firstName, lastName):
+        """
+        Notify a user that their account has been deactivated.
+
+        :param email:
+        :param firstName:
+        :param lastName:
+        :return:
+        """
+
         renderArgs = {
             'email': email,
             'firstName': firstName,
@@ -271,6 +423,14 @@ class EmailHandler(object):
         self.send(email, subject, body)
 
     def notifyProjectAdd(self, teamEmails, projectNumber, projectName):
+        """
+        Notify a user that they have been added to a project.
+
+        :param teamEmails:
+        :param projectNumber:
+        :param projectName:
+        :return:
+        """
         renderArgs = {
             'domain': self.domain,
             'projectNumber': int(projectNumber),
@@ -282,6 +442,15 @@ class EmailHandler(object):
         self.send(teamEmails, subject, body)
 
     def notifyProjectInactivate(self, teamEmails, projectNumber, projectName):
+        """
+        Notify a user that a project that they were a member of has been deactivated.
+
+        :param teamEmails:
+        :param projectNumber:
+        :param projectName:
+        :return:
+        """
+
         renderArgs = {
             'domain': self.domain,
             'projectNumber': int(projectNumber),
@@ -293,6 +462,15 @@ class EmailHandler(object):
         self.send(teamEmails, subject, body)
 
     def notifyProjectEdit(self, membersEmails, projectNumber, projectName, sponsorName):
+        """
+        Notify a user that a project that they were a member of has been edit.
+
+        :param teamEmails:
+        :param projectNumber:
+        :param projectName:
+        :return:
+        """
+
         renderArgs = {
             'domain': self.domain,
             'projectNumber': int(projectNumber),
@@ -307,6 +485,15 @@ class EmailHandler(object):
 
     def notifyStudentRejected(self, teamEmails, requestNumber, projectNumber, action,
                       user, role, comment):
+        """
+        Notify a user that a request has been rejected.
+
+        :param teamEmails:
+        :param projectNumber:
+        :param projectName:
+        :return:
+        """
+
         renderArgs = {
             'domain': self.domain,
             'requestNumber': int(requestNumber),
@@ -342,6 +529,16 @@ class Emailer(object):
         server.quit()
 
     def emailSend(self, to=None, subject=None, html=None):
+        """
+        Send an email with some HTML content to some email address with some
+        subject.
+
+        :param to: (str). An email address to send to.
+        :param subject: (str). A subject for the email.
+        :param html: (str). An HTML content to send in the email.
+        :return:
+        """
+
         assert to and subject
 
         if self.email_inwardly:

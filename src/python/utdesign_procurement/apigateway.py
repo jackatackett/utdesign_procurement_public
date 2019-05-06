@@ -49,28 +49,29 @@ class ApiGateway(object):
         the TM.
 
         Expected Input ::
-        {
-            "submit": (Boolean) optional (not optional if submitted by student),
-            "adminEdit": (Boolean) optional (not optional if admin performs an edit),
-            "status": (string) optional (not optional if admin performs an edit),
-            "requestNumber": (int) optional,
-            "manager": (string), //email of manager who can approve this
-            "vendor": (string),
-            "projectNumber": (int),
-            "URL": (string),
-            "justification": (string) optional,
-            "additionalInfo": (string) optional,
-            "items": [
-                {
-                "description": (string),
-                "partNo": (string),
-                "itemURL": (string),
-                "quantity": (integer),
-                "unitCost": (string),
-                "totalCost": (string)
-                }
-            ]
-        }
+
+            {
+                "submit": (Boolean) optional (not optional if submitted by student),
+                "adminEdit": (Boolean) optional (not optional if admin performs an edit),
+                "status": (string) optional (not optional if admin performs an edit),
+                "requestNumber": (int) optional,
+                "manager": (string), //email of manager who can approve this
+                "vendor": (string),
+                "projectNumber": (int),
+                "URL": (string),
+                "justification": (string) optional,
+                "additionalInfo": (string) optional,
+                "items": [
+                    {
+                    "description": (string),
+                    "partNo": (string),
+                    "itemURL": (string),
+                    "quantity": (integer),
+                    "unitCost": (string),
+                    "totalCost": (string)
+                    }
+                ]
+            }
 
         :return:
         """
@@ -225,14 +226,16 @@ class ApiGateway(object):
         project number
 
         Expected Input ::
-        {
-            "projectNumber": (int)
-        }
+
+            {
+                "projectNumber": (int)
+            }
 
         Returns::
-        [
-            (string)
-        ]
+
+            [
+                (string)
+            ]
 
         :return: list of technical manager's emails
         """
@@ -276,40 +279,42 @@ class ApiGateway(object):
         If the user is a manager, they will not be able to see saved requests
 
         Expected Input ::
-        {
-            "vendor": (string, optional),
-            "projectNumbers": (int or list of ints, optional),
-            "URL": (string, optional),
-            "statuses": (string or list of strings, optional)
-        }
+
+            {
+                "vendor": (string, optional),
+                "projectNumbers": (int or list of ints, optional),
+                "URL": (string, optional),
+                "statuses": (string or list of strings, optional)
+            }
 
         Returns::
-        [
-            {
-                "_id": ObjectId
-                "status": (string),
-                "requestNumber": (int) optional,
-                "manager": (string),
-                "vendor": (string),
-                "projectNumber": (int),
-                "URL": (string),
-                "justification": (string),
-                "additionalInfo": (string),
-                "items": [
-                    {
-                    "description": (string),
-                    "partNo": (string),
-                    "itemURL": (string),
-                    "quantity": (integer),
-                    "unitCost": (string),
-                    "totalCost": (string)
-                    }
-                ],
-                "requestSubtotal": (int),
-                "requestTotal": (int),
-                "history": (list of strings)
-            }
-        ]
+
+            [
+                {
+                    "_id": ObjectId
+                    "status": (string),
+                    "requestNumber": (int) optional,
+                    "manager": (string),
+                    "vendor": (string),
+                    "projectNumber": (int),
+                    "URL": (string),
+                    "justification": (string),
+                    "additionalInfo": (string),
+                    "items": [
+                        {
+                        "description": (string),
+                        "partNo": (string),
+                        "itemURL": (string),
+                        "quantity": (integer),
+                        "unitCost": (string),
+                        "totalCost": (string)
+                        }
+                    ],
+                    "requestSubtotal": (int),
+                    "requestTotal": (int),
+                    "history": (list of strings)
+                }
+            ]
 
         :return: list of requests matching filter
         """
@@ -391,20 +396,21 @@ class ApiGateway(object):
         Edit procurement request. Only available to admin user.
 
         Expected Input ::
-        {
-            "vendor": (string) optional,
-            "URL": (string) optional,
-            "items": [
-                {
-                "description": (string) optional,
-                "partNo": (string) optional,
-                "itemURL": (string) optional,
-                "quantity": (integer) optional,
-                "unitCost": (string)optional ,
-                "totalCost": (string) optional
-                }
-            ]
-        }
+
+            {
+                "vendor": (string) optional,
+                "URL": (string) optional,
+                "items": [
+                    {
+                    "description": (string) optional,
+                    "partNo": (string) optional,
+                    "itemURL": (string) optional,
+                    "quantity": (integer) optional,
+                    "unitCost": (string)optional ,
+                    "totalCost": (string) optional
+                    }
+                ]
+            }
 
         :return:
         """
@@ -436,9 +442,10 @@ class ApiGateway(object):
         request is then unable to be considered by any user.
 
         Expected Input ::
-        {
-            "_id": (string)
-        }
+
+            {
+                "_id": (string)
+            }
 
         :return:
         """
@@ -521,9 +528,10 @@ class ApiGateway(object):
         This in effect sends the request to the admin for review.
 
         Expected Input ::
-        {
-            "_id": (string)
-        }
+
+            {
+                "_id": (string)
+            }
 
         :return:
         """
@@ -605,10 +613,11 @@ class ApiGateway(object):
         or cancel it.
 
         Expected Input ::
-        {
-            "_id": (string),
-            "comment": (string)
-        }
+
+            {
+                "_id": (string),
+                "comment": (string)
+            }
 
         :return:
         """
@@ -685,10 +694,11 @@ class ApiGateway(object):
         and once submitted, will again go to the technical manager.
 
         Expected Input ::
-        {
-            "_id": (string),
-            "comment": (string)
-        }
+
+            {
+                "_id": (string),
+                "comment": (string)
+            }
 
         :return:
         """
@@ -775,27 +785,28 @@ class ApiGateway(object):
         to the manager for reconsideration.
 
         Expected Input ::
-        {
-            "_id": (string),
 
-            "requestNumber": (int) optional,
-            "manager": (string), //email of manager who can approve this
-            "vendor": (string),
-            "projectNumber": (int),
-            "URL": (string),
-            "justification": (string) optional,
-            "additionalInfo": (string) optional,
-            "items": [
-                {
-                "description": (string),
-                "partNo": (string),
-                "itemURL": (string),
-                "quantity": (integer),
-                "unitCost": (string),
-                "totalCost": (string)
-                }
-            ]
-        }
+            {
+                "_id": (string),
+
+                "requestNumber": (int) optional,
+                "manager": (string), //email of manager who can approve this
+                "vendor": (string),
+                "projectNumber": (int),
+                "URL": (string),
+                "justification": (string) optional,
+                "additionalInfo": (string) optional,
+                "items": [
+                    {
+                    "description": (string),
+                    "partNo": (string),
+                    "itemURL": (string),
+                    "quantity": (integer),
+                    "unitCost": (string),
+                    "totalCost": (string)
+                    }
+                ]
+            }
 
         :return:
         """
@@ -863,26 +874,27 @@ class ApiGateway(object):
         and then submitted directly back to the admin for reconsideration.
 
         Expected Input ::
-        {
-            "_id": (string),
-            "requestNumber": (int) optional,
-            "manager": (string), //email of manager who can approve this
-            "vendor": (string),
-            "projectNumber": (int),
-            "URL": (string),
-            "justification": (string) optional,
-            "additionalInfo": (string) optional,
-            "items": [
-                {
-                "description": (string),
-                "partNo": (string),
-                "itemURL": (string),
-                "quantity": (integer),
-                "unitCost": (string),
-                "totalCost": (string)
-                }
-            ]
-        }
+
+            {
+                "_id": (string),
+                "requestNumber": (int) optional,
+                "manager": (string), //email of manager who can approve this
+                "vendor": (string),
+                "projectNumber": (int),
+                "URL": (string),
+                "justification": (string) optional,
+                "additionalInfo": (string) optional,
+                "items": [
+                    {
+                    "description": (string),
+                    "partNo": (string),
+                    "itemURL": (string),
+                    "quantity": (integer),
+                    "unitCost": (string),
+                    "totalCost": (string)
+                    }
+                ]
+            }
 
         :return:
         """
@@ -951,10 +963,11 @@ class ApiGateway(object):
         from the technical manager upon resubmission.
 
         Expected Input ::
-        {
-            "_id": (string),
-            "comment": (string)
-        }
+
+            {
+                "_id": (string),
+                "comment": (string)
+            }
 
         :return:
         """
@@ -1032,10 +1045,11 @@ class ApiGateway(object):
         The shipping cost is set during this step.
 
         Expected Input ::
-        {
-            "_id": (string),
-            "amount": (string)
-        }
+
+            {
+                "_id": (string),
+                "amount": (string)
+            }
 
         :return:
         """
@@ -1118,9 +1132,10 @@ class ApiGateway(object):
         picked up by the student.
 
         Expected Input ::
-        {
-            "_id": (string)
-        }
+
+            {
+                "_id": (string)
+            }
 
         :return:
         """
@@ -1189,9 +1204,10 @@ class ApiGateway(object):
         no further actions need to be taken.
 
         Expected Input ::
-        {
-            "_id": (string)
-        }
+
+            {
+                "_id": (string)
+            }
 
         :return:
         """
@@ -1261,10 +1277,11 @@ class ApiGateway(object):
         It can no longer be considered by any user.
 
         Expected Input ::
-        {
-            "_id": (string),
-            "comment": (string)
-        }
+
+            {
+                "_id": (string),
+                "comment": (string)
+            }
 
         :return:
         """
@@ -1349,10 +1366,11 @@ class ApiGateway(object):
         no longer be considered by any user.
 
         Expected Input ::
-        {
-            "_id": (string),
-            "comment": (string)
-        }
+
+            {
+                "_id": (string),
+                "comment": (string)
+            }
 
         :return:
         """
@@ -1424,9 +1442,10 @@ class ApiGateway(object):
         Return the emails of all admins in the system.
 
         Returns::
-        [
-            (string)
-        ]
+
+            [
+                (string)
+            ]
 
         :return: list of emails for all admins
         """
@@ -1473,9 +1492,8 @@ class ApiGateway(object):
 
         return res
 
-    @cherrypy.expose
-    #~ @cherrypy.tools.json_out()
-    @cherrypy.tools.json_in()
+    # @cherrypy.expose
+    # @cherrypy.tools.json_in()
     @authorizedRoles("admin")
     def addCost(self):
         """
@@ -1483,13 +1501,14 @@ class ApiGateway(object):
         Can only be done by the admin.
 
         Expected Input ::
-        {
-            projectNumber: (int),
-            type: (string: refund, reimbursement, new budget),
-            amount: (string, dollar amount),
-            comment: (string),
-            actor: (string, email of admin)
-        }
+
+            {
+                projectNumber: (int),
+                type: (string: refund, reimbursement, new budget),
+                amount: (string, dollar amount),
+                comment: (string),
+                actor: (string, email of admin)
+            }
 
         :return:
         """
@@ -1538,22 +1557,24 @@ class ApiGateway(object):
         Return all the costs associated with a list of project numbers.
 
         Expected input::
-        {
-            projectNumbers: (list of ints, optional)
-        }
+
+            {
+                projectNumbers: (list of ints, optional)
+            }
 
         Returns::
-        [
-            {
-                "_id": ObjectId,
-                "type": (string),
-                "amount": (int),
-                "comment": (string),
-                "actor": (string) //email,
-                "projectNumber": (int),
-                "timestamp": (string)
-            }
-        ]
+
+            [
+                {
+                    "_id": ObjectId,
+                    "type": (string),
+                    "amount": (int),
+                    "comment": (string),
+                    "actor": (string) //email,
+                    "projectNumber": (int),
+                    "timestamp": (string)
+                }
+            ]
 
         :return: list of costs (refund, reimbursement, etc.)
         """
@@ -1607,15 +1628,16 @@ class ApiGateway(object):
         If the projectNumber is already in use, throw an error.
 
         Expected Input ::
-        {
-            “projectNumber”: (int),
-            “sponsorName”: (string),
-            “projectName”: (string),
-            “membersEmails: [(string), …], # list of strings
-            “defaultBudget”: (string),
-            “availableBudget”: (string),
-            “pendingBudget”: (string)
-        }
+
+            {
+                “projectNumber”: (int),
+                “sponsorName”: (string),
+                “projectName”: (string),
+                “membersEmails: [(string), …], # list of strings
+                “defaultBudget”: (string),
+                “availableBudget”: (string),
+                “pendingBudget”: (string)
+            }
 
         :return:
         """
@@ -1684,9 +1706,10 @@ class ApiGateway(object):
         Change status of project to inactivate.
 
         Expected Input ::
-        {
-            "_id": (string)
-        }
+
+            {
+                "_id": (string)
+            }
 
         :return:
         """
@@ -1727,24 +1750,26 @@ class ApiGateway(object):
         their budget. If none given, then return all authorized projects.
 
         Expected Input :: 
-        {
-            projectNumbers: (list of ints, optional)
-        }
+
+            {
+                projectNumbers: (list of ints, optional)
+            }
 
         Returns::
-        [
-            {
-                "_id": ObjectId,
-                "projectNumber": (int),
-                "sponsorName": (string),
-                "projectName": (string),
-                "membersEmails": (list of strings),
-                "defaultBudget": (int),
-                "availableBudget": (int),
-                "pendingBudget": (int),
-                "status": (string)
-            }
-        ]
+
+            [
+                {
+                    "_id": ObjectId,
+                    "projectNumber": (int),
+                    "sponsorName": (string),
+                    "projectName": (string),
+                    "membersEmails": (list of strings),
+                    "defaultBudget": (int),
+                    "availableBudget": (int),
+                    "pendingBudget": (int),
+                    "status": (string)
+                }
+            ]
 
         :return: list of projects
         """
@@ -1802,12 +1827,13 @@ class ApiGateway(object):
         its value cannot be changed.
 
         Expected Input ::
-        {
-            projectNumber: (int),
-            sponsorName: (string, optional),
-            projectName: (string, optional),
-            membersEmails: [(string), …, optional]
-        }
+
+            {
+                projectNumber: (int),
+                sponsorName: (string, optional),
+                projectName: (string, optional),
+                membersEmails: [(string), …, optional]
+            }
 
         :return:
         """
@@ -1876,15 +1902,16 @@ class ApiGateway(object):
         Add new user to the database with provided data.
 
         Expected Input ::
-        {
-            "projectNumbers": (int or list of ints),
-            "firstName": (string),
-            "lastName": (string),
-            "netID": (string),
-            "email": (string),
-            "course": (string),
-            "role": (string)
-        }
+
+            {
+                "projectNumbers": (int or list of ints),
+                "firstName": (string),
+                "lastName": (string),
+                "netID": (string),
+                "email": (string),
+                "course": (string),
+                "role": (string)
+            }
 
         :return:
         """
@@ -1955,9 +1982,10 @@ class ApiGateway(object):
         userVerify endpoint, but will expire at some point in the near future.
 
         Expected Input ::
-        {
-            "email": (string),
-        }
+
+            {
+                "email": (string),
+            }
 
         :return:
         """
@@ -2003,12 +2031,13 @@ class ApiGateway(object):
         user data will be stored until it is submitted.
 
         Each user will be evaluated and sorted into four categories:
+
         - valid - The user can be added without complication.
         - invalid - The user has some invalid attribute.
         - existing - A user with this email already exists, but can be updated
-            without problems.
+          without problems.
         - conflicting - A user with this email already exists, and its data
-            conflicts with the data given in the spreadsheet.
+          conflicts with the data given in the spreadsheet.
 
         The data can be modified by /userSpreadsheetRevalidate and finally
         submitted using /userSpreadsheetSubmit.
@@ -2144,12 +2173,13 @@ class ApiGateway(object):
         Returns a dict summarizing the current state of the bulk user data.
 
         Returns ::
-        {
-            'valid': (int, number of valid users),
-            'invalid': (int, number of invalid users),
-            'existing': (int, number of existing users),
-            'conflicting': (int, number of conflicting users),
-        }
+
+            {
+                'valid': (int, number of valid users),
+                'invalid': (int, number of invalid users),
+                'existing': (int, number of existing users),
+                'conflicting': (int, number of conflicting users),
+            }
 
         :return:
         """
@@ -2172,32 +2202,34 @@ class ApiGateway(object):
         users per page) cannot be configured.
 
         Expected input::
-        {
-            "bulkStatus": (string, Optional, default "valid".
-                Whether these are the "valid", "invalid", "existing", or
-                "conflicting" bulk users)
-        }
+
+            {
+                "bulkStatus": (string, Optional, default "valid".
+                    Whether these are the "valid", "invalid", "existing", or
+                    "conflicting" bulk users)
+            }
 
         Returns ::
-        [
-            {
-                “projectNumbers”: (list of ints),
-                "firstName": (string),
-                "lastName": (string),
-                "netID": (string),
-                "email": (string),
-                "course": (string),
-                “role”: “student”,
-                "comment": {
-                    merge: (boolean, if a user with this email exists),
-                    invalidRole: (boolean)
-                    missingProjects: (list of ints)
-                    missingAttributes: (list of strings)
-                    conflictingAttributes: (list of strings),
-                }
-            },
-            ...
-        ]
+
+            [
+                {
+                    “projectNumbers”: (list of ints),
+                    "firstName": (string),
+                    "lastName": (string),
+                    "netID": (string),
+                    "email": (string),
+                    "course": (string),
+                    “role”: “student”,
+                    "comment": {
+                        merge: (boolean, if a user with this email exists),
+                        invalidRole: (boolean)
+                        missingProjects: (list of ints)
+                        missingAttributes: (list of strings)
+                        conflictingAttributes: (list of strings),
+                    }
+                },
+                ...
+            ]
         """
 
         # check that we actually have json
@@ -2231,34 +2263,36 @@ class ApiGateway(object):
         decides which 10 users are returned. pageNumber must be a non-negative integer.
 
         Expected Input ::
-        {
-            "bulkStatus": (string, Optional, default "valid".
-                Whether these are the "valid", "invalid", "existing", or
-                "conflicting" bulk users)
 
-            'pageNumber': (int)
-                (Optional. Default: 0)
-        }
+            {
+                "bulkStatus": (string, Optional, default "valid".
+                    Whether these are the "valid", "invalid", "existing", or
+                    "conflicting" bulk users)
+
+                'pageNumber': (int)
+                    (Optional. Default: 0)
+            }
 
         Returns ::
-        [
-            {
-                “projectNumbers”: (list of ints),
-                "firstName": (string),
-                "lastName": (string),
-                "netID": (string),
-                "email": (string),
-                "course": (string),
-                “role”: “student”,
-                "comment": {
-                    merge: (boolean, if a user with this email exists),
-                    invalidRole: (boolean)
-                    missingProjects: (list of ints)
-                    missingAttributes: (list of strings)
-                    conflictingAttributes: (list of strings),
+
+            [
+                {
+                    “projectNumbers”: (list of ints),
+                    "firstName": (string),
+                    "lastName": (string),
+                    "netID": (string),
+                    "email": (string),
+                    "course": (string),
+                    “role”: “student”,
+                    "comment": {
+                        merge: (boolean, if a user with this email exists),
+                        invalidRole: (boolean)
+                        missingProjects: (list of ints)
+                        missingAttributes: (list of strings)
+                        conflictingAttributes: (list of strings),
+                    }
                 }
-            }
-        ]
+            ]
 
         """
 
@@ -2301,36 +2335,38 @@ class ApiGateway(object):
         status.
 
         Expected Input ::
-        {
-            "bulkStatus": (str. The status of the user being replaced.
-                Either "valid", "invalid", "existing", or "conflicting")
-            "index": (int. The index within the list of users with
-                the given status in the set of bulk user data)
-            "user" :  {
-                “projectNumbers”: (list of ints),
-                "firstName": (string),
-                "lastName": (string),
-                "netID": (string),
-                "email": (string),
-                "course": (string),
-                “role”: “student”,
-                "comment": {
-                    merge: (boolean, if a user with this email exists),
-                    invalidRole: (boolean)
-                    missingProjects: (list of ints)
-                    missingAttributes: (list of strings)
-                    conflictingAttributes: (list of strings),
+
+            {
+                "bulkStatus": (str. The status of the user being replaced.
+                    Either "valid", "invalid", "existing", or "conflicting")
+                "index": (int. The index within the list of users with
+                    the given status in the set of bulk user data)
+                "user" :  {
+                    “projectNumbers”: (list of ints),
+                    "firstName": (string),
+                    "lastName": (string),
+                    "netID": (string),
+                    "email": (string),
+                    "course": (string),
+                    “role”: “student”,
+                    "comment": {
+                        merge: (boolean, if a user with this email exists),
+                        invalidRole: (boolean)
+                        missingProjects: (list of ints)
+                        missingAttributes: (list of strings)
+                        conflictingAttributes: (list of strings),
+                    }
                 }
             }
-        }
 
         Returns ::
-        {
-            'user': (dict. The validated user, with the same schema as
-                in the expected input),
-            'status': (str. The new status of the validated user. Either
-                "valid", "invalid", "existing", or "conflicting")
-        }
+
+            {
+                'user': (dict. The validated user, with the same schema as
+                    in the expected input),
+                'status': (str. The new status of the validated user. Either
+                    "valid", "invalid", "existing", or "conflicting")
+            }
 
         :return:
         """
@@ -2389,6 +2425,7 @@ class ApiGateway(object):
         project data will be stored until it is submitted.
 
         Each project will be evaluated and sorted into four categories:
+
         - valid - The project can be added without complication.
         - invalid - The project has some invalid attribute.
         - conflicting - A project with this project number already exists,
@@ -2493,11 +2530,12 @@ class ApiGateway(object):
         Returns a dict summarizing the current state of the bulk project data.
 
         Returns ::
-        {
-            'valid': (int, number of valid users),
-            'invalid': (int, number of invalid users),
-            'conflicting': (int, number of conflicting users),
-        }
+
+            {
+                'valid': (int, number of valid users),
+                'invalid': (int, number of invalid users),
+                'conflicting': (int, number of conflicting users),
+            }
 
         :return:
         """
@@ -2520,10 +2558,11 @@ class ApiGateway(object):
         projects per page) cannot be configured.
 
         Expected input::
-        {
-            "bulkStatus": (string, Optional, default "valid".
-                Whether these are the "valid", "invalid", or "conflicting")
-        }
+
+            {
+                "bulkStatus": (string, Optional, default "valid".
+                    Whether these are the "valid", "invalid", or "conflicting")
+            }
 
         """
 
@@ -2558,28 +2597,30 @@ class ApiGateway(object):
         decides which 10 projects are returned. pageNumber must be a non-negative integer.
 
         Expected Input ::
-        {
-            "bulkStatus": (string, Optional, default "valid".
-                Whether these are the "valid", "invalid", "existing", or
-                "conflicting" bulk projects)
 
-            'pageNumber': (int)
-                (Optional. Default: 0)
-        }
+            {
+                "bulkStatus": (string, Optional, default "valid".
+                    Whether these are the "valid", "invalid", "existing", or
+                    "conflicting" bulk projects)
+
+                'pageNumber': (int)
+                    (Optional. Default: 0)
+            }
 
         Returns ::
-        [
-            {
-                “projectNumbers”: (list of ints),
-                "firstName": (string),
-                "lastName": (string),
-                "netID": (string),
-                "email": (string),
-                "course": (string),
-                “role”: “student”,
-                “status”: (string), //”current” or “removed”
-            }
-        ]
+
+            [
+                {
+                    “projectNumbers”: (list of ints),
+                    "firstName": (string),
+                    "lastName": (string),
+                    "netID": (string),
+                    "email": (string),
+                    "course": (string),
+                    “role”: “student”,
+                    “status”: (string), //”current” or “removed”
+                }
+            ]
 
         """
 
@@ -2622,30 +2663,32 @@ class ApiGateway(object):
         status.
 
         Expected Input ::
-        {
-            "bulkStatus": (str. The status of the user being replaced.
-                Either "valid", "invalid", or "conflicting")
-            "index": (int. The index within the list of users with
-                the given status in the set of bulk user data)
-            "project" :  {
-                “projectNumbers”: (list of ints),
-                "firstName": (string),
-                "lastName": (string),
-                "netID": (string),
-                "email": (string),
-                "course": (string),
-                “role”: “student”,
-                “status”: (string), //”current” or “removed”
+
+            {
+                "bulkStatus": (str. The status of the user being replaced.
+                    Either "valid", "invalid", or "conflicting")
+                "index": (int. The index within the list of users with
+                    the given status in the set of bulk user data)
+                "project" :  {
+                    “projectNumbers”: (list of ints),
+                    "firstName": (string),
+                    "lastName": (string),
+                    "netID": (string),
+                    "email": (string),
+                    "course": (string),
+                    “role”: “student”,
+                    “status”: (string), //”current” or “removed”
+                }
             }
-        }
 
         Returns ::
-        {
-            'project': (dict. The validated user, with the same schema as
-                in the expected input),
-            'status': (str. The new status of the validated project. Either
-                "valid", "invalid", or "conflicting")
-        }
+
+            {
+                'project': (dict. The validated user, with the same schema as
+                    in the expected input),
+                'status': (str. The new status of the validated project. Either
+                    "valid", "invalid", or "conflicting")
+            }
 
         :return:
         """
@@ -2727,14 +2770,15 @@ class ApiGateway(object):
         optional data is what the existing data will be changed to.
 
         Expected Input ::
-        {
-            "_id": (string)
-            “projectNumbers”: (list of ints, optional),
-            "firstName": (string, optional),
-            "lastName": (string, optional),
-            "netID": (string, optional),
-            "course": (string, optional)
-        }
+
+            {
+                "_id": (string)
+                “projectNumbers”: (list of ints, optional),
+                "firstName": (string, optional),
+                "lastName": (string, optional),
+                "netID": (string, optional),
+                "course": (string, optional)
+            }
 
         :return:
         """
@@ -2790,9 +2834,10 @@ class ApiGateway(object):
         with the system. Doesn't delete the user from the database.
 
         Expected Input ::
-        {
-            "_id": (string)
-        }
+
+            {
+                "_id": (string)
+            }
 
         :return:
         """
@@ -2839,11 +2884,12 @@ class ApiGateway(object):
         a user is first invited to use the system and when a user forgets their password.
 
         Expected Input ::
-        {
-            "uuid": (string),
-            "email": (string),
-            "password": (string)
-        }
+
+            {
+                "uuid": (string),
+                "email": (string),
+                "password": (string)
+            }
 
         :return:
         """
@@ -2885,10 +2931,11 @@ class ApiGateway(object):
         is associated with the given email, and if so, log in a user.
 
         Expected Input ::
-        {
-            "email": (string),
-            "password": (string)
-        }
+
+            {
+                "email": (string),
+                "password": (string)
+            }
 
         :return: A message if login is successful
         """
@@ -2921,14 +2968,15 @@ class ApiGateway(object):
         Return true if the project number(s) exist in the database.
 
         Expected Input :: 
-        {
 
-        }
+            {
+            }
 
         Returns ::
-        {
-            "valid": boolean
-        }
+
+            {
+                "valid": boolean
+            }
 
         :return: a boolean, as per above
         """
@@ -2963,9 +3011,10 @@ class ApiGateway(object):
         who calls this function.
 
         Returns ::
-        {
-            'projectNumbers': (list of ints)
-        }
+
+            {
+                'projectNumbers': (list of ints)
+            }
 
         :return: a list of project numbers
         """
@@ -3007,13 +3056,14 @@ class ApiGateway(object):
         projects per page, i.e. 10) cannot be configured.
 
         Expected Input ::
-        {
-            "projectNumber": (int),
-            "sponsorName": (string, optional),
-            "projectName": (string, optional),
-            "membersEmails": (string, optional),
-            "defaultBudget": (string, optional)
-        }
+
+            {
+                "projectNumber": (int),
+                "sponsorName": (string, optional),
+                "projectName": (string, optional),
+                "membersEmails": (string, optional),
+                "defaultBudget": (string, optional)
+            }
 
         :return: the number of pages it would take to display all specified projects
         """
@@ -3045,15 +3095,16 @@ class ApiGateway(object):
         cannot be configured.
 
         Expected Input ::
-        {
-            "projectNumbers": (int or list of ints, optional),
-            "firstName": (string, optional),
-            "lastName": (string, optional),
-            "netID": (string, optional),
-            "email": (string, optional),
-            "course": (string, optional),
-            "role": (string, optional)
-        }
+
+            {
+                "projectNumbers": (int or list of ints, optional),
+                "firstName": (string, optional),
+                "lastName": (string, optional),
+                "netID": (string, optional),
+                "email": (string, optional),
+                "course": (string, optional),
+                "role": (string, optional)
+            }
 
         :return: the total number of pages required to display all specified users
         """
@@ -3079,12 +3130,14 @@ class ApiGateway(object):
     def requestPages(self):
         """
 
-        {
-            primaryFilter: {
-            },
-            secondaryFilter: {
+        ::
+
+            {
+                primaryFilter: {
+                },
+                secondaryFilter: {
+                }
             }
-        }
 
         """
         # check that we actually have json
@@ -3113,29 +3166,31 @@ class ApiGateway(object):
         decides which 10 users are returned. pageNumber must be a non-negative integer.
 
         Expected Input ::
-        {
-            'sortBy': (string in 'projectNumbers', 'firstName', 'lastName', 'netID',
-                'email', 'course', 'role', 'status')
-                (Optional. Default "email")
-            'order': (string in 'ascending', 'descending')
-                (Optional. Default: 'ascending')
-            'pageNumber': (int)
-                (Optional. Default: 0)
-            'keywordSearch': (dict)
-                {
-                    primaryFilter: {
-                    },
-                    secondaryFilter: {
+
+            {
+                'sortBy': (string in 'projectNumbers', 'firstName', 'lastName', 'netID',
+                    'email', 'course', 'role', 'status')
+                    (Optional. Default "email")
+                'order': (string in 'ascending', 'descending')
+                    (Optional. Default: 'ascending')
+                'pageNumber': (int)
+                    (Optional. Default: 0)
+                'keywordSearch': (dict)
+                    {
+                        primaryFilter: {
+                        },
+                        secondaryFilter: {
+                        }
                     }
-                }
-        }
+            }
 
         Returns ::
-        [
-            {
 
-            }
-        ]
+            [
+                {
+
+                }
+            ]
 
 
         :return: a list of at most 10 requests
@@ -3201,34 +3256,36 @@ class ApiGateway(object):
         decides which 10 projects are returned. pageNumber must be a non-negative integer.
 
         Expected Input ::
-        {
-            'sortBy': (string in 'projectNumber', 'sponsorName', 'projectName', 'membersEmails',
-                'defaultBudget')
-                (Optional. Default "projectNumber")
-            'order': (string in 'ascending', 'descending')
-                (Optional. Default: "ascending")
-            'pageNumber': (int)
-                (Optional. Default: 0)
-            'keywordSearch': (dict)
-                {
-                    "projectNumber": (int, optional),
-                    "sponsorName": (string, optional),
-                    "projectName": (string, optional),
-                    "membersEmails": (string, optional),
-                    "defaultBudget": (string, optional)
-                }
-        }
+
+            {
+                'sortBy': (string in 'projectNumber', 'sponsorName', 'projectName', 'membersEmails',
+                    'defaultBudget')
+                    (Optional. Default "projectNumber")
+                'order': (string in 'ascending', 'descending')
+                    (Optional. Default: "ascending")
+                'pageNumber': (int)
+                    (Optional. Default: 0)
+                'keywordSearch': (dict)
+                    {
+                        "projectNumber": (int, optional),
+                        "sponsorName": (string, optional),
+                        "projectName": (string, optional),
+                        "membersEmails": (string, optional),
+                        "defaultBudget": (string, optional)
+                    }
+            }
 
         Returns ::
-        [
-            {
-                “projectNumber”: (int),
-                "sponsorName": (string),
-                "projectName": (string),
-                "membersEmails": (string),
-                "defaultBudget": (string)
-            }
-        ]
+
+            [
+                {
+                    “projectNumber”: (int),
+                    "sponsorName": (string),
+                    "projectName": (string),
+                    "membersEmails": (string),
+                    "defaultBudget": (string)
+                }
+            ]
 
         :return: a list of at most 10 projects
         """
@@ -3302,20 +3359,22 @@ class ApiGateway(object):
         which data is returned. The user is found by their email.
 
         Expected Input ::
-        {
-            'email': (int)
-        }
+
+            {
+                'email': (int)
+            }
 
         Returns ::
-        {
-            'projectNumbers':, (list of ints)
-            'firstName':, (str)
-            'lastName':, (str)
-            'netID':, (str)
-            'course':, (str)
-            'email':, (str)
-            'role': (str)
-        }
+
+            {
+                'projectNumbers':, (list of ints)
+                'firstName':, (str)
+                'lastName':, (str)
+                'netID':, (str)
+                'course':, (str)
+                'email':, (str)
+                'role': (str)
+            }
 
         :return: a dict containing a single project's data, as per above
         """
@@ -3345,18 +3404,20 @@ class ApiGateway(object):
         which data is returned. The project is found by its projectNumber.
 
         Expected Input ::
-        {
-            'projectNumber': (int)
-        }
+
+            {
+                'projectNumber': (int)
+            }
 
         Returns ::
-        {
-            'projectNumber': (int),
-            'sponsorName': (str),
-            'projectName': (str),
-            'defaultBudget': (???),
-            'membersEmails': (list of str)
-        }
+
+            {
+                'projectNumber': (int),
+                'sponsorName': (str),
+                'projectName': (str),
+                'defaultBudget': (???),
+                'membersEmails': (list of str)
+            }
 
         :return: a dict containing a single project's data, as per above
         """
@@ -3388,39 +3449,41 @@ class ApiGateway(object):
         decides which 10 users are returned. pageNumber must be a non-negative integer.
 
         Expected Input ::
-        {
-            'sortBy': (string in projectNumbers, firstName, lastName, netID,
-                email, course, role, status)
-                (Optional. Default "email")
-            'order': (string in 'ascending', 'descending')
-                (Optional. Default: "ascending")
-            'pageNumber': (int)
-                (Optional. Default: 0)
-            'keywordSearch': (dict)
-                {
-                    "projectNumbers": (int or list of ints, optional),
-                    "firstName": (string, optional),
-                    "lastName": (string, optional),
-                    "netID": (string, optional),
-                    "email": (string, optional),
-                    "course": (string, optional),
-                    "role": (string, optional)
-                }
-        }
+
+            {
+                'sortBy': (string in projectNumbers, firstName, lastName, netID,
+                    email, course, role, status)
+                    (Optional. Default "email")
+                'order': (string in 'ascending', 'descending')
+                    (Optional. Default: "ascending")
+                'pageNumber': (int)
+                    (Optional. Default: 0)
+                'keywordSearch': (dict)
+                    {
+                        "projectNumbers": (int or list of ints, optional),
+                        "firstName": (string, optional),
+                        "lastName": (string, optional),
+                        "netID": (string, optional),
+                        "email": (string, optional),
+                        "course": (string, optional),
+                        "role": (string, optional)
+                    }
+            }
 
         Returns ::
-        [
-            {
-                “projectNumbers”: (list of ints),
-                "firstName": (string),
-                "lastName": (string),
-                "netID": (string),
-                "email": (string),
-                "course": (string),
-                “role”: “student”,
-                “status”: (string), //”current” or “removed”
-            }
-        ]
+
+            [
+                {
+                    “projectNumbers”: (list of ints),
+                    "firstName": (string),
+                    "lastName": (string),
+                    "netID": (string),
+                    "email": (string),
+                    "course": (string),
+                    “role”: “student”,
+                    “status”: (string), //”current” or “removed”
+                }
+            ]
 
         :return: a list of at most 10 users
         """
@@ -3632,6 +3695,7 @@ class ApiGateway(object):
     def getAdminEmails(self):
         """
         Return a list of emails of all admins.
+
         :return: a list of emails of all admins
         """
         adminEmails = []

@@ -5,6 +5,7 @@ import hashlib
 import os
 import re
 import math
+import functools
 
 from bson.objectid import ObjectId
 
@@ -21,6 +22,7 @@ def authorizedRoles(*acceptableRoles, redirect=False):
 
     def decorator(func):
 
+        @functools.wraps(func)
         def decorated_function(*args, **kwargs):
             role = cherrypy.session.get('role', None)
 
@@ -184,13 +186,21 @@ def checkValidID(data):
         raise cherrypy.HTTPError(400, 'data needs object id')
 
 def convertToDollarStr(cents):
+    """
+    Concerts a number of cents to a string with a dollar sign.
+
+    :param cents: (int). A number of cents
+    :return:
+    """
     dollar = math.floor(cents / 100)
     cts = cents - (dollar * 100)
     return "$" + str(dollar) + "." + "{:02d}".format(cts)
 
 def convertToCents(dollarAmt):
     """
-    Converts a string dollar amount to an int cents amount
+    Converts a string dollar amount to an int cents amount.
+    Strings must have two digits after the .
+
     :param dollarAmt: the string dollar amount, does not have $ sign
     :return: cents in int
     """
@@ -206,7 +216,9 @@ def convertToCents(dollarAmt):
 
 def lenientConvertToCents(dollarAmt):
     """
-    Converts a string dollar amount to an int cents amount
+    Converts a string dollar amount to an int cents amount.
+    Strings can have 1 or 2 digits after the . or just be an integer.
+
     :param dollarAmt: the string dollar amount, does not have $ sign
     :return: cents in int
     """
@@ -315,6 +327,14 @@ def requestCreate(data, status, optional=False):
     return myRequest
 
 def getKeywords(keywords):
+    """
+    Parse and sanitize a dict of keywords to be used in filtering the
+    various users in the users collection in mongo.
+
+    :param keywords: (dict).
+    :return:
+    """
+
     # TODO rename this to be getUserKeywords
     # parse the keyword search
     myFilter = dict()
@@ -347,6 +367,14 @@ def getKeywords(keywords):
 
 
 def getProjectKeywords(keywords):
+    """
+    Parse and sanitize a dict of keywords to be used in filtering the
+    various projects in the projects collection in mongo.
+
+    :param keywords: (dict).
+    :return:
+    """
+
     # parse the keyword search
     myFilter = {'status': 'active'}
 
@@ -373,25 +401,6 @@ def getProjectKeywords(keywords):
 
     return myFilter
 
-"""
-{
-    "requestNumber": (int) optional,
-    "projectNumber": (int),
-    "status": (string) optional (not optional if admin performs an edit),
-    "vendor": (string),
-    "URL": (string),
-}
-
-{
-    "description": (string),
-    "itemURL": (string),
-    "partNo": (string),
-    "quantity": (integer),
-    "unitCost": (string),
-    "totalCost": (string)
-}
-"""
-
 STATUS_SET = {
     "saved",
     "pending",
@@ -405,6 +414,14 @@ STATUS_SET = {
 }
 
 def getRequestKeywords(data):
+    """
+    Parse and sanitize a dict of keywords to be used in filtering the
+    various requests in the requests collection in mongo.
+
+    :param keywords: (dict).
+    :return:
+    """
+
     myFilter = {'$and': [{'status': {'$ne': 'saved'}}, {'status': {'$ne': 'cancelled'}}]}
 
     if 'primaryFilter' in data:
