@@ -3047,6 +3047,8 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def requestPages(self):
         """
+        Takes as input filters. Determines how many pages, each displaying
+        10 requests, it would take to show all procurement requests.
 
         Expected Input::
 
@@ -3057,6 +3059,7 @@ class ApiGateway(object):
                 }
             }
 
+        :return: the number of pages it would take to display all filtered requests
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -3098,15 +3101,6 @@ class ApiGateway(object):
                 secondaryFilter: {
                 }
             }
-
-        Returns::
-
-            [
-                {
-
-                }
-            ]
-
 
         :return: a list of at most 10 requests
         """
