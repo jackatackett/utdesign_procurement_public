@@ -3129,13 +3129,10 @@ class ApiGateway(object):
                     (Optional. Default: 'ascending')
                 'pageNumber': (int)
                     (Optional. Default: 0)
-                'keywordSearch': (dict)
-                    {
-                        primaryFilter: {
-                        },
-                        secondaryFilter: {
-                        }
-                    }
+                primaryFilter: {
+                },
+                secondaryFilter: {
+                }
             }
 
         Returns ::
@@ -3531,13 +3528,10 @@ class ApiGateway(object):
                     (Optional. Default "email")
                 'order': (string in 'ascending', 'descending')
                     (Optional. Default: "ascending")
-                'keywordSearch': (dict)
-                    {
-                        primaryFilter: {
-                        },
-                        secondaryFilter: {
-                        }
-                    }
+                primaryFilter: {
+                },
+                secondaryFilter: {
+                }
             }
 
         :return: a uuid for the generated report
