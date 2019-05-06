@@ -1,7 +1,8 @@
-# UTDesign Procurement Management System
+# UTDesign GettIt
 
-UTDesign Procurement Management System (Senior Design, Spring 2019)
+UTDesign GettIt (Senior Design, Spring 2019)
 
+Procurement Management System
 
 ## Setup
 
@@ -15,7 +16,7 @@ $ python3 -m pip install virtualenv
 ```
 
 
-This project depends on the PyPI projects `cherrypy` and `mako`. Recommended 
+This project depends several PyPI projects. Recommended 
 workflow is to create a python3 virtualenv and install these packages there.
 
 For example:
@@ -27,19 +28,39 @@ $ source venvProcurement/bin/activate
 $ python3 -m pip install -r requirements.txt
 ```
 
-Also, to add one of each user for debugging, use this:
+Also, to initialize the database development purposes, use this:
 
 ```
 $ mongo scripts/debug_users.js
 ```
 
-And users will be created as below:
+## Unit Tests
 
-| Email                | Password | Role    |
-| -------------------- | ---------| ------- |
-| admin@utdallas.edu   | oddrun   | admin   |
-| manager@utdallas.edu | oddrun   | manager |
-| student@utdallas.edu | oddrun   | student |
+Unit tests can be found in the src/python/tests package. To run them, be sure
+to have MongoDB backed up. It's necessary to run the debug_users.js script
+before running unit tests. Recommended workflow:
+
+```
+$ cd utdesign_procurement/
+$ source venvProcurement/bin/activate
+$ cd src/python
+$ python3 -m unittest
+```
+
+## Sphinx Documentation
+
+Sphinx documentation can be generated from within the virtualenv by using
+the makefile in the doc directory. For example:
+
+```
+$ cd utdesign_procurement
+$ source venvProcurement/bin/activate
+$ cd doc
+$ make html
+$ make latexpdf
+```
+
+Then documentation can be found in doc/build
 
 ## Running
 

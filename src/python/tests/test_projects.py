@@ -9,8 +9,8 @@ import math
 from unittest import TestCase
 
 import sys
-sys.path.insert(0, '../utdesign_procurement')
-from utils import lenientConvertToCents
+# sys.path.insert(0, '../utdesign_procurement')
+from utdesign_procurement.utils import lenientConvertToCents
 
 class ProjectTester(TestCase):
     def test_project(self):
