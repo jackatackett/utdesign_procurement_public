@@ -73,7 +73,14 @@ class ApiGateway(object):
                 ]
             }
 
-        :return:
+        Returns ::
+
+            {
+                "_id": (string),
+                "requestNumber" (int):
+            }
+
+        :return: a dict containing the MongoDB objectId of the request and the request number
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -195,8 +202,6 @@ class ApiGateway(object):
         """
         Check the current sequence value of requests, return it,
         and increment the value.
-
-        :return:
         """
 
         query = {"name": "requests"}
@@ -231,7 +236,7 @@ class ApiGateway(object):
                 "projectNumber": (int)
             }
 
-        Returns::
+        Returns ::
 
             [
                 (string)
@@ -287,7 +292,7 @@ class ApiGateway(object):
                 "statuses": (string or list of strings, optional)
             }
 
-        Returns::
+        Returns ::
 
             [
                 {
@@ -400,8 +405,6 @@ class ApiGateway(object):
             {
                 "_id": (string)
             }
-
-        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -486,8 +489,6 @@ class ApiGateway(object):
             {
                 "_id": (string)
             }
-
-        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -572,8 +573,6 @@ class ApiGateway(object):
                 "_id": (string),
                 "comment": (string)
             }
-
-        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -653,8 +652,6 @@ class ApiGateway(object):
                 "_id": (string),
                 "comment": (string)
             }
-
-        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -761,8 +758,6 @@ class ApiGateway(object):
                     }
                 ]
             }
-
-        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -849,8 +844,6 @@ class ApiGateway(object):
                     }
                 ]
             }
-
-        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -922,8 +915,6 @@ class ApiGateway(object):
                 "_id": (string),
                 "comment": (string)
             }
-
-        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -1004,8 +995,6 @@ class ApiGateway(object):
                 "_id": (string),
                 "amount": (string)
             }
-
-        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -1090,8 +1079,6 @@ class ApiGateway(object):
             {
                 "_id": (string)
             }
-
-        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -1162,8 +1149,6 @@ class ApiGateway(object):
             {
                 "_id": (string)
             }
-
-        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -1236,8 +1221,6 @@ class ApiGateway(object):
                 "_id": (string),
                 "comment": (string)
             }
-
-        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -1325,8 +1308,6 @@ class ApiGateway(object):
                 "_id": (string),
                 "comment": (string)
             }
-
-        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -1395,7 +1376,7 @@ class ApiGateway(object):
         """
         Return the emails of all admins in the system.
 
-        Returns::
+        Returns ::
 
             [
                 (string)
@@ -1451,7 +1432,7 @@ class ApiGateway(object):
     @authorizedRoles("admin")
     def addCost(self):
         """
-        Adds a cost (refund, reimbursement, funding, or cut) to a project.
+        Adds a cost (refund, reimbursement, or new project) to a project.
         Can only be done by the admin.
 
         Expected Input ::
@@ -1463,8 +1444,6 @@ class ApiGateway(object):
                 comment: (string),
                 actor: (string, email of admin)
             }
-
-        :return:
         """
 
         # check that we actually have json
@@ -1516,7 +1495,7 @@ class ApiGateway(object):
                 projectNumbers: (list of ints, optional)
             }
 
-        Returns::
+        Returns ::
 
             [
                 {
@@ -1592,8 +1571,6 @@ class ApiGateway(object):
                 “availableBudget”: (string),
                 “pendingBudget”: (string)
             }
-
-        :return:
         """
         # TODO defaultBudget, availableBudget, pendingBudget not yet optional
         # TODO default budget from value in database
@@ -1664,8 +1641,6 @@ class ApiGateway(object):
             {
                 "_id": (string)
             }
-
-        :return:
         """
 
         # check that we actually have json
@@ -1709,7 +1684,7 @@ class ApiGateway(object):
                 projectNumbers: (list of ints, optional)
             }
 
-        Returns::
+        Returns ::
 
             [
                 {
@@ -1788,8 +1763,6 @@ class ApiGateway(object):
                 projectName: (string, optional),
                 membersEmails: [(string), …, optional]
             }
-
-        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -1867,7 +1840,7 @@ class ApiGateway(object):
                 "role": (string)
             }
 
-        :return:
+        :return: uuid of invitation for new user
         """
 
         # check that we actually have json
@@ -1941,7 +1914,7 @@ class ApiGateway(object):
                 "email": (string),
             }
 
-        :return:
+        :return: uuid of invitation for forgot password form
         """
 
         # check that we actually have json
@@ -2070,8 +2043,6 @@ class ApiGateway(object):
         to the database and invited by email.
 
         Otherwise, a 400 error is returned.
-
-        :return:
         """
 
         # check that we actually have bulk data
@@ -2135,7 +2106,7 @@ class ApiGateway(object):
                 'conflicting': (int, number of conflicting users),
             }
 
-        :return:
+        :return: a dict summarizing the current state of the bulk user data
         """
 
         # check that we actually have json
@@ -2491,7 +2462,7 @@ class ApiGateway(object):
                 'conflicting': (int, number of conflicting users),
             }
 
-        :return:
+        :return: a dict summarizing the current state of the bulk project dataa
         """
 
         # check that we actually have json
@@ -2518,6 +2489,7 @@ class ApiGateway(object):
                     Whether these are the "valid", "invalid", or "conflicting")
             }
 
+        :return: number of pages required to display all current projects
         """
 
         # check that we actually have json
@@ -2694,8 +2666,6 @@ class ApiGateway(object):
         Marks all projects with a given project number to be ignored in
         the bulk project data list, so that they will not be uploaded
         when projectSpreadsheetUpload is called.
-
-        :return:
         """
 
         # check that we actually have json
@@ -2733,8 +2703,6 @@ class ApiGateway(object):
                 "netID": (string, optional),
                 "course": (string, optional)
             }
-
-        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -2792,8 +2760,6 @@ class ApiGateway(object):
             {
                 "_id": (string)
             }
-
-        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -2844,8 +2810,6 @@ class ApiGateway(object):
                 "email": (string),
                 "password": (string)
             }
-
-        :return:
         """
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
@@ -3146,7 +3110,6 @@ class ApiGateway(object):
 
         :return: a list of at most 10 requests
         """
-        #TODO finish docstring
         # check that we actually have json
         if hasattr(cherrypy.request, 'json'):
             data = cherrypy.request.json
@@ -3507,8 +3470,6 @@ class ApiGateway(object):
     def userLogout(self):
         """
         Logs out a user by expiring their session.
-
-        :return:
         """
         cherrypy.lib.sessions.expire()
 
@@ -3693,7 +3654,7 @@ class ApiGateway(object):
 
         :param data: dict. The user to be validated.
         :param myComment: bool. As described above.
-        :return:
+        :return: sanitized version of the user dict, or None if anything was wrong with the dict
         """
 
         myComment = {
@@ -3815,7 +3776,7 @@ class ApiGateway(object):
 
         :param data: dict. The project to be validated.
         :param myComment: bool. As described above.
-        :return:
+        :return: sanitized version of the project dict
         """
 
         myComment = {
