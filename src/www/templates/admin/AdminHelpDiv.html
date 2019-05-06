@@ -17,78 +17,244 @@ Add Projects</p>
 
 <p>Let&rsquo;s discuss each of them.</p>
 
-<p>Requests</p>
+<h3>Requests</h3>
 
 <p>The &ldquo;Requests&rdquo; interface allows you to view a list of all requests that have ever been submitted to you, including requests that since have have been cancelled, rejected by an admin, or successfully ordered. </p>
 
-<p>By default, you will see a table of requests that displays:<br />
-&ldquo;Request Number&rdquo;: a unique integer that differentiates each request from every other request saved in the system, including unsubmitted ones.<br />
-&ldquo;Project Number&rdquo;: the project number of the project this request is for<br />
-&ldquo;Status&rdquo;: the status of the request. <br />
-&ldquo;Vendor&rdquo;: name of vendor the items will be ordered from. Each procurement request may have only one vendor<br />
-&ldquo;URL&rdquo;: URL of the home page of the vendor&rsquo;s online storefront<br />
-&ldquo;Total Cost&rdquo;: total cost of all items plus shipping<br />
-&ldquo;Shipping Cost&rdquo;: the cost of shipping only; this will be set after your items have been ordered</p>
+<p>By default, you will see a table of requests that displays:</p>
+
+<table class="table table-bordered">
+    <tr>
+        <td>Request Number</td>
+        <td>a unique integer that differentiates the request from every other saved request in the system, including unsubmitted ones.</td></tr>
+    <tr>
+        <td>Project Number</td>
+        <td>the project number of the project this request is for</td>
+    </tr>
+    <tr>
+        <td>Status
+        </td><td>the status of the request</td></tr>
+    <tr>
+        <td>
+            Vendor</td>
+        <td>name of vendor the items will be ordered from; each procurement request may have only one vendor</td>
+    </tr>
+    <tr>
+        <td>URL</td>
+        <td>URL of the home page of the vendor&rsquo;s online storefront</td>
+    </tr>
+    <tr>
+        <td>Total Cost</td>
+        <td>total cost of all items plus shipping</td>
+    </tr>
+    <tr>
+        <td>Shipping Cost</td>
+        <td>the cost of shipping only; this will be set after the items have been ordered</td>
+    </tr>
+</table>
 
 <p>If you click on any of the white rows of this table, the row will expand, revealing gray rows, each corresponding to an item; and optionally buttons, depending on the status of the request.</p>
 
 <p>For each item, the following information is provided:<br />
-&ldquo;Description&rdquo;: a brief verbal description of what the item is, e.g. &ldquo;screws&rdquo;<br />
-&ldquo;Item URL&rdquo;: the URL of the item&rsquo;s online listing<br />
-&ldquo;Catalog Part Number&rdquo;: the catalog part number of the item<br />
-Quantity&rdquo;: how many of this item you wish to order; please give an integer<br />
-&ldquo;Estimated Unit Cost&rdquo;: how much one of this item costs<br />
-&ldquo;Total Cost&rdquo;: automatically figured out for you by the system</p>
 
-<p>These buttons may include:<br />
-&ldquo;Approve&rdquo;: mark the request as approved and waiting to be ordered<br />
-&ldquo;Reject&rdquo;: reject the request. After you select this button, you will be prompted with a new display, with three? buttons and a ????<br />
-&ldquo;Permanent Reject&rdquo;: reject the request such that it may no longer be edited<br />
-&ldquo;Send for Updates, Return to Admin&rdquo;: send the request back to the students who created it and prompt them to make changes to it. When they are finished, it will return directly to you.<br />
-&ldquo;Send for Updates, Return to Manager&rdquo;: send the request back to the students who created it and prompt them to make changes to it. When they are finished, it will be resubmitted to their technical manager for reapproval.<br />
-&ldquo;Comments&rdquo;: a box to explain why you rejected the request or what changes should be made to it<br />
-&ldquo;Edit Request&rdquo;: brings up a form allowing you to manually edit the procurement request yourself<br />
-&ldquo;View History&rdquo;: brings up a table allowing you to view the history of the procurement request</p>
+<table class="table table-bordered">
+  <tr>
+    <td>Description</td>
+    <td>a brief verbal description of what the item is, e.g. &ldquo;screws&rdquo;</td>
+  </tr>
+  <tr>
+    <td>Item URL</td>
+    <td>the URL of the item&rsquo;s online listing</td>
+  </tr>
+  <tr>
+    <td>Catalog Part Number</td>
+    <td>the catalog part number of the item</td>
+  </tr>
+  <tr>
+    <td>Quantity</td>
+    <td>how many of this item need to be ordered</td>
+  </tr>
+  <tr>
+    <td>Estimated Unit Cost</td>
+    <td>how much one of this item costs</td>
+  </tr>
+  <tr>
+    <td>Total Cost</td>
+    <td>the total cost of all items, plus shipping</td>
+  </tr>
+</table>
 
-<p>
-Edit Users</p>
+<p>These buttons may include:</p>
+
+<table class="table table-bordered">
+  <tr>
+    <td>Mark as Ordered</td>
+    <td>after you've ordered the items for an approved procurement request, mark it as ordered and specify a shipping cost amount</td>
+  </tr>
+  <tr>
+    <td>Mark as Ready for Pickup</td>
+    <td>after items have arrived and are ready for pickup, mark them as ready for pickup to notify students</td>
+  </tr>
+  <tr>
+    <td>Mark as Complete</td>
+    <td>after items have been picked up, mark request as complete</td>
+  </tr>
+  <tr>
+    <td>Edit Request</td>
+    <td>brings up a form allowing you to manually edit the procurement request yourself</td>
+  </tr>
+  <tr>
+    <td>View History</td>
+    <td>brings up a table allowing you to view the history of the procurement request</td>
+  </tr>
+  <tr>
+    <td>Reject</td>
+    <td>reject the request; after you select this button, you will be prompted with a new display with three buttons and a box to leave comments</td>
+  </tr>
+</table>
+
+<p>If you select "reject", the popup will have the following:</p>
+
+<table class="table table-bordered">
+  <tr>
+    <td>Permanent Reject</td>
+    <td>reject the request such that it may no longer be edited or ordered</td>
+  </tr>
+  <tr>
+    <td>Send for Updates, Return to Admin</td>
+    <td>send the request back to the students who created it and prompt them to make changes to it; when they are finished, it will return directly to you</td>
+  </tr>
+  <tr>
+    <td>Send for Updates, Return to Manager</td>
+    <td>send the request back to the students who created it and prompt them to make changes to it; when they are finished, it will be resubmitted to their technical manager for reapproval.</td>
+  </tr>
+  <tr>
+    <td>Comments</td>
+    <td>explain why you rejected the request or what changes should be made to it</td>
+  </tr>
+</table>
+
+<h3>Edit Users</h3>
 
 <p>The &ldquo;Edit Users&rdquo; view allows you to view student information, search for students, and edit student information. </p>
 
-<p>By default, you will see a table of users with the following columns:<br />
-&ldquo;Project Number(s)&rdquo;<br />
-&ldquo;First Name&rdquo;: first name of the student; can be edited<br />
-&ldquo;Last Name&rdquo;: last name of the student; can be edited<br />
-&ldquo;NetID&rdquo;: optional field, because not all users will have one. Every user who is a student should have one.<br />
-&ldquo;Email&rdquo;: this field cannot be edited<br />
-&ldquo;Course&rdquo;: p</p>
+<p>By default, you will see a table of users with the following columns:</p>
 
-<p>Each row of this table is a user. At the far right of each row is an &ldquo;edit&rdquo; button. Clicking on this &ldquo;edit&rdquo; button will bring up a dialog box that allows you to edit the following fields of that user:<br />
-&ldquo;Project Number(s)&rdquo;: if a user is assigned to multiple projects, separate each number with a comma<br />
-&ldquo;First Name&rdquo;: first name of the student<br />
-&ldquo;Last Name&rdquo;: last name of the student<br />
-&ldquo;NetID&rdquo;: optional field, because not all users will have one. Every student should have one.<br />
-&ldquo;Course&rdquo;</p>
+<table class="table table-bordered">
+  <tr>
+    <td>Project Number</td>
+    <td>each project has a unique identifying number, and every student must be assigned to at least one project; can be edited</td>
+  </tr>
+  <tr>
+    <td>First Name</td>
+    <td>first name of the student; can be edited</td>
+  </tr>
+  <tr>
+    <td>Last Name</td>
+    <td>last name of the student; can be edited</td>
+  </tr>
+  <tr>
+    <td>NetID</td>
+    <td>optional field, because not all users will have one; every user who is a student should have one</td>
+  </tr>
+  <tr>
+    <td>Email</td>
+    <td>used by the user to log in; this field cannot be edited</td>
+  </tr>
+  <tr>
+    <td>Course</td>
+    <td>the course number(s), e.g. CS 4485, that the student is enrolled in and working on a project for; if a user is enrolled in multiple courses, separate each course with a comma; can be edited</td>
+  </tr>
+  <tr>
+    <td>Role</td>
+    <td>may be either "student", "manager", or "admin"; this field cannot be edited</td>
+  </tr>
+</table>
 
-<p>The following buttons at the bottom perform the following actions:<br />
-&ldquo;Close&rdquo;: will close the dialog box and return you to the Edit Users screen<br />
-&ldquo;Save&rdquo;: will save the changes you have made<br />
-&ldquo;Deactivate&rdquo;: will prevent the user from using the system; cannot be undone</p>
 
-<p>
-Add Users</p>
+<p>Each row of this table is a user. At the far right of each row is an &ldquo;edit&rdquo; button. Clicking on this &ldquo;edit&rdquo; button will bring up a dialog box that allows you to edit the following fields of that user:</p>
+
+<table class="table table-bordered">
+  <tr>
+    <td>Project Number</td>
+    <td>if a user is assigned to multiple projects, separate each number with a comma</td>
+  </tr>
+  <tr>
+    <td>First Name</td>
+    <td>first name of the student; can be edited</td>
+  </tr>
+  <tr>
+    <td>Last Name</td>
+    <td>last name of the student; can be edited</td>
+  </tr>
+  <tr>
+    <td>NetID</td>
+    <td>optional field, because not all users will have one; every user who is a student should have one</td>
+  </tr>
+  <tr>
+    <td>Course</td>
+    <td>if a user is assigned to multiple courses, separate each course with a comma</td>
+  </tr>
+</table>
+
+<p>The following buttons at the bottom perform the following actions:</p>
+
+<table class="table table-bordered">
+  <tr>
+    <td>Close</td>
+    <td>will close the dialog box and return you to the Edit Users screen</td>
+  </tr>
+  <tr>
+    <td>Save</td>
+    <td>will save the changes you have made</td>
+  </tr>
+  <tr>
+    <td>Deactivate</td>
+    <td>will deactivate the user's account, preventing the user from further using the system; cannot be undone</td>
+  </tr>
+  <tr>
+    <td>NetID</td>
+    <td>optional field, because not all users will have one; every user who is a student should have one</td>
+  </tr>
+</table>
+
+<h3>Add Users</h3>
 
 <p>The &ldquo;Add Users&rdquo; view allows you to add users to the system. You may do so either <br />
-one user at a time, or... <br />
-in bulk by uploading an excel spreadsheet.</p>
+<ul>
+    <li>one user at a time, or...</li>
+    <li>in bulk by uploading an excel spreadsheet.</li>
+</ul>
+</p>
 
-<p>To add a single user, simply fill out the fields:<br />
-&ldquo;Project Number(s)&rdquo;: if a user is assigned to multiple projects, separate each number with a comma<br />
-&ldquo;First Name&rdquo;: first name of the student; can be edited later<br />
-&ldquo;Last Name&rdquo;: last name of the student; can be edited later<br />
-&ldquo;NetID&rdquo;: optional field, because not all users will have one. Every student should have one<br />
-&ldquo;Email&rdquo;: this field cannot be edited later<br />
-&ldquo;Course&rdquo;: the course number(s), e.g. CS 4485, that the student is enrolled in and working on a project for. If a user is enrolled in multiple courses, separate each number with a comma</p>
+<p>To add a single user, simply fill out the fields:</p>
+
+<table class="table table-bordered">
+  <tr>
+    <td>Project Number</td>
+    <td>if a user is assigned to multiple projects, separate each number with a comma; can be edited later</td>
+  </tr>
+  <tr>
+    <td>First Name</td>
+    <td>first name of the student; can be edited later</td>
+  </tr>
+  <tr>
+    <td>Last Name</td>
+    <td>last name of the student; can be edited later</td>
+  </tr>
+  <tr>
+    <td>NetID</td>
+    <td>optional field, because not all users will have one; every user who is a student should have one; can be edited later</td>
+  </tr>
+  <tr>
+    <td>Email</td>
+    <td>used by the user to log in; this field cannot be edited later</td>
+  </tr>
+  <tr>
+    <td>Course</td>
+    <td>if a user is assigned to multiple courses, separate each course with a comma; can be edited later</td>
+  </tr>
+</table>
 
 <p>Then click add to add a single user with the information you&rsquo;ve specified.</p>
 
@@ -96,7 +262,7 @@ in bulk by uploading an excel spreadsheet.</p>
 
 <p>There is a spreadsheet template to follow when you create the spreadsheet you upload. The &ldquo;Download Template&rdquo; button will allow you to download a copy of this template.</p>
 
-<p>View Costs</p>
+<h3>View Costs</h3>
 
 <p>The &ldquo;View Costs&rdquo; interface allows you to view all costs that are not directly tied to procurement requests. </p>
 
@@ -104,32 +270,86 @@ in bulk by uploading an excel spreadsheet.</p>
 
 <p>A table shows information about each cost. Each row corresponds to a single cost. These costs come in three types:</p>
 
-<p>&ldquo;Refund&rdquo;: money is returned to the project&rsquo;s budget<br />
-&ldquo;Reimbursement&rdquo;: money is taken from the project&rsquo;s budget to reimburse a student who spent their own money on items<br />
-&ldquo;New Budget&rdquo;: the total budget of the project is set to a new value</p>
+<table class="table table-bordered">
+  <tr>
+    <td>Refund</td>
+    <td>money is returned to the project&rsquo;s budget</td>
+  </tr>
+  <tr>
+    <td>Reimbursement</td>
+    <td>money is taken from the project&rsquo;s budget to reimburse a student who spent their own money on items</td>
+  </tr>
+  <tr>
+    <td>New Budget</td>
+    <td>the total budget of the project is set to a new value</td>
+  </tr>
+</table>
+
 
 <p>Each column of the table corresponds to the following information about each cost:</p>
 
-<p>&ldquo;Timestamp&rdquo;: what time and date the cost was applied to the project<br />
-&ldquo;Type&rdquo;: see above<br />
-&ldquo;Comment&rdquo;: any comment made by the admin who applied the cost will display here<br />
-&ldquo;Amount&rdquo;: how much money the cost is. Negative means this cost returns money to the project&rsquo;s budget. </p>
+<table class="table table-bordered">
+  <tr>
+    <td>Timestamp</td>
+    <td>what time and date the cost was applied to the project</td>
+  </tr>
+  <tr>
+    <td>Type</td>
+    <td>"refund", "reimbursement", or "new budget"</td>
+  </tr>
+  <tr>
+    <td>Comment</td>
+    <td>any comment made by the admin who applied the cost will display here</td>
+  </tr>
+  <tr>
+    <td>Amount</td>
+    <td>how much money the cost is; negative means this cost returns money to the project&rsquo;s budget</td>
+  </tr>
+</table>
 
 <p>If the type of the cost is &ldquo;New Budget&rdquo;, the &ldquo;amount&rdquo; of the cost is the new budget of the project and not the change in the budget. For example, if a project whose budget was $2000 had its budget increased by $1000, the &ldquo;amount&rdquo; of the new budget would be $3000.</p>
 
-<p>Add Costs<br />
-The &ldquo;Add Costs&rdquo; interface allows you to add costs to the system that are not directly tied to a procurement request. You may do so one at a time.</p>
+<h3>Add Costs</h3>
 
-<p>These costs come in three types:<br />
-&ldquo;Refund&rdquo;: money is returned to the project&rsquo;s budget<br />
-&ldquo;Reimbursement&rdquo;: money is taken from the project&rsquo;s budget to reimburse a student who spent their own money on items<br />
-&ldquo;New Budget&rdquo;: the total budget of the project is set to a new value</p>
+<p>The &ldquo;Add Costs&rdquo; interface allows you to add costs to the system that are not directly tied to a procurement request. You may do so one at a time.</p>
 
-<p>To add a single cost, simply fill out the fields:<br />
-&ldquo;Type&rdquo;: see above<br />
-&ldquo;Project Number&rdquo;: which project this cost will apply to<br />
-&ldquo;Comment&rdquo;: any additional information you would like to share goes here<br />
-&ldquo;Amount&rdquo;: how much money the cost is; see below</p>
+<p>These costs come in three types:</p>
+
+<table class="table table-bordered">
+  <tr>
+    <td>Refund</td>
+    <td>money is returned to the project&rsquo;s budget</td>
+  </tr>
+  <tr>
+    <td>Reimbursement</td>
+    <td>money is taken from the project&rsquo;s budget to reimburse a student who spent their own money on items</td>
+  </tr>
+  <tr>
+    <td>New Budget</td>
+    <td>the total budget of the project is set to a new value</td>
+  </tr>
+</table>
+
+<p>To add a single cost, simply fill out the fields:</p>
+
+<table class="table table-bordered">
+  <tr>
+    <td>Type</td>
+    <td>"refund", "reimbursement", or "new budget"</td>
+  </tr>
+  <tr>
+    <td>Project Number</td>
+    <td>which project this cost will apply to</td>
+  </tr>
+  <tr>
+    <td>Comment</td>
+    <td>any comment made by the admin who applied the cost will display here</td>
+  </tr>
+  <tr>
+    <td>Amount</td>
+    <td>how much money the cost is; negative means this cost returns money to the project&rsquo;s budget</td>
+  </tr>
+</table>
 
 <p>If the type of the cost is &ldquo;New Budget&rdquo;, the &ldquo;amount&rdquo; of the cost is the new budget of the project and not the change in the budget. For example, if a project whose budget was $2000 had its budget increased by $1000, the &ldquo;amount&rdquo; of the new budget would be $3000.</p>
 
@@ -137,7 +357,7 @@ The &ldquo;Add Costs&rdquo; interface allows you to add costs to the system that
 
 <p>Then click add to add a single cost with the information you&rsquo;ve specified.</p>
 
-<p>Edit Projects</p>
+<h3>Edit Projects</h3>
 
 <p>The &ldquo;Edit Projects&rdquo; interface allows you to view a table of projects in the system, and edit each one individually.</p>
 
@@ -145,28 +365,73 @@ The &ldquo;Add Costs&rdquo; interface allows you to add costs to the system that
 
 <p>Each row of the table of projects corresponds to a project, and each column corresponds to the following:</p>
 
-<p>&ldquo;Project Number&rdquo;: a unique number identifying each project<br />
-&ldquo;Sponsor Name&rdquo;: the name of the project&rsquo;s sponsor<br />
-&ldquo;Project Name&rdquo;: the name of the project<br />
-&ldquo;Members Emails&rdquo;: a dropdown allowing you to see the email addresses of each member of the project<br />
-&ldquo;Budget&rdquo;: the total maximum budget of the project</p>
+<table class="table table-bordered">
+  <tr>
+    <td>Project Number</td>
+    <td>a unique number identifying each project</td>
+  </tr>
+  <tr>
+    <td>Sponsor Name</td>
+    <td>the name of the project&rsquo;s sponsor</td>
+  </tr>
+  <tr>
+    <td>Project Name</td>
+    <td>the name of the project</td>
+  </tr>
+  <tr>
+    <td>Members Emails</td>
+    <td>a dropdown allowing you to see the email addresses of each member of the project</td>
+  </tr>
+  <tr>
+    <td>Budget</td>
+    <td>the total maximum budget of the project</td>
+  </tr>
+</table>
 
 <p>Next to each row of the table is an &ldquo;edit&rdquo; button, which brings up a form allowing you to edit the aforementioned information.</p>
 
 <p>Members Emails may be separated by a comma if there is more than one email per project.</p>
 
-<p>Add Projects</p>
+<h3>Add Projects</h3>
 
 <p>The &ldquo;Add Projects&rdquo; view allows you to add projects to the system. You may do so either <br />
-one project at a time, or... <br />
-in bulk by uploading an excel .xlsx spreadsheet.</p>
+<ul>
+    <li>one project at a time, or...</li>
+    <li>in bulk by uploading an excel .xlsx spreadsheet.</li>
+</ul>
+</p>
 
 <p>To add a single project, simply fill out the fields:<br />
 &ldquo;Project Number&rdquo;: a unique number identifying each project<br />
 &ldquo;Sponsor Name&rdquo;: the name of the project&rsquo;s sponsor<br />
 &ldquo;Project Name&rdquo;: the name of the project<br />
-&ldquo;Members Emails&rdquo;: the users who will be assigned to the project, identified by their email address; email addresses should be separated by a comma<br />
+&ldquo;Members Emails&rdquo;:
+    the users who will be assigned to the project, identified by their email address; email addresses should be separated by a comma
+    <br />
 &ldquo;Budget&rdquo;: the total maximum budget of the project; the default budget will be automatically filled in to the form</p>
+
+<table class="table table-bordered">
+  <tr>
+    <td>Project Number</td>
+    <td>a unique number identifying each project</td>
+  </tr>
+  <tr>
+    <td>Sponsor Name</td>
+    <td>the name of the project&rsquo;s sponsor</td>
+  </tr>
+  <tr>
+    <td>Project Name</td>
+    <td>the name of the project</td>
+  </tr>
+  <tr>
+    <td>Members Emails</td>
+    <td>the users who will be assigned to the project, identified by their email address; email addresses should be separated by a comma</td>
+  </tr>
+  <tr>
+    <td>Budget</td>
+    <td>the total maximum budget of the project; the default budget will be automatically filled in to the form</td>
+  </tr>
+</table>
 
 <p>Then click add to add a single project with the information you&rsquo;ve specified.</p>
 
