@@ -233,3 +233,10 @@
 .dollarfy::before {
     content: '$';
 }
+
+/* how to display help page div */
+div.help {
+    margin: 2% auto;
+    padding: 5px;
+    width: 45em;
+}
