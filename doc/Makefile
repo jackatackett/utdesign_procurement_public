@@ -23,7 +23,6 @@ clean:
 	rm -rf "$(BUILDDIR)"
 	rm -rf "$(SOURCEDIR)/apidoc" $(0)
 
-
 .PHONY: help Makefile
 
 # Catch-all target: route all unknown targets to Sphinx using the new
